@@ -51,7 +51,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         correct_classifications.append(clf.predict(X_cand)[0] == y_cand)
         # check whether to sample the instance or not
         # call_func is used since a classifier is not needed for RandomSampling and PeriodicSampling
-        kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(X_train)
+        kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(X_train)  #MH: Don't you want to add the bandwidth parameter here?
         X_candidate_density = np.array([kde.score(X_cand)])
 
         sampled_indices, utilities = call_func(query_strategy.query, candidates=X_cand, X=X_train, y=y_train,
@@ -67,18 +67,18 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         # add X_cand to X_train
         X_train.append(x_t)
         # add label or missing_label to y_train
-        al_label = y_cand if len(sampled_indices) > 0 else clf.missing_label
+        al_label = y_cand if len(sampled_indices) > 0 else clf.missing_label  #MH: In which cases is len(sampled_indices) > 1? 
         y_train.append(y_cand if len(sampled_indices) > 0 else clf.missing_label)
 
-        prediction = clf.predict(X_cand)[0]
+        prediction = clf.predict(X_cand)[0]  #MH: You could already do this before line 51, no?
 
         if approach_name.endswith('Batch'):
-            clf.fit(X_train, y_train)
+            clf.fit(X_train, y_train)  #MH: Here you use y_train, in line 78 you use al_label. Why?
         elif approach_name.startswith('Clustering'):
-            clf.partial_fit(X_cand.reshape([1, -1]), np.array([al_label]))
+            clf.partial_fit(X_cand.reshape([1, -1]), np.array([al_label]))  #MH: (1) Not sure, do you have to reshape again? (probably yes) (2) What happens when we fit / partial_fit on missing labels? couldn't we simply skip it in this case?
         else:
-            if not np.isnan(al_label):
-                clf.partial_fit(X_cand.reshape([1, -1]), np.array([al_label]))
+            if not np.isnan(al_label):  #MH: np.isnan only returns a scalar if al_label is a scalar. Otherwise it will be an array and, afaik, arrays evaluate to true. So be careful here. Also, maybe rather compare to clf.missinglabel instead of NaN, in case clf.missinglabel is not none.
+                clf.partial_fit(X_cand.reshape([1, -1]), np.array([al_label]))  
 
         logger.track_timestep(t)
         logger.track_y(prediction)
@@ -95,7 +95,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         logger.finalize_round()
 
     df = logger.get_dataframe()
-    accuracy = gaussian_filter1d(np.array(tmp_accuracy, dtype=float), 100)
+    accuracy = gaussian_filter1d(np.array(tmp_accuracy, dtype=float), 100) #MH: here you could do something like pd.Series(temp_accuracy).rolling(windowsize).mean()
     df["Accuracy"] = accuracy
 
     # calculate and show the average accuracy
