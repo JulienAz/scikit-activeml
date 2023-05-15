@@ -22,6 +22,9 @@ from ._density_uncertainty import (
 
 __all__ = [
     "budgetmanager",
+    "clustering",
+    "datagenerator",
+    "tests",
     "StreamRandomSampling",
     "PeriodicSampling",
     "FixedUncertainty",
