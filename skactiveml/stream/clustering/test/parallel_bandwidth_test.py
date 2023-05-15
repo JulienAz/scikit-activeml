@@ -53,13 +53,13 @@ budget = 0.5
 n_reps = 1
 
 n_bandwidths = 21
-bandwidth_step_size = 0.1
+bandwidth_step_size = 0.1  #MH: You could also use linespace to create an array with bandwith values you want to try: https://numpy.org/doc/stable/reference/generated/numpy.linspace.html
 init_bandwidth = 0.5
 
 # random state that is used to generate random seeds
 random_number = 15
 
-REP = "rep"
+REP = "rep"  #MH: I would put these in a separate file so that you can re-use them.
 TIMESTEP = "round"
 APPROACH = "Approach"
 ACCURACY = "Accuracy"

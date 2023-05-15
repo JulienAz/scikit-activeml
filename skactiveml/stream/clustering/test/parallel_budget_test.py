@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     # df[ACCURACY] = accuracy
 
-    fp_performance = "target/performance_test_abalone.csv"
+    fp_performance = "target/performance_test_abalone.csv"  #MH: I would suggest using Parquet files since they are much smaller and also load faster.
     df.to_csv(fp_performance, index=False)
 
     sb.set_theme()
@@ -194,13 +194,13 @@ if __name__ == '__main__':
         hue=CLASSIFIER, errorbar=None
     )
 
-    mean_rolling_avg = df.groupby([BUDGET, CLASSIFIER, REP])[ACCURACY].mean()
+    mean_rolling_avg = df.groupby([BUDGET, CLASSIFIER, REP])[ACCURACY].mean()  #MH: I am not sure how many entries the grouped data frame will have. Why doesn't it have one row if you group by all those three columns? Do you maybe want to average over BUDGET and CLASSIFIER only?
     df_budget = pd.DataFrame(mean_rolling_avg.reset_index())
     budget_plot = 0.1
 
     # Add mean rolling average as horizontal line and text
     for i, ax in enumerate(g.axes.flat):
-        avgs = mean_rolling_avg[np.round(budget_plot, 1)]
+        avgs = mean_rolling_avg[np.round(budget_plot, 1)]  #MH: What does this do? I don't think I understand. doesn't this say mean_rolling_average[0.1]?
         for j, ((classifier, rep), mean_accuracy) in enumerate(avgs.items()):
             ax.text(x=100, y=0.6 - j * (0.03), s=f"{classifier}: {mean_accuracy:.3f}", color='black', ha='left',
                     va='center', fontweight='bold')
@@ -210,4 +210,4 @@ if __name__ == '__main__':
         data=df_budget, x=BUDGET, y=ACCURACY,
         kind="line", hue=CLASSIFIER, errorbar=None
     )
-    save_image('target/performance_test_abalone.pdf')
+    save_image('target/performance_test_abalone.pdf')  #MH: Detail, but best practice would be to use os.path.join('target', 'performance_test_abalone.pdf') to avoid problems when switching between e.g. windows and mac.
