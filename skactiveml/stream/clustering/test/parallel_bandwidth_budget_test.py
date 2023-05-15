@@ -34,7 +34,7 @@ from skactiveml.utils import call_func
 # number of instances that are provided to the classifier
 init_train_length = 10
 # the length of the data stream
-stream_length = 1000
+stream_length = 10000
 # the size of the sliding window that limits the training data
 training_size = 300
 # the parameter dedicated to decide if the classifier needs to be refited with X and y.
@@ -46,11 +46,11 @@ budget = 0.1
 
 n_features = 2
 
-n_budget = 5
+n_budget = 9
 
 n_reps = 1
 
-n_bandwidths = 3
+n_bandwidths = 30
 
 bandwidth_step_size = 0.1
 init_bandwidth = 0.1
@@ -192,7 +192,7 @@ if __name__ == '__main__':
 
     # df[ACCURACY] = accuracy
 
-    fp_performance = "target/performance_test_abalone.csv"
+    fp_performance = "target/test_bandwidth_budget.csv"
     df.to_csv(fp_performance, index=False)
 
     sb.set_theme()
@@ -223,4 +223,4 @@ if __name__ == '__main__':
     )
 
 
-    save_image('target/performance_test_abalone.pdf')
+    save_image('target/test_bandwidth_budget.pdf')
