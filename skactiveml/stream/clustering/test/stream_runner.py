@@ -77,7 +77,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         elif approach_name.startswith('Clustering'):
             clf.partial_fit(X_cand.reshape([1, -1]), np.array([al_label]))
         else:
-            if not np.isnan(al_label):
+            if not al_label is clf.missing_label:
                 clf.partial_fit(X_cand.reshape([1, -1]), np.array([al_label]))
 
         logger.track_timestep(t)
