@@ -1,5 +1,8 @@
 from collections import deque
 
+
+import random
+
 import numpy as np
 import pandas as pd
 from scipy.ndimage import gaussian_filter1d
@@ -110,3 +113,74 @@ def run_multiple(query_strategies: dict, X, y, logger, n_training_size=0, n_init
     results = [run(X, y, query_strategy_name, query_strategy, clf, logger, n_training_size, n_init_traing, rep, bandwidth)
                for query_strategy_name, (query_strategy, clf) in query_strategies.items()]
     return pd.concat(results)
+
+def run_sequential(X, y, approach_name, query_strategy, clf, logger, rep=0, band_width=0.1, fit_clf=False):
+    logger = logger()
+
+    X_stream = X
+    y_stream = sample(X, y, clf.missing_label, query_strategy.budget)
+
+    clf.fit(X_stream, y_stream)
+
+    correct_classifications = []
+    count = 0
+    budget = query_strategy.budget
+
+    tmp_accuracy = []
+
+    for t, (x_t, y_t) in enumerate(zip(X_stream, y_stream)):
+        # create stream samples
+        X_cand = x_t.reshape([1, -1])
+        y_cand = y_t
+
+        correct_classifications.append(clf.predict(X_cand)[0] == y_cand)
+
+        # count the number of queries
+        count += 1 if y_cand is not clf.missing_label else 0
+
+        # add label or missing_label to y_train
+        al_label = y_cand
+
+        prediction = clf.predict(X_cand)[0]  # MH: You could already do this before line 51, no?
+        logger.track_y(prediction)
+        logger.track_timestep(t)
+        logger.track_y(prediction)
+        logger.track_label(al_label)
+        logger.track_gt(y[t])
+        logger.track_budget(np.round(budget, 1))
+        logger.track_bandwidth(band_width)
+        logger.track_x1(X_cand[0][0])
+        logger.track_x2(X_cand[0][1])
+        logger.track_rep(rep)
+        tmp_accuracy.append(prediction == y_cand)
+
+        logger.track_classifier(approach_name)
+        logger.finalize_round()
+
+    df = logger.get_dataframe()
+    accuracy = gaussian_filter1d(np.array(tmp_accuracy, dtype=float),
+                                 100)  # MH: here you could do something like pd.Series(temp_accuracy).rolling(windowsize).mean()
+    df["Accuracy"] = accuracy
+
+    # calculate and show the average accuracy
+    print("Repition", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: ", band_width,
+          ", Avg Accuracy: ", np.mean(correct_classifications),
+          ", Acquisition count:", count)
+
+    return df
+
+
+def sample(X, y, missing_label=None, budget=0.1):
+    num_elements = len(y)
+    num_none_values = int((1 - budget) * num_elements)  # Calculate the number of elements to set to None
+
+    y_sampled = np.array(y, dtype=object)
+    indices = list(range(num_elements))  # Create a list of indices from 0 to num_elements-1
+    random.shuffle(indices)  # Shuffle the list of indices
+
+    for i in range(num_none_values):
+        index = indices[i]  # Get the i-th shuffled index
+        y_sampled[index] = missing_label  # Set the element at the shuffled index to None
+
+    return y_sampled
+
