@@ -37,7 +37,7 @@ import os
 # number of instances that are provided to the classifier
 init_train_length = 10
 # the length of the data stream
-stream_length = 1000
+stream_length = 10000
 # the size of the sliding window that limits the training data
 training_size = 300
 # the parameter dedicated to decide if the classifier needs to be refited with X and y.
@@ -49,11 +49,11 @@ budget = 0.1
 
 n_features = 2
 
-n_budget = 3
+n_budget = 9
 
 n_reps = 1
 
-n_bandwidths = 1
+n_bandwidths = 21
 
 bandwidth_step_size = 0.1
 init_bandwidth = 0.1
@@ -131,9 +131,9 @@ if __name__ == '__main__':
     res = [0] * n_reps
 
     for j in range(n_reps):
-        random_state = np.random.RandomState(random_number + j)
+        #random_state = np.random.RandomState(random_number + j)
 
-        dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2, mag_change=0.2)
+        #dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2, mag_change=0.2)
 
 
         # Abalone binary 50/50
@@ -148,7 +148,7 @@ if __name__ == '__main__':
         # dataGenerator = OpenMlStreamGenerator(dataSetId)
         # stream_length = len(dataGenerator.y) - init_train_length - 1
 
-        X, y = dataGenerator.next_sample(stream_length + init_train_length)
+        #X, y = dataGenerator.next_sample(stream_length + init_train_length)
 
         args = [0] * n_bandwidths * n_budget
         bandwidth = init_bandwidth
@@ -156,6 +156,25 @@ if __name__ == '__main__':
         for k in range(n_budget):
             bandwidth = init_bandwidth
             for i in range(n_bandwidths):
+                random_state = np.random.RandomState(random_number + j)
+
+                dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2,
+                                                    mag_change=0.2)
+
+                # Abalone binary 50/50
+                # dataSetId = 720
+
+                # Abalone
+                # datasetId = 44956
+
+                # Covertype
+                # dataSetId = 1596
+
+                # dataGenerator = OpenMlStreamGenerator(dataSetId)
+                # stream_length = len(dataGenerator.y) - init_train_length - 1
+
+                X, y = dataGenerator.next_sample(stream_length + init_train_length)
+
                 metric_dict = {
                     'gamma': bandwidth
                 }
