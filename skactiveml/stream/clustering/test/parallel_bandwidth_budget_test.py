@@ -31,10 +31,13 @@ from skactiveml.stream import StreamRandomSampling, PeriodicSampling
 from skactiveml.stream import FixedUncertainty, VariableUncertainty, Split, StreamProbabilisticAL
 from skactiveml.utils import call_func
 
+import os
+
+
 # number of instances that are provided to the classifier
 init_train_length = 10
 # the length of the data stream
-stream_length = 10000
+stream_length = 1000
 # the size of the sliding window that limits the training data
 training_size = 300
 # the parameter dedicated to decide if the classifier needs to be refited with X and y.
@@ -46,11 +49,11 @@ budget = 0.1
 
 n_features = 2
 
-n_budget = 9
+n_budget = 3
 
 n_reps = 1
 
-n_bandwidths = 30
+n_bandwidths = 1
 
 bandwidth_step_size = 0.1
 init_bandwidth = 0.1
@@ -174,11 +177,11 @@ if __name__ == '__main__':
                         (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
                                                budget=budget, metric_dict=metric_dict),
                          SklearnClassifier(GaussianNB(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
-                    #'ClusteringBased': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget),
-                    #                    CluStreamClassifier(estimator_clf=SklearnClassifier(GaussianNB(), classes=classes,
-                    #                                                                        random_state=get_randomseed(
-                    #                                                                            random_state)),
-                    #                                        metric_dict=metric_dict))
+                    'ClusteringBased': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget),
+                                        CluStreamClassifier(estimator_clf=SklearnClassifier(GaussianNB(), classes=classes,
+                                                                                            random_state=get_randomseed(
+                                                                                                random_state)),
+                                                            metric_dict=metric_dict))
                 }
                 args[(k * n_bandwidths) + i] = [query_strategies, X, y, logger, training_size, init_train_length, j, bandwidth]
                 bandwidth += bandwidth_step_size
@@ -192,8 +195,12 @@ if __name__ == '__main__':
 
     # df[ACCURACY] = accuracy
 
-    fp_performance = "target/test_bandwidth_budget.csv"
-    df.to_csv(fp_performance, index=False)
+    target_directory = 'target'
+    os.makedirs(target_directory, exist_ok=True)
+
+    csv_filepath = os.path.join(target_directory, 'output.csv')
+
+    df.to_csv(csv_filepath, index=False)
 
     sb.set_theme()
 
@@ -222,5 +229,6 @@ if __name__ == '__main__':
         kind="line", hue=CLASSIFIER, errorbar=None
     )
 
+    image_filepath = os.path.join(target_directory, 'output.pdf')
 
-    save_image('target/test_bandwidth_budget.pdf')
+    save_image(image_filepath)
