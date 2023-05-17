@@ -161,20 +161,20 @@ if __name__ == '__main__':
             for i in range(n_bandwidths):
                 random_state = np.random.RandomState(random_number + j)
 
-                dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2,
-                                                    mag_change=0)
+                #dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2,
+                #                                    mag_change=0)
 
                 # Abalone binary 50/50
-                # dataSetId = 720
+                dataSetId = 720
 
                 # Abalone
-                # datasetId = 44956
+                #datasetId = 44956
 
                 # Covertype
                 # dataSetId = 1596
 
-                # dataGenerator = OpenMlStreamGenerator(dataSetId)
-                # stream_length = len(dataGenerator.y) - init_train_length - 1
+                dataGenerator = OpenMlStreamGenerator(dataSetId)
+                stream_length = len(dataGenerator.y) - init_train_length - 1
 
                 X, y = dataGenerator.next_sample(stream_length + init_train_length)
 

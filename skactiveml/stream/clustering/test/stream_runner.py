@@ -56,7 +56,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         # call_func is used since a classifier is not needed for RandomSampling and PeriodicSampling
         #kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(X_train)  #MH: Don't you want to add the bandwidth parameter here?
         #X_candidate_density = np.array([kde.score(X_cand)])
-
+        '''
         sampled_indices, utilities = call_func(query_strategy.query, candidates=X_cand, X=X_train, y=y_train,
                                                # utility_weight=X_candidate_density,
                                                clf=clf, return_utilities=True, fit_clf=fit_clf)
@@ -72,11 +72,14 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         # add label or missing_label to y_train
         al_label = y_cand if len(sampled_indices) > 0 else clf.missing_label  #MH: In which cases is len(sampled_indices) > 1?
         y_train.append(al_label)
+        '''
+
 
         # Test with random sampling
-        #al_label = sample_random(y_cand, budget, clf.missing_label)
-        #y_train.append(al_label)
-        #count += 1 if al_label is not clf.missing_label else 0
+        X_train.append(x_t)
+        al_label = sample_random(y_cand, budget, clf.missing_label)
+        y_train.append(al_label)
+        count += 1 if al_label is not clf.missing_label else 0
 
         prediction = clf.predict(X_cand)[0]  #MH: You could already do this before line 51, no?
 
@@ -174,7 +177,7 @@ def run_sequential(X, y, approach_name, query_strategy, clf, logger, n_training_
             clf.partial_fit(x_t.reshape([1, -1]), np.array([al_label]))
             # MH: (1) Not sure, do you have to reshape again? (probably yes) (2) What happens when we fit / partial_fit on missing labels? couldn't we simply skip it in this case?
         else:
-            if not y_cand is clf.missing_label:
+            if not al_label is clf.missing_label:
                 clf.partial_fit(x_t.reshape([1, -1]), np.array([al_label]))
 
         logger.track_y(prediction)
