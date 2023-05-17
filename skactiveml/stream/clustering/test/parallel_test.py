@@ -194,15 +194,15 @@ if __name__ == '__main__':
                     # 'Split': Split(random_state=get_randomseed(random_state)),
                     'TraditionalBatch': (#StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
                                          #                      metric_dict=metric_dict),
-                        VariableUncertainty(random_state=get_randomseed(random_state)),
+                        VariableUncertainty(random_state=get_randomseed(random_state), budget=budget),
                                          clf_factory()),
                     'TraditionalIncremental':
                         (#StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
                          #                      budget=budget, metric_dict=metric_dict),
-                        VariableUncertainty(random_state=get_randomseed(random_state)),
+                        VariableUncertainty(random_state=get_randomseed(random_state), budget=budget),
                          SklearnClassifier(GaussianNB(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
                     'ClusteringBased': (#StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget),
-                                        VariableUncertainty(random_state=get_randomseed(random_state)),
+                                        VariableUncertainty(random_state=get_randomseed(random_state), budget=budget),
                                         CluStreamClassifier(estimator_clf=SklearnClassifier(GaussianNB(), missing_label=None,
                                                                                             classes=classes,
                                                                                             random_state=get_randomseed(
