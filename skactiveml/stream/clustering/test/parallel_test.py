@@ -50,15 +50,16 @@ budget = 0.1
 n_features = 2
 
 n_budget = 9
+init_budget = 0.1
 
-n_reps = 5
+n_reps = 1
 
 n_bandwidths = 1
 
 bandwidth_step_size = 0.5
 init_bandwidth = 1
 
-n_approaches = 3
+n_approaches = 1
 
 # random state that is used to generate random seeds
 random_number = 23
@@ -135,6 +136,7 @@ if __name__ == '__main__':
     args = [0] * n_bandwidths * n_budget * n_approaches * n_reps
 
     for j in range(n_reps):
+        budget = init_budget
         #random_state = np.random.RandomState(random_number + j)
 
         #dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2, mag_change=0.2)
@@ -153,7 +155,6 @@ if __name__ == '__main__':
         # stream_length = len(dataGenerator.y) - init_train_length - 1
 
         #X, y = dataGenerator.next_sample(stream_length + init_train_length)
-        bandwidth = init_bandwidth
 
         for k in range(n_budget):
             bandwidth = init_bandwidth
@@ -191,13 +192,13 @@ if __name__ == '__main__':
                     # 'FixedUncertainty': FixedUncertainty(random_state=get_randomseed(random_state)),
                     # 'VariableUncertainty': VariableUncertainty(random_state=get_randomseed(random_state)),
                     # 'Split': Split(random_state=get_randomseed(random_state)),
-                    'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
-                                                               metric_dict=metric_dict),
-                                         clf_factory()),
-                    'TraditionalIncremental':
-                        (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
-                                               budget=budget, metric_dict=metric_dict),
-                         SklearnClassifier(GaussianNB(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
+                    #'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
+                    #                                           metric_dict=metric_dict),
+                    #                     clf_factory()),
+                    #'TraditionalIncremental':
+                    #    (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
+                    #                           budget=budget, metric_dict=metric_dict),
+                    #     SklearnClassifier(GaussianNB(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
                     'ClusteringBased': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget),
                                         CluStreamClassifier(estimator_clf=SklearnClassifier(GaussianNB(), missing_label=None,
                                                                                             classes=classes,
@@ -215,7 +216,7 @@ if __name__ == '__main__':
             budget += 0.1
             budget = np.round(budget, 1)
         #results = run_async(run_sequential, args, n_bandwidths * n_budget * n_approaches)
-        results = run_async(run, args, n_bandwidths * n_budget * n_approaches)
+    results = run_async(run, args, n_bandwidths * n_budget * n_approaches * n_reps)
     df = pd.concat(results)
 
 

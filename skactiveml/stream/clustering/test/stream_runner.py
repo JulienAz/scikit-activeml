@@ -220,5 +220,5 @@ def sample(X, y, missing_label=None, budget=0.1):
 
 def sample_random(y, budget, missing_label=None):
     choices = [y, missing_label]
-    probabilities = [budget, 1 - -budget]
+    probabilities = [budget, 1 - budget]
     return random.choices(choices, probabilities)[0]
