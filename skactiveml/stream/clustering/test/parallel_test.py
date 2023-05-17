@@ -58,7 +58,7 @@ n_bandwidths = 3
 bandwidth_step_size = 0.1
 init_bandwidth = 1
 
-n_approaches = 2
+n_approaches = 3
 
 # random state that is used to generate random seeds
 random_number = 23
@@ -191,9 +191,9 @@ if __name__ == '__main__':
                     # 'FixedUncertainty': FixedUncertainty(random_state=get_randomseed(random_state)),
                     # 'VariableUncertainty': VariableUncertainty(random_state=get_randomseed(random_state)),
                     # 'Split': Split(random_state=get_randomseed(random_state)),
-                    #'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
-                    #                                           metric_dict=metric_dict),
-                    #                     clf_factory()),
+                    'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
+                                                               metric_dict=metric_dict),
+                                         clf_factory()),
                     'TraditionalIncremental':
                         (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
                                                budget=budget, metric_dict=metric_dict),
@@ -206,13 +206,17 @@ if __name__ == '__main__':
                                                             metric_dict=metric_dict, missing_label=None))
                 }
                 for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
+                    #args for sequential (First sample then train)
                     args[(k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l] = [X, y, query_strategy_name, query_strategy, clf, logger, j, bandwidth]
                     #results = run_sequential(X, y, query_strategy_name, query_strategy, clf, logger, j, bandwidth)
+
+                    #Common approach
+                    args[(k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l] = [X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth]
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget += 0.1
             budget = np.round(budget, 1)
-        results = run_async(run_sequential, args, n_bandwidths * n_budget * n_approaches)
+        results = run_async(run, args, n_bandwidths * n_budget * n_approaches)
 
     df = pd.concat(results)
 
