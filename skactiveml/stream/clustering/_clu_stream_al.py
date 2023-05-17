@@ -72,7 +72,7 @@ class MicroCluster:
 
         self.features["M"] += (x - past_mean) * (x - (self.features["ls_x"] / self.features["n"]))
 
-        if not np.isnan(y):
+        if y is not None:   ####Missing Label hinzufügen
             if len(self.labeled_samples) == 0:
                 self.labeled_samples = np.array((x, y), dtype=object)
             else:

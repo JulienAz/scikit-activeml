@@ -37,7 +37,7 @@ class CluStreamClassifier(SkactivemlClassifier):
     def partial_fit(self, X, y, sample_weight=None):
 
         self.clustering.fit_one(X[0], y[0])
-        if not np.isnan(y):
+        if y[0] is not self.estimator_clf.missing_label:
             self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
         #return self.estimator_clf.partial_fit(X, y, sample_weight)
 

@@ -120,7 +120,14 @@ def run_sequential(X, y, approach_name, query_strategy, clf, logger, rep=0, band
     X_stream = X
     y_stream = sample(X, y, clf.missing_label, query_strategy.budget)
 
-    clf.fit(X_stream, y_stream)
+    for i, y_cand in enumerate(y_stream):
+        if approach_name.endswith('Batch'):
+            clf.fit(X, y_cand)  # MH: Here you use y_train, in line 78 you use al_label. Why?
+        elif approach_name.startswith('Clustering'):
+            clf.partial_fit(X[i].reshape([1, -1]), np.array([y_cand]))  # MH: (1) Not sure, do you have to reshape again? (probably yes) (2) What happens when we fit / partial_fit on missing labels? couldn't we simply skip it in this case?
+        else:
+            if not y_cand is clf.missing_label:
+                clf.partial_fit(X[i].reshape([1, -1]), np.array([y_cand]))
 
     correct_classifications = []
     count = 0
