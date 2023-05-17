@@ -55,8 +55,8 @@ n_reps = 1
 
 n_bandwidths = 3
 
-bandwidth_step_size = 0.1
-init_bandwidth = 1
+bandwidth_step_size = 0.5
+init_bandwidth = 0.5
 
 n_approaches = 3
 
