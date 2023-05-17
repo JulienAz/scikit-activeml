@@ -37,7 +37,7 @@ import os
 # number of instances that are provided to the classifier
 init_train_length = 10
 # the length of the data stream
-stream_length = 10000
+stream_length = 5000
 # the size of the sliding window that limits the training data
 training_size = 300
 # the parameter dedicated to decide if the classifier needs to be refited with X and y.
@@ -51,12 +51,12 @@ n_features = 2
 
 n_budget = 9
 
-n_reps = 1
+n_reps = 5
 
-n_bandwidths = 3
+n_bandwidths = 1
 
 bandwidth_step_size = 0.5
-init_bandwidth = 0.5
+init_bandwidth = 1
 
 n_approaches = 3
 
@@ -132,6 +132,8 @@ if __name__ == '__main__':
 
     res = [0] * n_reps
 
+    args = [0] * n_bandwidths * n_budget * n_approaches * n_reps
+
     for j in range(n_reps):
         #random_state = np.random.RandomState(random_number + j)
 
@@ -151,8 +153,6 @@ if __name__ == '__main__':
         # stream_length = len(dataGenerator.y) - init_train_length - 1
 
         #X, y = dataGenerator.next_sample(stream_length + init_train_length)
-
-        args = [0] * n_bandwidths * n_budget * n_approaches
         bandwidth = init_bandwidth
 
         for k in range(n_budget):
@@ -161,7 +161,7 @@ if __name__ == '__main__':
                 random_state = np.random.RandomState(random_number + j)
 
                 dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2,
-                                                    mag_change=0.2)
+                                                    mag_change=0)
 
                 # Abalone binary 50/50
                 # dataSetId = 720
@@ -207,7 +207,8 @@ if __name__ == '__main__':
                 }
                 for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
                     #Common approach
-                    args[(k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l] = [X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth]
+                    index = j *(n_budget * n_bandwidths * len(query_strategies)) + (k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
+                    args[index] = [X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth]
                     #results = run_sequential(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)

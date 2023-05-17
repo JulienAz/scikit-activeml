@@ -82,10 +82,10 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         if approach_name.endswith('Batch'):
             clf.fit(X_train, y_train)  #MH: Here you use y_train, in line 78 you use al_label. Why?
         elif approach_name.startswith('Clustering'):
-            clf.partial_fit(X_cand.reshape([1, -1]), np.array([al_label]))  #MH: (1) Not sure, do you have to reshape again? (probably yes) (2) What happens when we fit / partial_fit on missing labels? couldn't we simply skip it in this case?
+            clf.partial_fit(X_cand, np.array([al_label]))  #MH: (1) Not sure, do you have to reshape again? (probably yes) (2) What happens when we fit / partial_fit on missing labels? couldn't we simply skip it in this case?
         else:
-            #if not al_label is clf.missing_label:
-            clf.partial_fit(X_cand.reshape([1, -1]), np.array([al_label]))
+            if not al_label is clf.missing_label:
+                clf.partial_fit(X_cand, np.array([al_label]))
 
         logger.track_timestep(t)
         logger.track_y(prediction)
@@ -219,6 +219,6 @@ def sample(X, y, missing_label=None, budget=0.1):
     return y_sampled
 
 def sample_random(y, budget, missing_label=None):
-    choices = [y, None]
+    choices = [y, missing_label]
     probabilities = [budget, 1 - -budget]
     return random.choices(choices, probabilities)[0]
