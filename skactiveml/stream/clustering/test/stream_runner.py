@@ -118,12 +118,23 @@ def run_multiple(query_strategies: dict, X, y, logger, n_training_size=0, n_init
                for query_strategy_name, (query_strategy, clf) in query_strategies.items()]
     return pd.concat(results)
 
-def run_sequential(X, y, approach_name, query_strategy, clf, logger, rep=0, band_width=0.1, fit_clf=False):
+def run_sequential(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n_init_traing=10,  rep=0, band_width=0.1, fit_clf=False):
     logger = logger()
 
-    X_stream = X
-    y_stream = sample(X, y, clf.missing_label, query_strategy.budget)
+    X_init = X[:n_init_traing, :]
+    y_init = y[:n_init_traing]
+    X_stream = X[n_init_traing:, :]
+    y_stream = y[n_init_traing:]
+    y_stream_al = sample(X, y[n_init_traing:], clf.missing_label, query_strategy.budget)
 
+    X_train = deque(maxlen=n_training_size)
+    X_train.extend(X_init)
+    y_train = deque(maxlen=n_training_size)
+    y_train.extend(y_init)
+
+    clf.fit(X_train, y_train)
+
+    '''
     for i, y_cand in enumerate(y_stream):
         if approach_name.endswith('Batch'):
             clf.fit(X, y_cand)  # MH: Here you use y_train, in line 78 you use al_label. Why?
@@ -132,7 +143,7 @@ def run_sequential(X, y, approach_name, query_strategy, clf, logger, rep=0, band
         else:
             if not y_cand is clf.missing_label:
                 clf.partial_fit(X[i].reshape([1, -1]), np.array([y_cand]))
-
+    '''
     correct_classifications = []
     count = 0
     budget = query_strategy.budget
@@ -143,19 +154,31 @@ def run_sequential(X, y, approach_name, query_strategy, clf, logger, rep=0, band
         # create stream samples
         X_cand = x_t.reshape([1, -1])
         y_cand = y_t
+        al_label = y_stream_al[t]
 
-        correct_classifications.append(clf.predict(X_cand)[0] == y_cand)
+        prediction = clf.predict(X_cand)[0]
+        correct_classifications.append(prediction == y_cand)
 
+        X_train.append(x_t)
+        y_train.append(al_label)
         # count the number of queries
-        count += 1 if y_cand is not clf.missing_label else 0
+        count += 1 if al_label is not clf.missing_label else 0
 
         # add label or missing_label to y_train
-        al_label = y_cand
+        #al_label = y_cand
 
-        prediction = clf.predict(X_cand)[0]  # MH: You could already do this before line 51, no?
+        if approach_name.endswith('Batch'):
+            clf.fit(X_train, y_train)  # MH: Here you use y_train, in line 78 you use al_label. Why?
+        elif approach_name.startswith('Clustering'):
+            clf.partial_fit(x_t.reshape([1, -1]), np.array([
+                                                                al_label]))  # MH: (1) Not sure, do you have to reshape again? (probably yes) (2) What happens when we fit / partial_fit on missing labels? couldn't we simply skip it in this case?
+        else:
+            if not y_cand is clf.missing_label:
+                clf.partial_fit(x_t.reshape([1, -1]), np.array([al_label]))
+
         logger.track_y(prediction)
         logger.track_timestep(t)
-        logger.track_y(prediction)
+        #logger.track_y(prediction)
         logger.track_label(al_label)
         logger.track_gt(y[t])
         logger.track_budget(np.round(budget, 1))
