@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     # Hyperplane Generator
 
-    res = [0] * n_reps
+    res = [0] * n_bandwidths * n_budget * n_approaches * n_reps
 
     args = [0] * n_bandwidths * n_budget * n_approaches * n_reps
 
@@ -204,7 +204,7 @@ if __name__ == '__main__':
                     args[index] = [X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth]
 
                     # Sequential execution for debuggin
-                    #results = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
+                    #res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
 
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
