@@ -51,17 +51,17 @@ budget = 0.1
 
 n_features = 2
 
-n_budget = 1
+n_budget = 9
 init_budget = 0.1
 
-n_reps = 1
+n_reps = 5
 
 n_bandwidths = 1
 
 bandwidth_step_size = 0.5
 init_bandwidth = 1
 
-n_approaches = 1
+n_approaches = 3
 
 # random state that is used to generate random seeds
 random_number = 23
@@ -179,22 +179,17 @@ if __name__ == '__main__':
 
                 # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                 query_strategies = {
-                    # 'StreamRandomSampling': StreamRandomSampling(random_state=get_randomseed(random_state)),
-                    # 'PeriodicSampling': PeriodicSampling(random_state=get_randomseed(random_state)),
-                    # 'FixedUncertainty': FixedUncertainty(random_state=get_randomseed(random_state)),
-                    # 'VariableUncertainty': VariableUncertainty(random_state=get_randomseed(random_state)),
-                    # 'Split': Split(random_state=get_randomseed(random_state)),
-                    #'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
-                    #                                           metric_dict=metric_dict),
+                    'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
+                                                               metric_dict=metric_dict),
                         #VariableUncertainty(random_state=get_randomseed(random_state)),
-                    #                     ParzenWindowClassifier(classes=classes,
-                    #                                            random_state=get_randomseed(random_state),
-                    #                                            metric_dict=metric_dict, missing_label=None)),
-                    #'TraditionalIncremental':
-                    #    (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
-                    #                           budget=budget, metric_dict=metric_dict),
+                                         ParzenWindowClassifier(classes=classes,
+                                                                random_state=get_randomseed(random_state),
+                                                                metric_dict=metric_dict, missing_label=None)),
+                    'TraditionalIncremental':
+                        (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
+                                               budget=budget, metric_dict=metric_dict),
                         #VariableUncertainty(random_state=get_randomseed(random_state)),
-                    #     SklearnClassifier(HoeffdingTreeClassifier(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
+                        SklearnClassifier(HoeffdingTreeClassifier(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
                     'ClusteringBased': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget),
                                         #VariableUncertainty(random_state=get_randomseed(random_state)),
                                         CluStreamClassifier(estimator_clf=SklearnClassifier(
@@ -209,7 +204,7 @@ if __name__ == '__main__':
                     args[index] = [X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth]
 
                     # Sequential execution for debuggin
-                    results = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
+                    #results = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
 
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
