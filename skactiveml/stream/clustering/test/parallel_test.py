@@ -192,14 +192,17 @@ if __name__ == '__main__':
                     # 'FixedUncertainty': FixedUncertainty(random_state=get_randomseed(random_state)),
                     # 'VariableUncertainty': VariableUncertainty(random_state=get_randomseed(random_state)),
                     # 'Split': Split(random_state=get_randomseed(random_state)),
-                    'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
-                                                               metric_dict=metric_dict),
+                    'TraditionalBatch': (#StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
+                                         #                      metric_dict=metric_dict),
+                        VariableUncertainty(random_state=get_randomseed(random_state)),
                                          clf_factory()),
                     'TraditionalIncremental':
-                        (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
-                                               budget=budget, metric_dict=metric_dict),
+                        (#StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
+                         #                      budget=budget, metric_dict=metric_dict),
+                        VariableUncertainty(random_state=get_randomseed(random_state)),
                          SklearnClassifier(GaussianNB(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
-                    'ClusteringBased': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget),
+                    'ClusteringBased': (#StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget),
+                                        VariableUncertainty(random_state=get_randomseed(random_state)),
                                         CluStreamClassifier(estimator_clf=SklearnClassifier(GaussianNB(), missing_label=None,
                                                                                             classes=classes,
                                                                                             random_state=get_randomseed(
@@ -252,7 +255,7 @@ if __name__ == '__main__':
 
     f = sb.relplot(
         data=df_budget, x=BUDGET, y=ACCURACY,
-        col=BANDWIDTH, col_wrap=3,
+        col=CLASSIFIER, col_wrap=3,
         kind="line", hue=CLASSIFIER, errorbar=None
     )
 
