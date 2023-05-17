@@ -57,25 +57,26 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         #kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(X_train)  #MH: Don't you want to add the bandwidth parameter here?
         #X_candidate_density = np.array([kde.score(X_cand)])
 
-        #sampled_indices, utilities = call_func(query_strategy.query, candidates=X_cand, X=X_train, y=y_train,
+        sampled_indices, utilities = call_func(query_strategy.query, candidates=X_cand, X=X_train, y=y_train,
                                                # utility_weight=X_candidate_density,
-        #                                       clf=clf, return_utilities=True, fit_clf=fit_clf)
+                                               clf=clf, return_utilities=True, fit_clf=fit_clf)
         # create budget_manager_param_dict for BalancedIncrementalQuantileFilter used by StreamProbabilisticAL
-        #budget_manager_param_dict = {"utilities": utilities}
+        budget_manager_param_dict = {"utilities": utilities}
         # update the query strategy and budget_manager to calculate the right budget
-        #call_func(query_strategy.update, candidates=X_cand, queried_indices=sampled_indices,
-        #          budget_manager_param_dict=budget_manager_param_dict)
+        call_func(query_strategy.update, candidates=X_cand, queried_indices=sampled_indices,
+                  budget_manager_param_dict=budget_manager_param_dict)
         # count the number of queries
-        #count += len(sampled_indices)
+        count += len(sampled_indices)
         # add X_cand to X_train
         X_train.append(x_t)
         # add label or missing_label to y_train
-        #al_label = y_cand if len(sampled_indices) > 0 else clf.missing_label  #MH: In which cases is len(sampled_indices) > 1?
+        al_label = y_cand if len(sampled_indices) > 0 else clf.missing_label  #MH: In which cases is len(sampled_indices) > 1?
+        y_train.append(al_label)
 
         # Test with random sampling
-        al_label = sample_random(y_cand, budget, clf.missing_label)
-        y_train.append(al_label)
-        count += 1 if al_label is not clf.missing_label else 0
+        #al_label = sample_random(y_cand, budget, clf.missing_label)
+        #y_train.append(al_label)
+        #count += 1 if al_label is not clf.missing_label else 0
 
         prediction = clf.predict(X_cand)[0]  #MH: You could already do this before line 51, no?
 
