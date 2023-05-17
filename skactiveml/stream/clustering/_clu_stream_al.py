@@ -72,11 +72,11 @@ class MicroCluster:
 
         self.features["M"] += (x - past_mean) * (x - (self.features["ls_x"] / self.features["n"]))
 
-        if y is not None:   ####Missing Label hinzufügen
+        if y is not None:   ####TODO: Missing Label hinzufügen
             if len(self.labeled_samples) == 0:
                 self.labeled_samples = np.array((x, y), dtype=object)
             else:
-                self.labeled_samples = np.vstack([self.labeled_samples, (x, y)])
+                self.labeled_samples = np.vstack([self.labeled_samples, np.array((x, y), dtype=object)])
 
         self.x = np.vstack([self.x, x[np.newaxis, ...]])
 
@@ -172,7 +172,7 @@ class CluStream:
         # If point fits in cluster -> add and return
         if distance < self.r_factor * radius:
             self.micro_clusters[nearest_mc_id].add(((X, y), self._timestamp))
-            self.cluster_test[nearest_mc_id] = np.vstack([self.cluster_test[nearest_mc_id], (X, y)])
+            self.cluster_test[nearest_mc_id] = np.vstack([self.cluster_test[nearest_mc_id], np.array((X, y), dtype=object)])
             return nearest_mc_id
 
         # Else Merge or delete Cluster
