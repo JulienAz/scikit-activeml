@@ -213,8 +213,8 @@ if __name__ == '__main__':
                 bandwidth = np.round(bandwidth, 2)
             budget += 0.1
             budget = np.round(budget, 1)
-        results = run_async(run_sequential, args, n_bandwidths * n_budget * n_approaches)
-
+        #results = run_async(run_sequential, args, n_bandwidths * n_budget * n_approaches)
+        results = run_async(run, args, n_bandwidths * n_budget * n_approaches)
     df = pd.concat(results)
 
 
