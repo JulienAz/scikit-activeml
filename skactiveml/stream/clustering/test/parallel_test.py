@@ -51,17 +51,17 @@ budget = 0.1
 
 n_features = 2
 
-n_budget = 9
+n_budget = 1
 init_budget = 0.1
 
-n_reps = 5
+n_reps = 1
 
 n_bandwidths = 1
 
 bandwidth_step_size = 0.5
 init_bandwidth = 1
 
-n_approaches = 3
+n_approaches = 1
 
 # random state that is used to generate random seeds
 random_number = 23
@@ -137,35 +137,24 @@ if __name__ == '__main__':
 
     args = [0] * n_bandwidths * n_budget * n_approaches * n_reps
 
+    # Looping over number of repetition
     for j in range(n_reps):
+
         budget = init_budget
-        #random_state = np.random.RandomState(random_number + j)
 
-        #dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2, mag_change=0.2)
-
-
-        # Abalone binary 50/50
-        #dataSetId = 720
-
-        # Abalone
-        # datasetId = 44956
-
-        # Covertype
-        # dataSetId = 1596
-
-        # dataGenerator = OpenMlStreamGenerator(dataSetId)
-        # stream_length = len(dataGenerator.y) - init_train_length - 1
-
-        #X, y = dataGenerator.next_sample(stream_length + init_train_length)
-
+        # Looping over n_budget budgets with stepsize 0.1
         for k in range(n_budget):
+
             bandwidth = init_bandwidth
+
             for i in range(n_bandwidths):
                 random_state = np.random.RandomState(random_number + j)
 
+                # Hypperplane generator
                 #dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2,
                 #                                    mag_change=0)
 
+                #Open ML datasets
                 # Abalone binary 50/50
                 dataSetId = 720
 
@@ -178,54 +167,58 @@ if __name__ == '__main__':
                 dataGenerator = OpenMlStreamGenerator(dataSetId)
                 stream_length = len(dataGenerator.y) - init_train_length - 1
 
+                # Generating Datastream
                 X, y = dataGenerator.next_sample(stream_length + init_train_length)
 
+                # Bandiwdths for Kernels, passed to Query Strategy and/or Classifier
                 metric_dict = {
                     'gamma': bandwidth
                 }
 
                 classes = np.unique(y)
 
-                clf_factory = lambda: ParzenWindowClassifier(classes=classes, random_state=get_randomseed(random_state),
-                                                             metric_dict=metric_dict, missing_label=None)
+                # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                 query_strategies = {
                     # 'StreamRandomSampling': StreamRandomSampling(random_state=get_randomseed(random_state)),
                     # 'PeriodicSampling': PeriodicSampling(random_state=get_randomseed(random_state)),
                     # 'FixedUncertainty': FixedUncertainty(random_state=get_randomseed(random_state)),
                     # 'VariableUncertainty': VariableUncertainty(random_state=get_randomseed(random_state)),
                     # 'Split': Split(random_state=get_randomseed(random_state)),
-                    'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
-                                                               metric_dict=metric_dict),
+                    #'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
+                    #                                           metric_dict=metric_dict),
                         #VariableUncertainty(random_state=get_randomseed(random_state)),
-                                         clf_factory()),
-                    'TraditionalIncremental':
-                        (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
-                                               budget=budget, metric_dict=metric_dict),
+                    #                     ParzenWindowClassifier(classes=classes,
+                    #                                            random_state=get_randomseed(random_state),
+                    #                                            metric_dict=metric_dict, missing_label=None)),
+                    #'TraditionalIncremental':
+                    #    (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
+                    #                           budget=budget, metric_dict=metric_dict),
                         #VariableUncertainty(random_state=get_randomseed(random_state)),
-                         SklearnClassifier(HoeffdingTreeClassifier(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
+                    #     SklearnClassifier(HoeffdingTreeClassifier(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
                     'ClusteringBased': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget),
                                         #VariableUncertainty(random_state=get_randomseed(random_state)),
-                                        CluStreamClassifier(estimator_clf=SklearnClassifier(HoeffdingTreeClassifier(), missing_label=None,
-                                                                                            classes=classes,
-                                                                                            random_state=get_randomseed(
-                                                                                                random_state)),
-                                                            metric_dict=metric_dict, missing_label=None))
+                                        CluStreamClassifier(estimator_clf=SklearnClassifier(
+                                            HoeffdingTreeClassifier(),
+                                            missing_label=None,
+                                            classes=classes,
+                                            random_state=get_randomseed(random_state)),
+                                            metric_dict=metric_dict, missing_label=None))
                 }
                 for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
-                    #Common approach
                     index = j *(n_budget * n_bandwidths * len(query_strategies)) + (k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
                     args[index] = [X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth]
-                    #results = run_sequential(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
+
+                    # Sequential execution for debuggin
+                    results = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
+
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget += 0.1
             budget = np.round(budget, 1)
-        #results = run_async(run_sequential, args, n_bandwidths * n_budget * n_approaches)
+
+    # Parallel execution of run()
     results = run_async(run, args, n_bandwidths * n_budget * n_approaches * n_reps)
     df = pd.concat(results)
-
-
-    # df[ACCURACY] = accuracy
 
     target_directory = 'target'
     os.makedirs(target_directory, exist_ok=True)
@@ -255,6 +248,8 @@ if __name__ == '__main__':
     #    bd_plot += bandwidth_step_size
     #    bd_plot = np.round(bd_plot, 2)
 
+
+    # Plotting Accuracy in respect to budget
     f = sb.relplot(
         data=df_budget, x=BUDGET, y=ACCURACY,
         col=CLASSIFIER, col_wrap=3,

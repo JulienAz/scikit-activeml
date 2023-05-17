@@ -13,6 +13,8 @@ from skactiveml.utils import call_func
 
 def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n_init_traing=10, rep=0, band_width=0.1, fit_clf=False):
     logger = logger()
+
+    # Dividing Pretraining and Stream data
     X_init = X[:n_init_traing, :]
     y_init = y[:n_init_traing]
     X_stream = X[n_init_traing:, :]
@@ -20,57 +22,53 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
 
     unique_classes = np.unique(y)
 
-    '''
-    for target_class in unique_classes:
-        sample_extracted = False
-        i = 0
-        while not sample_extracted:
-            X_sample, y_sample = X[i], y[i]
-            if y_sample == target_class:
-                X_init = np.concatenate((X_init, [X_sample]))
-                y_init = np.concatenate((y_init, [y_sample]))
-                sample_extracted = True
-            i += 1
-    '''
-
     tmp_accuracy = []
-    # initializing the training data
+
+    # initializing the training window
     X_train = deque(maxlen=n_training_size)
     X_train.extend(X_init)
     y_train = deque(maxlen=n_training_size)
     y_train.extend(y_init)
-    # train the model with the initially available data
+
+    # pretrain
     clf.fit(X_train, y_train)
-    # initialize the list that stores the result of the classifier's prediction
+
     correct_classifications = []
     count = 0
     budget = query_strategy.budget
 
     for t, (x_t, y_t) in enumerate(zip(X_stream, y_stream)):
-        # create stream samples
+        # create current sample
         X_cand = x_t.reshape([1, -1])
         y_cand = y_t
 
+        # Classifier prediction
+        prediction = clf.predict(X_cand)[0]
+
         correct_classifications.append(clf.predict(X_cand)[0] == y_cand)
-        # check whether to sample the instance or not
-        # call_func is used since a classifier is not needed for RandomSampling and PeriodicSampling
+
+        # Kernel Densities (currently disabled)
         #kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(X_train)  #MH: Don't you want to add the bandwidth parameter here?
         #X_candidate_density = np.array([kde.score(X_cand)])
 
+        # Query decision
         sampled_indices, utilities = call_func(query_strategy.query, candidates=X_cand, X=X_train, y=y_train,
                                                # utility_weight=X_candidate_density,
                                                clf=clf, return_utilities=True, fit_clf=fit_clf)
-        # create budget_manager_param_dict for BalancedIncrementalQuantileFilter used by StreamProbabilisticAL
+
+        # create budget_manager_param_dict for BalancedIncrementalQuantileFilter
         budget_manager_param_dict = {"utilities": utilities}
         # update the query strategy and budget_manager to calculate the right budget
         call_func(query_strategy.update, candidates=X_cand, queried_indices=sampled_indices,
                   budget_manager_param_dict=budget_manager_param_dict)
+
         # count the number of queries
         count += len(sampled_indices)
-        # add X_cand to X_train
-        X_train.append(x_t)
-        # add label or missing_label to y_train
+
         al_label = y_cand if len(sampled_indices) > 0 else clf.missing_label  #MH: In which cases is len(sampled_indices) > 1?
+
+        # Append to Trainingwindow
+        X_train.append(x_t)
         y_train.append(al_label)
 
 
@@ -81,12 +79,11 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         y_train.append(al_label)
         count += 1 if al_label is not clf.missing_label else 0'''
 
-        prediction = clf.predict(X_cand)[0]  #MH: You could already do this before line 51, no?
-
         if approach_name.endswith('Batch'):
-            clf.fit(X_train, y_train)  #MH: Here you use y_train, in line 78 you use al_label. Why?
+            clf.fit(X_train, y_train)
         elif approach_name.startswith('Clustering'):
-            clf.partial_fit(X_cand, np.array([al_label]))  #MH: (1) Not sure, do you have to reshape again? (probably yes) (2) What happens when we fit / partial_fit on missing labels? couldn't we simply skip it in this case?
+            # Missing Labels are handled in the Classifier itself
+            clf.partial_fit(X_cand, np.array([al_label]))
         else:
             if not al_label is clf.missing_label:
                 clf.partial_fit(X_cand, np.array([al_label]))
@@ -122,6 +119,7 @@ def run_multiple(query_strategies: dict, X, y, logger, n_training_size=0, n_init
                for query_strategy_name, (query_strategy, clf) in query_strategies.items()]
     return pd.concat(results)
 
+# For Debugging
 def run_sequential(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n_init_traing=10,  rep=0, band_width=0.1, fit_clf=False):
     logger = logger()
 
