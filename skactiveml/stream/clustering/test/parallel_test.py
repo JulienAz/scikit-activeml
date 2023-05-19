@@ -224,6 +224,8 @@ if __name__ == '__main__':
     #    hue=CLASSIFIER, errorbar=None
     # )
 
+    # Der rolling average ist hier für den Plot erstmal egal.
+    # Den brauchen wir nur, wenn wir etwas über die Zeit plotten wollen.
     mean_rolling_avg = df.groupby([BANDWIDTH, CLASSIFIER, REP, BUDGET])[ACCURACY].rolling(30).mean().reset_index()
     df_budget = pd.DataFrame(mean_rolling_avg)
     bd_plot = init_bandwidth
@@ -239,9 +241,7 @@ if __name__ == '__main__':
 
     # Plotting Accuracy in respect to budget
     f = sb.relplot(
-        data=df_budget, x=BUDGET, y=ACCURACY,
-        col=CLASSIFIER, col_wrap=3,
-        kind="line", hue=CLASSIFIER
+        data=df_budget, x=BUDGET, y=ACCURACY, kind="line", hue=CLASSIFIER
     )
 
     image_filepath = os.path.join(target_directory, 'output.pdf')
