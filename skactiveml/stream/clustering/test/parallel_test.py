@@ -105,20 +105,24 @@ def run_async(function, args_list, njobs, sleep_time_s=0.1):
 
 
 if __name__ == '__main__':
+    run_algorithms = False
+    target_directory = 'target'
+    csv_filepath = os.path.join(target_directory, 'output.csv')
+
     datasetId = ABALONE_BIN
     # number of instances that are provided to the classifier
     init_train_length = 10
     # the length of the data stream
-    stream_length = 2000
+    stream_length = 1000
     # the size of the sliding window that limits the training data
     training_size = 300
     # the parameter dedicated to decide if the classifier needs to be refited with X and y.
     fit_clf = False
 
     n_cluster = 100
-    n_budget = 20
+    n_budget = 10
     init_budget = 0.01
-    n_reps = 10
+    n_reps = 30
     n_bandwidths = 1
     bandwidth_step_size = 0.5
     init_bandwidth = 1
@@ -137,82 +141,80 @@ if __name__ == '__main__':
     # convert it to a list and then simply loop over the grid
 
     # Looping over number of repetition
-    for rep in range(n_reps):
+    if run_algorithms:
+        for rep in range(n_reps):
 
-        budget = init_budget
-        random_state = rep
+            budget = init_budget
+            random_state = rep
 
-        # Generating Datastream
-        X, y = generate_data(datasetId, init_train_length, shuffle=True, random_state=random_state)
+            # Generating Datastream
+            X, y = generate_data(datasetId, init_train_length, shuffle=True, random_state=random_state)
 
-        # Looping over n_budget budgets with stepsize 0.1
-        for k in range(n_budget):
+            # Looping over n_budget budgets with stepsize 0.1
+            for k in range(n_budget):
 
-            bandwidth = init_bandwidth
+                bandwidth = init_bandwidth
 
-            for i in range(n_bandwidths):
+                for i in range(n_bandwidths):
 
-                # Bandiwdths for Kernels, passed to Query Strategy and/or Classifier
-                metric_dict = {
-                    'gamma': bandwidth
-                }
+                    # Bandiwdths for Kernels, passed to Query Strategy and/or Classifier
+                    metric_dict = {
+                        'gamma': bandwidth
+                    }
 
-                classes = np.unique(y)
+                    classes = np.unique(y)
 
-                # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
-                query_strategies = {
-                    'TraditionalBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget,
-                                                               metric_dict=metric_dict),
-                                         # VariableUncertainty(random_state=random_state),
-                                         ParzenWindowClassifier(classes=classes,
-                                                                random_state=random_state,
-                                                                metric_dict=metric_dict, missing_label=None)),
-                    'TraditionalIncremental':
-                        (StreamProbabilisticAL(random_state=random_state, metric="rbf",
-                                               budget=budget, metric_dict=metric_dict),
-                         # VariableUncertainty(random_state=random_state),
-                         SklearnClassifier(HoeffdingTreeClassifier(), classes=classes,
-                                           random_state=random_state, missing_label=None)),
-                    'ClusteringBased': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                                        # VariableUncertainty(random_state=random_state),
-                                        CluStreamClassifier(estimator_clf=SklearnClassifier(
-                                            HoeffdingTreeClassifier(),
-                                            missing_label=None,
-                                            classes=classes,
-                                            random_state=random_state),
-                                            metric_dict=metric_dict,
-                                            missing_label=None))
-                }
-                assert len(query_strategies) == n_approaches, "Number of approaches does not match n_approaches"
+                    # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
+                    query_strategies = {
+                        'TraditionalBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget,
+                                                                   metric_dict=metric_dict),
+                                             # VariableUncertainty(random_state=random_state),
+                                             ParzenWindowClassifier(classes=classes,
+                                                                    random_state=random_state,
+                                                                    metric_dict=metric_dict, missing_label=None)),
+                        'TraditionalIncremental':
+                            (StreamProbabilisticAL(random_state=random_state, metric="rbf",
+                                                   budget=budget, metric_dict=metric_dict),
+                             # VariableUncertainty(random_state=random_state),
+                             SklearnClassifier(HoeffdingTreeClassifier(), classes=classes,
+                                               random_state=random_state, missing_label=None)),
+                        'ClusteringBased': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                            # VariableUncertainty(random_state=random_state),
+                                            CluStreamClassifier(estimator_clf=SklearnClassifier(
+                                                HoeffdingTreeClassifier(),
+                                                missing_label=None,
+                                                classes=classes,
+                                                random_state=random_state),
+                                                metric_dict=metric_dict,
+                                                missing_label=None))
+                    }
+                    assert len(query_strategies) == n_approaches, "Number of approaches does not match n_approaches"
 
-                for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
-                    index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
-                            k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
-                    assert index not in all_used_indices, "We have an index overlap!"
-                    all_used_indices.append(index)
-                    args[index] = [X, y,
-                                   query_strategy_name, query_strategy,
-                                   clf, logger,
-                                   training_size, init_train_length,
-                                   rep, bandwidth]
+                    for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
+                        index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
+                                k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
+                        assert index not in all_used_indices, "We have an index overlap!"
+                        all_used_indices.append(index)
+                        args[index] = [X, y,
+                                       query_strategy_name, query_strategy,
+                                       clf, logger,
+                                       training_size, init_train_length,
+                                       rep, bandwidth]
 
-                    # Sequential execution for debuggin
-                    # res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
+                        # Sequential execution for debuggin
+                        # res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
 
-                bandwidth += bandwidth_step_size
-                bandwidth = np.round(bandwidth, 2)
-            budget += 0.02
+                    bandwidth += bandwidth_step_size
+                    bandwidth = np.round(bandwidth, 2)
+                budget += 0.02
 
-    # Parallel execution of run()
-    results = run_async(run, args, multiprocessing.cpu_count() - 1)
-    df = pd.concat(results)
-
-    target_directory = 'target'
-    os.makedirs(target_directory, exist_ok=True)
-
-    csv_filepath = os.path.join(target_directory, 'output.csv')
-
-    df.to_csv(csv_filepath, index=False)
+        # Parallel execution of run()
+        results = run_async(run, args, multiprocessing.cpu_count() - 1)
+        df = pd.concat(results)
+        os.makedirs(target_directory, exist_ok=True)
+        df.to_csv(csv_filepath, index=False)
+    else:
+        df = pd.read_csv(csv_filepath)
 
     sb.set_theme()
 
@@ -239,7 +241,7 @@ if __name__ == '__main__':
     f = sb.relplot(
         data=df_budget, x=BUDGET, y=ACCURACY,
         col=CLASSIFIER, col_wrap=3,
-        kind="line", hue=CLASSIFIER, errorbar=None
+        kind="line", hue=CLASSIFIER
     )
 
     image_filepath = os.path.join(target_directory, 'output.pdf')
