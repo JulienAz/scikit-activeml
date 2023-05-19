@@ -45,7 +45,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         # Classifier prediction
         prediction = clf.predict(X_cand)[0]
 
-        correct_classifications.append(clf.predict(X_cand)[0] == y_cand)
+        correct_classifications.append(prediction == y_cand)
 
         # Kernel Densities (currently disabled)
         #kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(X_train)  #MH: Don't you want to add the bandwidth parameter here?
@@ -103,7 +103,10 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         logger.finalize_round()
 
     df = logger.get_dataframe()
-    accuracy = gaussian_filter1d(np.array(tmp_accuracy, dtype=float), 100) #MH: here you could do something like pd.Series(temp_accuracy).rolling(windowsize).mean()
+    acc_series = pd.Series(tmp_accuracy)
+    accuracy = acc_series.rolling(window=30).mean()
+    # accuracy = gaussian_filter1d(np.array(tmp_accuracy, dtype=float), 100) #MH: here you could do something like pd.Series(temp_accuracy).rolling(windowsize).mean()
+
     df["Accuracy"] = accuracy
 
     # calculate and show the average accuracy
@@ -194,9 +197,8 @@ def run_sequential(X, y, approach_name, query_strategy, clf, logger, n_training_
         logger.finalize_round()
 
     df = logger.get_dataframe()
-    accuracy = gaussian_filter1d(np.array(tmp_accuracy, dtype=float),
-                                 100)  # MH: here you could do something like pd.Series(temp_accuracy).rolling(windowsize).mean()
-    df["Accuracy"] = accuracy
+    # accuracy = gaussian_filter1d(np.array(tmp_accuracy, dtype=float), 100)  # MH: here you could do something like pd.Series(temp_accuracy).rolling(windowsize).mean()
+    df["Accuracy"] = tmp_accuracy
 
     # calculate and show the average accuracy
     print("Repition", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: ", band_width,

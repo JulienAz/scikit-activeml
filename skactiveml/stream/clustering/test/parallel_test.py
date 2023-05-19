@@ -1,3 +1,5 @@
+import multiprocessing
+
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 from skactiveml.stream.clustering.test.stream_runner import *
@@ -35,7 +37,6 @@ from skactiveml.utils import call_func
 
 import os
 
-
 # number of instances that are provided to the classifier
 init_train_length = 10
 # the length of the data stream
@@ -51,10 +52,10 @@ budget = 0.1
 
 n_features = 2
 
-n_budget = 9
-init_budget = 0.1
+n_budget = 20
+init_budget = 0.01
 
-n_reps = 5
+n_reps = 30
 
 n_bandwidths = 1
 
@@ -101,10 +102,6 @@ def save_image(filename):
     p.close()
 
 
-def get_randomseed(random_state):
-    return random_state.randint(2 ** 31 - 1)
-
-
 def next_sample(data, n=1):
     # Randomly choose datapoint from dataset
     X, y = random.sample(data, n)[0]
@@ -127,20 +124,19 @@ def run_async(function, args_list, njobs, sleep_time_s=0.1):
 
 if __name__ == '__main__':
 
-    random_state = np.random.RandomState(random_number)
-
     logger = CluStreamPerformanceLogger
 
     # Hyperplane Generator
 
     res = [0] * n_bandwidths * n_budget * n_approaches * n_reps
-
     args = [0] * n_bandwidths * n_budget * n_approaches * n_reps
+    all_used_indices = []
 
     # Looping over number of repetition
-    for j in range(n_reps):
+    for rep in range(n_reps):
 
         budget = init_budget
+        random_state = rep
 
         # Looping over n_budget budgets with stepsize 0.1
         for k in range(n_budget):
@@ -148,18 +144,17 @@ if __name__ == '__main__':
             bandwidth = init_bandwidth
 
             for i in range(n_bandwidths):
-                random_state = np.random.RandomState(random_number + j)
 
                 # Hypperplane generator
-                #dataGenerator = HyperplaneGenerator(random_state=get_randomseed(random_state), n_features=2,
+                # dataGenerator = HyperplaneGenerator(random_state=random_state, n_features=2,
                 #                                    mag_change=0)
 
-                #Open ML datasets
+                # Open ML datasets
                 # Abalone binary 50/50
                 dataSetId = 720
 
                 # Abalone
-                #datasetId = 44956
+                # datasetId = 44956
 
                 # Covertype
                 # dataSetId = 1596
@@ -179,40 +174,49 @@ if __name__ == '__main__':
 
                 # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                 query_strategies = {
-                    'TraditionalBatch': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget,
+                    'TraditionalBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget,
                                                                metric_dict=metric_dict),
-                        #VariableUncertainty(random_state=get_randomseed(random_state)),
+                                         # VariableUncertainty(random_state=random_state),
                                          ParzenWindowClassifier(classes=classes,
-                                                                random_state=get_randomseed(random_state),
+                                                                random_state=random_state,
                                                                 metric_dict=metric_dict, missing_label=None)),
                     'TraditionalIncremental':
-                        (StreamProbabilisticAL(random_state=get_randomseed(random_state), metric="rbf",
+                        (StreamProbabilisticAL(random_state=random_state, metric="rbf",
                                                budget=budget, metric_dict=metric_dict),
-                        #VariableUncertainty(random_state=get_randomseed(random_state)),
-                        SklearnClassifier(HoeffdingTreeClassifier(), classes=classes, random_state=get_randomseed(random_state), missing_label=None)),
-                    'ClusteringBased': (StreamProbabilisticAL(random_state=get_randomseed(random_state), budget=budget),
-                                        #VariableUncertainty(random_state=get_randomseed(random_state)),
+                         # VariableUncertainty(random_state=random_state),
+                         SklearnClassifier(HoeffdingTreeClassifier(), classes=classes,
+                                           random_state=random_state, missing_label=None)),
+                    'ClusteringBased': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                        # VariableUncertainty(random_state=random_state),
                                         CluStreamClassifier(estimator_clf=SklearnClassifier(
                                             HoeffdingTreeClassifier(),
                                             missing_label=None,
                                             classes=classes,
-                                            random_state=get_randomseed(random_state)),
-                                            metric_dict=metric_dict, missing_label=None))
+                                            random_state=random_state),
+                                            metric_dict=metric_dict,
+                                            missing_label=None))
                 }
                 for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
-                    index = j *(n_budget * n_bandwidths * len(query_strategies)) + (k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
-                    args[index] = [X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth]
+                    index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
+                            k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
+                    assert index not in all_used_indices, "We have an index overlap!"
+                    all_used_indices.append(index)
+                    args[index] = [X, y,
+                                   query_strategy_name, query_strategy,
+                                   clf, logger,
+                                   training_size, init_train_length,
+                                   rep, bandwidth]
 
                     # Sequential execution for debuggin
-                    #res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
+                    # res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
 
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
-            budget += 0.1
-            budget = np.round(budget, 1)
+            budget += 0.02
+            budget = np.round(budget, 2)
 
     # Parallel execution of run()
-    results = run_async(run, args, n_bandwidths * n_budget * n_approaches * n_reps)
+    results = run_async(run, args, multiprocessing.cpu_count() - 1)
     df = pd.concat(results)
 
     target_directory = 'target'
@@ -224,25 +228,24 @@ if __name__ == '__main__':
 
     sb.set_theme()
 
-    #g = sb.relplot(
+    # g = sb.relplot(
     #    data=df, x=TIMESTEP, y=ACCURACY,
     #    kind="line", col=BANDWIDTH, col_wrap=3,
     #    hue=CLASSIFIER, errorbar=None
-    #)
+    # )
 
-    mean_rolling_avg = df.groupby([BANDWIDTH, CLASSIFIER, REP, BUDGET])[ACCURACY].mean()
-    df_budget = pd.DataFrame(mean_rolling_avg.reset_index())
+    mean_rolling_avg = df.groupby([BANDWIDTH, CLASSIFIER, REP, BUDGET])[ACCURACY].rolling(30).mean().reset_index()
+    df_budget = pd.DataFrame(mean_rolling_avg)
     bd_plot = init_bandwidth
 
     # Add mean rolling average as horizontal line and text
-    #for i, ax in enumerate(g.axes.flat):
+    # for i, ax in enumerate(g.axes.flat):
     #    avgs = mean_rolling_avg[bd_plot]
     #    for j, ((classifier, rep), mean_accuracy) in enumerate(avgs.items()):
     #        ax.text(x=100, y=0.6 - j * (0.03), s=f"{classifier}: {mean_accuracy:.3f}", color='black', ha='left',
     #                va='center', fontweight='bold')
     #    bd_plot += bandwidth_step_size
     #    bd_plot = np.round(bd_plot, 2)
-
 
     # Plotting Accuracy in respect to budget
     f = sb.relplot(
