@@ -37,36 +37,6 @@ from skactiveml.utils import call_func
 
 import os
 
-# number of instances that are provided to the classifier
-init_train_length = 10
-# the length of the data stream
-stream_length = 5000
-# the size of the sliding window that limits the training data
-training_size = 300
-# the parameter dedicated to decide if the classifier needs to be refited with X and y.
-fit_clf = False
-
-n_cluster = 100
-
-budget = 0.1
-
-n_features = 2
-
-n_budget = 20
-init_budget = 0.01
-
-n_reps = 30
-
-n_bandwidths = 1
-
-bandwidth_step_size = 0.5
-init_bandwidth = 1
-
-n_approaches = 3
-
-# random state that is used to generate random seeds
-random_number = 23
-
 REP = "rep"
 TIMESTEP = "round"
 APPROACH = "Approach"
@@ -80,6 +50,12 @@ X1 = "X1"
 X2 = "X2"
 Y = "Label"
 GT = "GT_Label"
+
+# Datasets
+ABALONE_BIN = 720
+ABALONE = 44956
+COVERTYPE = 1596
+HYPERPLANE = -1
 
 
 def save_image(filename):
@@ -102,13 +78,19 @@ def save_image(filename):
     p.close()
 
 
-def next_sample(data, n=1):
-    # Randomly choose datapoint from dataset
-    X, y = random.sample(data, n)[0]
-
-    # Add noise to features
-    X_new = X + np.random.normal(0, 0.1, len(X))
-    return X_new, y
+def generate_data(dataset_id, init_train_length, shuffle, random_state, n_features=0):
+    if dataset_id == HYPERPLANE:
+        assert n_features > 0, "Please specify the number of features for the hyperplane generator"
+        dataGenerator = HyperplaneGenerator(random_state=random_state,
+                                            n_features=2,
+                                            mag_change=0)
+    else:
+        rng = np.random.default_rng(random_state)
+        dataGenerator = OpenMlStreamGenerator(dataset_id, shuffle=shuffle, rng=rng)
+    # Generating Datastream
+    stream_length = len(dataGenerator.y) - init_train_length - 1
+    X, y = dataGenerator.next_sample(stream_length + init_train_length)
+    return X, y
 
 
 def run_async(function, args_list, njobs, sleep_time_s=0.1):
@@ -123,14 +105,36 @@ def run_async(function, args_list, njobs, sleep_time_s=0.1):
 
 
 if __name__ == '__main__':
+    datasetId = ABALONE_BIN
+    # number of instances that are provided to the classifier
+    init_train_length = 10
+    # the length of the data stream
+    stream_length = 2000
+    # the size of the sliding window that limits the training data
+    training_size = 300
+    # the parameter dedicated to decide if the classifier needs to be refited with X and y.
+    fit_clf = False
+
+    n_cluster = 100
+    n_budget = 20
+    init_budget = 0.01
+    n_reps = 30
+    n_bandwidths = 1
+    bandwidth_step_size = 0.5
+    init_bandwidth = 1
+    n_approaches = 3
 
     logger = CluStreamPerformanceLogger
 
-    # Hyperplane Generator
-
     res = [0] * n_bandwidths * n_budget * n_approaches * n_reps
     args = [0] * n_bandwidths * n_budget * n_approaches * n_reps
+    # I was checking if your way of creating the indices causes problems (it seems to be fine)
+    # Why not simply defining res = [] and args = [] and then appending to these lists?
     all_used_indices = []
+
+    # It might be easier (and better readable) to create a parameter grid
+    # (https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.ParameterGrid.html#sklearn.model_selection.ParameterGrid)
+    # convert it to a list and then simply loop over the grid
 
     # Looping over number of repetition
     for rep in range(n_reps):
@@ -138,32 +142,15 @@ if __name__ == '__main__':
         budget = init_budget
         random_state = rep
 
+        # Generating Datastream
+        X, y = generate_data(datasetId, init_train_length, shuffle=True, rng=random_state)
+
         # Looping over n_budget budgets with stepsize 0.1
         for k in range(n_budget):
 
             bandwidth = init_bandwidth
 
             for i in range(n_bandwidths):
-
-                # Hypperplane generator
-                # dataGenerator = HyperplaneGenerator(random_state=random_state, n_features=2,
-                #                                    mag_change=0)
-
-                # Open ML datasets
-                # Abalone binary 50/50
-                dataSetId = 720
-
-                # Abalone
-                # datasetId = 44956
-
-                # Covertype
-                # dataSetId = 1596
-
-                dataGenerator = OpenMlStreamGenerator(dataSetId)
-                stream_length = len(dataGenerator.y) - init_train_length - 1
-
-                # Generating Datastream
-                X, y = dataGenerator.next_sample(stream_length + init_train_length)
 
                 # Bandiwdths for Kernels, passed to Query Strategy and/or Classifier
                 metric_dict = {
@@ -196,6 +183,8 @@ if __name__ == '__main__':
                                             metric_dict=metric_dict,
                                             missing_label=None))
                 }
+                assert len(query_strategies) == n_approaches, "Number of approaches does not match n_approaches"
+
                 for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
                     index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
                             k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
