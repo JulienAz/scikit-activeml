@@ -118,7 +118,7 @@ if __name__ == '__main__':
     n_cluster = 100
     n_budget = 20
     init_budget = 0.01
-    n_reps = 30
+    n_reps = 10
     n_bandwidths = 1
     bandwidth_step_size = 0.5
     init_bandwidth = 1
@@ -143,7 +143,7 @@ if __name__ == '__main__':
         random_state = rep
 
         # Generating Datastream
-        X, y = generate_data(datasetId, init_train_length, shuffle=True, rng=random_state)
+        X, y = generate_data(datasetId, init_train_length, shuffle=True, random_state=random_state)
 
         # Looping over n_budget budgets with stepsize 0.1
         for k in range(n_budget):
@@ -202,7 +202,6 @@ if __name__ == '__main__':
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget += 0.02
-            budget = np.round(budget, 2)
 
     # Parallel execution of run()
     results = run_async(run, args, multiprocessing.cpu_count() - 1)

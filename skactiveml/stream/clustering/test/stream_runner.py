@@ -183,10 +183,9 @@ def run_sequential(X, y, approach_name, query_strategy, clf, logger, n_training_
 
         logger.track_y(prediction)
         logger.track_timestep(t)
-        #logger.track_y(prediction)
         logger.track_label(al_label)
         logger.track_gt(y[t])
-        logger.track_budget(np.round(budget, 1))
+        logger.track_budget(budget)
         logger.track_bandwidth(band_width)
         logger.track_x1(X_cand[0][0])
         logger.track_x2(X_cand[0][1])
