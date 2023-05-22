@@ -15,7 +15,7 @@ BANDWIDTH = "Kernel_Bandwidth"
 X1 = "X1"
 X2 = "X2"
 Y = "Prediction"
-Label = "Label"
+LABEL = "Label"
 GT = "GT_Label"
 
 # Add column names to list
@@ -30,7 +30,7 @@ all_ids = [
     X1,
     X2,
     Y,
-    Label,
+    LABEL,
     GT
 ]
 
@@ -76,7 +76,7 @@ class CluStreamPerformanceLogger:
         self._track_value(value, Y)
 
     def track_label(self, value):
-        self._track_value(value, Label)
+        self._track_value(value, LABEL)
 
     def track_gt(self, value):
         self._track_value(value, GT)
