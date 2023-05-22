@@ -120,7 +120,7 @@ if __name__ == '__main__':
                                    rep, bandwidth]
 
                     # Sequential execution for debuggin
-                    # res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, j, bandwidth)
+                    # res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, rep, bandwidth)
 
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
