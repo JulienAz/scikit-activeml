@@ -44,6 +44,8 @@ if __name__ == '__main__':
     init_bandwidth = 1
     n_approaches = 3
 
+    base_classifier = HoeffdingTreeClassifier
+
     logger = CluStreamPerformanceLogger
 
     res = [0] * n_bandwidths * n_budget * n_approaches * n_reps
@@ -78,22 +80,28 @@ if __name__ == '__main__':
 
                 # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                 query_strategies = {
-                    'TraditionalBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget,
-                                                               metric_dict=metric_dict),
+                    #'TraditionalBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget,
+                    #                                           metric_dict=metric_dict),
+                    #                     # VariableUncertainty(random_state=random_state),
+                    #                     ParzenWindowClassifier(classes=classes,
+                    #                                            random_state=random_state,
+                    #                                            metric_dict=metric_dict, missing_label=None)),
+                    'OPALBatch':
+                        (StreamProbabilisticAL(random_state=random_state, metric="rbf",
+                                               budget=budget, metric_dict=metric_dict),
                                          # VariableUncertainty(random_state=random_state),
-                                         ParzenWindowClassifier(classes=classes,
-                                                                random_state=random_state,
-                                                                metric_dict=metric_dict, missing_label=None)),
-                    'TraditionalIncremental':
+                        SklearnClassifier(base_classifier, classes=classes,
+                                            random_state=random_state, missing_label=None)),
+                    'OPALIncremental':
                         (StreamProbabilisticAL(random_state=random_state, metric="rbf",
                                                budget=budget, metric_dict=metric_dict),
                          # VariableUncertainty(random_state=random_state),
-                         SklearnClassifier(HoeffdingTreeClassifier(), classes=classes,
+                         SklearnClassifier(base_classifier, classes=classes,
                                            random_state=random_state, missing_label=None)),
                     'ClusteringBased': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                                         # VariableUncertainty(random_state=random_state),
                                         CluStreamClassifier(estimator_clf=SklearnClassifier(
-                                            HoeffdingTreeClassifier(),
+                                            base_classifier,
                                             missing_label=None,
                                             classes=classes,
                                             random_state=random_state),
