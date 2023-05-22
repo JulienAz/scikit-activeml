@@ -31,7 +31,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
     y_train.extend(y_init)
 
     # pretrain
-    clf.fit(X_train, y_train)
+    clf.fit(X_train, y_train, classes=unique_classes)
 
     correct_classifications = []
     count = 0
