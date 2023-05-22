@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     n_cluster = 100
     n_budget = 10
-    init_budget = 0.01
+    init_budget = 0.1
     budget_step_size = 0.1
     n_reps = 30
     n_bandwidths = 1
@@ -90,18 +90,18 @@ if __name__ == '__main__':
                         (StreamProbabilisticAL(random_state=random_state, metric="rbf",
                                                budget=budget, metric_dict=metric_dict),
                                          # VariableUncertainty(random_state=random_state),
-                        SklearnClassifier(base_classifier, classes=classes,
+                        SklearnClassifier(base_classifier(), classes=classes,
                                             random_state=random_state, missing_label=None)),
                     'OPALIncremental':
                         (StreamProbabilisticAL(random_state=random_state, metric="rbf",
                                                budget=budget, metric_dict=metric_dict),
                          # VariableUncertainty(random_state=random_state),
-                         SklearnClassifier(base_classifier, classes=classes,
+                         SklearnClassifier(base_classifier(), classes=classes,
                                            random_state=random_state, missing_label=None)),
                     'ClusteringBased': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                                         # VariableUncertainty(random_state=random_state),
                                         CluStreamClassifier(estimator_clf=SklearnClassifier(
-                                            base_classifier,
+                                            base_classifier(),
                                             missing_label=None,
                                             classes=classes,
                                             random_state=random_state),
@@ -120,7 +120,7 @@ if __name__ == '__main__':
                                    rep, bandwidth]
 
                     # Sequential execution for debuggin
-                    # res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, rep, bandwidth)
+                    #res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, rep, bandwidth)
 
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
