@@ -2,7 +2,7 @@ import multiprocessing
 
 from skmultiflow.trees import HoeffdingTreeClassifier
 
-from skactiveml.stream.clustering.datasets import ABALONE_BIN, generate_data
+from skactiveml.stream.clustering.datasets import ABALONE_BIN,COVERTYPE, generate_data
 from skactiveml.stream.clustering.test.stream_runner import *
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamPerformanceLogger, \
     ACCURACY, BUDGET, CLASSIFIER, REP, BANDWIDTH
@@ -24,21 +24,21 @@ if __name__ == '__main__':
     target_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'target')
     csv_filepath = os.path.join(target_directory, 'output.csv')
 
-    datasetId = ABALONE_BIN
+    datasetId = COVERTYPE
     # number of instances that are provided to the classifier
     init_train_length = 10
     # the length of the data stream
-    stream_length = 1000
+    stream_length = 5000
     # the size of the sliding window that limits the training data
     training_size = 300
     # the parameter dedicated to decide if the classifier needs to be refited with X and y.
     fit_clf = False
 
     n_cluster = 100
-    n_budget = 10
+    n_budget = 2
     init_budget = 0.01
     budget_step_size = 0.1
-    n_reps = 30
+    n_reps = 1
     n_bandwidths = 1
     bandwidth_step_size = 0.5
     init_bandwidth = 1
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         random_state = rep
 
         # Generating Datastream
-        X, y = generate_data(datasetId, init_train_length, shuffle=True, random_state=random_state)
+        X, y = generate_data(datasetId, init_train_length, shuffle=True, random_state=random_state, stream_length=stream_length)
 
         # Looping over n_budget budgets with stepsize 0.1
         for k in range(n_budget):

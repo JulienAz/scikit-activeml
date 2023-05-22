@@ -3,7 +3,7 @@ import openml
 import pandas as pd
 from openml import OpenMLDataset
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 
 
 class StreamGenerator:
@@ -43,7 +43,11 @@ class OpenMlStreamGenerator(StreamGenerator):
             ])
 
         X = preprocessor.fit_transform(X)
-        y = np.where(y == 'P', 1, 0)
+
+        # Transform y values to integers if categorical
+        if isinstance(y[0], str):
+            label_encoder = LabelEncoder()
+            y = label_encoder.fit_transform(y)
 
         # random shuffle of data
         if shuffle:
