@@ -80,7 +80,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         count += 1 if al_label is not clf.missing_label else 0'''
 
         if approach_name.endswith('Batch'):
-            clf.fit(X_train, y_train)
+            clf.fit(X_train, y_train, classes=unique_classes)
         elif approach_name.startswith('Clustering'):
             # Missing Labels are handled in the Classifier itself
             clf.partial_fit(X_cand, np.array([al_label]))

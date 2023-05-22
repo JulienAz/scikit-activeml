@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     n_cluster = 100
     n_budget = 10
-    init_budget = 0.1
+    init_budget = 0.01
     budget_step_size = 0.1
     n_reps = 30
     n_bandwidths = 1
@@ -120,7 +120,7 @@ if __name__ == '__main__':
                                    rep, bandwidth]
 
                     # Sequential execution for debuggin
-                    #res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, rep, bandwidth)
+                    # res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, rep, bandwidth)
 
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
