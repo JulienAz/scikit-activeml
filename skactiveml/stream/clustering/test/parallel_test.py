@@ -21,7 +21,7 @@ import os
 
 
 if __name__ == '__main__':
-    target_directory = 'target'
+    target_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'target')
     csv_filepath = os.path.join(target_directory, 'output.csv')
 
     datasetId = ABALONE_BIN
@@ -37,6 +37,7 @@ if __name__ == '__main__':
     n_cluster = 100
     n_budget = 10
     init_budget = 0.01
+    budget_step_size = 0.1
     n_reps = 30
     n_bandwidths = 1
     bandwidth_step_size = 0.5
@@ -115,7 +116,7 @@ if __name__ == '__main__':
 
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
-            budget += 0.02
+            budget += budget_step_size
 
     # Parallel execution of run()
     results = run_async(run, args, multiprocessing.cpu_count() - 1)
