@@ -105,7 +105,6 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
     df = logger.get_dataframe()
     acc_series = pd.Series(tmp_accuracy)
     accuracy = acc_series.rolling(window=30).mean()
-    # accuracy = gaussian_filter1d(np.array(tmp_accuracy, dtype=float), 100) #MH: here you could do something like pd.Series(temp_accuracy).rolling(windowsize).mean()
 
     df["Accuracy"] = accuracy
 

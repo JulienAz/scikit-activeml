@@ -34,11 +34,13 @@ if __name__ == '__main__':
     # the parameter dedicated to decide if the classifier needs to be refited with X and y.
     fit_clf = False
 
+    shuffle_data = True
+
     n_cluster = 100
-    n_budget = 2
+    n_budget = 10
     init_budget = 0.01
     budget_step_size = 0.1
-    n_reps = 1
+    n_reps = 30
     n_bandwidths = 1
     bandwidth_step_size = 0.5
     init_bandwidth = 1
@@ -62,7 +64,7 @@ if __name__ == '__main__':
         random_state = rep
 
         # Generating Datastream
-        X, y = generate_data(datasetId, init_train_length, shuffle=True, random_state=random_state, stream_length=stream_length)
+        X, y = generate_data(datasetId, init_train_length, shuffle=shuffle_data, random_state=random_state, stream_length=stream_length)
 
         # Looping over n_budget budgets with stepsize 0.1
         for k in range(n_budget):
@@ -120,7 +122,7 @@ if __name__ == '__main__':
                                    rep, bandwidth]
 
                     # Sequential execution for debuggin
-                    # res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, rep, bandwidth)
+                    #res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, rep, bandwidth)
 
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)

@@ -18,9 +18,9 @@ def generate_data(dataset_id, init_train_length, shuffle, random_state, n_featur
         assert stream_length != None, "Please specify the stream length for hyperplane generator"
     else:
         rng = np.random.default_rng(random_state)
-        dataGenerator = OpenMlStreamGenerator(dataset_id, shuffle=shuffle, rng=rng)
+        dataGenerator = OpenMlStreamGenerator(dataset_id, shuffle=shuffle, rng=rng, stream_length=stream_length + init_train_length)
     # Generating Datastream
-    if stream_length == None:
+    if stream_length is None:
         stream_length = len(dataGenerator.y) - init_train_length - 1
     X, y = dataGenerator.next_sample(stream_length + init_train_length)
     return X, y
