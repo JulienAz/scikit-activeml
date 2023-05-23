@@ -101,6 +101,7 @@ class StreamProbabilisticAL(SingleAnnotatorStreamQueryStrategy):
         fit_clf=False,
         utility_weight=None,
         return_utilities=False,
+        logger=None
     ):
         """Ask the query strategy which instances in candidates to acquire.
 
@@ -177,10 +178,13 @@ class StreamProbabilisticAL(SingleAnnotatorStreamQueryStrategy):
             )
             pwc.fit(X=X, y=y, sample_weight=sample_weight)
             n = pwc.predict_freq(candidates).sum(axis=1, keepdims=True)
+            if logger is not None:
+                logger.track_lbl_frequency(n[0][0])
+
             pred_proba = clf.predict_proba(candidates)
             k_vec = n * pred_proba
         else:
-            k_vec = clf.predict_freq(candidates)
+            k_vec = clf.predict_freq(candidates, logger)
 
         utilities = cost_reduction(k_vec, prior=self.prior, m_max=self.m_max)
 

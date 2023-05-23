@@ -54,7 +54,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
         # Query decision
         sampled_indices, utilities = call_func(query_strategy.query, candidates=X_cand, X=X_train, y=y_train,
                                                # utility_weight=X_candidate_density,
-                                               clf=clf, return_utilities=True, fit_clf=fit_clf)
+                                               clf=clf, return_utilities=True, fit_clf=fit_clf, logger=logger)
 
         # create budget_manager_param_dict for BalancedIncrementalQuantileFilter
         budget_manager_param_dict = {"utilities": utilities}

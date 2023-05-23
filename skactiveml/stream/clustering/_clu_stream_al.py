@@ -86,6 +86,10 @@ class MicroCluster:
         
         self.features = {k: self.features[k] + other.features[k] for k, value in other.features.items()}
         self.features["M"] += addterm_m
+
+        if len(other.labeled_samples) > 0:
+            self.labeled_samples = np.vstack([self.labeled_samples.reshape(-1, 2), other.labeled_samples.reshape(-1, 2)])
+
         return self
 
 
@@ -140,7 +144,7 @@ class CluStream:
         else:
             self.init_train = []
 
-    def fit_one(self, X, y=None):
+    def fit_one(self, X, y=None): #TODO: Fit() for multiple samples
         if not self._initialized:
             sample = np.array((X, y), dtype=object)
             if len(self.init_train) == 0:

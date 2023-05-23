@@ -17,6 +17,7 @@ X2 = "X2"
 Y = "Prediction"
 LABEL = "Label"
 GT = "GT_Label"
+LABEL_FREQUENCY = "Lbl_frequency"
 
 # Add column names to list
 all_ids = [
@@ -31,7 +32,8 @@ all_ids = [
     X2,
     Y,
     LABEL,
-    GT
+    GT,
+    LABEL_FREQUENCY
 ]
 
 
@@ -80,6 +82,9 @@ class CluStreamPerformanceLogger:
 
     def track_gt(self, value):
         self._track_value(value, GT)
+
+    def track_lbl_frequency(self, value):
+        self._track_value(value, LABEL_FREQUENCY)
 
     def finalize_round(self):
         self._data.append(self._current_row)

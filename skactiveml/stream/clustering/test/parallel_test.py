@@ -2,6 +2,7 @@ import multiprocessing
 
 from skmultiflow.trees import HoeffdingTreeClassifier
 
+from skactiveml.stream.clustering import CluStream
 from skactiveml.stream.clustering.datasets import ABALONE_BIN,COVERTYPE, generate_data
 from skactiveml.stream.clustering.test.stream_runner import *
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamPerformanceLogger, \
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     # number of instances that are provided to the classifier
     init_train_length = 10
     # the length of the data stream
-    stream_length = 5000
+    stream_length = 4000
     # the size of the sliding window that limits the training data
     training_size = 300
     # the parameter dedicated to decide if the classifier needs to be refited with X and y.
@@ -36,7 +37,7 @@ if __name__ == '__main__':
 
     shuffle_data = True
 
-    n_cluster = 100
+    n_cluster = 10
     n_budget = 10
     init_budget = 0.01
     budget_step_size = 0.1
@@ -53,6 +54,7 @@ if __name__ == '__main__':
     res = [0] * n_bandwidths * n_budget * n_approaches * n_reps
     args = [0] * n_bandwidths * n_budget * n_approaches * n_reps
 
+    assert n_cluster <= init_train_length
     # It might be easier (and better readable) to create a parameter grid
     # (https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.ParameterGrid.html#sklearn.model_selection.ParameterGrid)
     # convert it to a list and then simply loop over the grid
@@ -107,6 +109,10 @@ if __name__ == '__main__':
                                             missing_label=None,
                                             classes=classes,
                                             random_state=random_state),
+                                            clustering=CluStream(
+                                                n_micro_clusters=n_cluster,
+                                                n_init_train=init_train_length
+                                            ),
                                             metric_dict=metric_dict,
                                             missing_label=None))
                 }

@@ -32,6 +32,8 @@ class CluStreamClassifier(SkactivemlClassifier):
         self.clustering = clustering
 
     def fit(self, X, y, sample_weight=None, **fit_kwargs):
+        for t, (x_t, y_t) in enumerate(zip(X, y)):
+            self.clustering.fit_one(x_t, y_t)
         return self.estimator_clf.fit(X, y, sample_weight=None, **fit_kwargs)
 
     def partial_fit(self, X, y, sample_weight=None, **fit_kwargs):
@@ -46,7 +48,7 @@ class CluStreamClassifier(SkactivemlClassifier):
     def predict(self, X):
         return self.estimator_clf.predict(X)
 
-    def predict_freq(self, X):
+    def predict_freq(self, X, logger=None):
         if self.clustering.initialized:
             cluster_id, _ = self.clustering.nearest_cluster(X)
             mc = self.clustering.micro_clusters[cluster_id]
@@ -67,14 +69,18 @@ class CluStreamClassifier(SkactivemlClassifier):
 
                 pwc.fit(X=X_fit, y=y_fit)
                 n = pwc.predict_freq(X).sum(axis=1, keepdims=True)
+                if logger is not None:
+                    logger.track_lbl_frequency(n.sum(axis=1, keepdims=True)[0][0])
                 pred_proba = self.estimator_clf.predict_proba(X)
                 k_vec = n * pred_proba
 
-                kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(mc.x)
-                X_cluster_density = np.array([kde.score(X)])
-
+                kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(mc.x)
+                # X_cluster_density = np.array([kde.score(X)]) TODO: Density seems to be broken, high negative values
+                X_cluster_density = 1
                 return k_vec * X_cluster_density
 
+        if logger is not None:
+            logger.track_lbl_frequency(1)
         return self.estimator_clf.predict_proba(X)
 
 
