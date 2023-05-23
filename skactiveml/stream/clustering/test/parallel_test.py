@@ -3,7 +3,7 @@ import multiprocessing
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 from skactiveml.stream.clustering import CluStream
-from skactiveml.stream.clustering.datasets import ABALONE_BIN,COVERTYPE, generate_data
+from skactiveml.stream.clustering.datasets import ABALONE_BIN, COVERTYPE, generate_data, HYPERPLANE
 from skactiveml.stream.clustering.test.stream_runner import *
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamPerformanceLogger, \
     ACCURACY, BUDGET, CLASSIFIER, REP, BANDWIDTH
@@ -25,11 +25,13 @@ if __name__ == '__main__':
     target_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'target')
     csv_filepath = os.path.join(target_directory, 'output.csv')
 
-    datasetId = COVERTYPE
+    datasetId = HYPERPLANE
     # number of instances that are provided to the classifier
     init_train_length = 10
     # the length of the data stream
     stream_length = 4000
+    n_features = 2
+    mag_change = 0.2
     # the size of the sliding window that limits the training data
     training_size = 300
     # the parameter dedicated to decide if the classifier needs to be refited with X and y.
@@ -66,7 +68,7 @@ if __name__ == '__main__':
         random_state = rep
 
         # Generating Datastream
-        X, y = generate_data(datasetId, init_train_length, shuffle=shuffle_data, random_state=random_state, stream_length=stream_length)
+        X, y = generate_data(datasetId, init_train_length, shuffle=shuffle_data, random_state=random_state, stream_length=stream_length, n_features=n_features, mag_change=mag_change)
 
         # Looping over n_budget budgets with stepsize 0.1
         for k in range(n_budget):

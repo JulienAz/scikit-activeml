@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     sb.set_theme()
 
-    f = sb.relplot(data=df, x=TIMESTEP, y=LABEL_FREQUENCY, kind="line", hue=CLASSIFIER, col=CLASSIFIER, row=BUDGET)
+    f = sb.relplot(data=df, x=TIMESTEP, y=LABEL_FREQUENCY, kind="line", hue=CLASSIFIER, col=CLASSIFIER, row=BUDGET, errorbar=None)
     #f.set(title='Label Frequency Predictions')
 
     image_filepath = os.path.join(this_dir, "..", target_directory, 'output_lbl_frequency.pdf')

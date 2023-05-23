@@ -29,7 +29,7 @@ if __name__ == '__main__':
         data=df_label_acquisition, x=BUDGET, y=LABEL, kind="line", hue=CLASSIFIER
     )
     g.set(title='Label Acquisition Count')
-    image_filepath = os.path.join(this_dir, "..", target_directory, 'output.pdf')
+    image_filepath = os.path.join(this_dir, "..", target_directory, 'output_accuracy.pdf')
 
     save_image(image_filepath)
 
