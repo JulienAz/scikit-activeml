@@ -155,3 +155,4 @@ cython_debug/
 /examples/pool/al_cycle_own.ipynb
 /docs/generated/
 /_build/
+/skactiveml/stream/clustering/experiments/

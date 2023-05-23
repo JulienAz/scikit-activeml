@@ -71,6 +71,7 @@ class CluStreamClassifier(SkactivemlClassifier):
                 n = pwc.predict_freq(X).sum(axis=1, keepdims=True)
                 if logger is not None:
                     logger.track_lbl_frequency(n.sum(axis=1, keepdims=True)[0][0])
+                    logger.track_cluster(cluster_id)
                 pred_proba = self.estimator_clf.predict_proba(X)
                 k_vec = n * pred_proba
 
