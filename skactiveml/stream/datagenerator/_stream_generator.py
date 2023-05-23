@@ -61,3 +61,49 @@ class OpenMlStreamGenerator(StreamGenerator):
             y = label_encoder.fit_transform(y)
 
         super().__init__(X, y)
+
+
+class ArtificialStreamGenerator(StreamGenerator):
+    def __init__(self, datasetId, rng, shuffle: bool, stream_length, noise):
+        assert stream_length is not None, "Stream length must be provided with artificial strteam generators"
+        dataset = openml.datasets.get_dataset(datasetId)
+        self.rng = rng
+
+        # Extract feature matrix and target array
+        X, y, categorical_features, _ = dataset.get_data(target=dataset.default_target_attribute)
+
+        # random shuffle of data
+        if shuffle:
+            indices = np.arange(len(y))
+            rng.shuffle(indices)
+            X = X.iloc[indices]
+            y = y.iloc[indices]
+
+        # Identify numerical features
+        numerical_features = ~np.array(categorical_features)
+
+        # Scale numerical features to [0,1]
+        numeric_transformer = MinMaxScaler()
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', numeric_transformer, numerical_features),
+                ('cat', OneHotEncoder(), categorical_features)
+            ])
+
+        X = preprocessor.fit_transform(X)
+
+        # Transform y values to integers if categorical
+        if y.dtype.name == 'category':
+            label_encoder = LabelEncoder()
+            y = label_encoder.fit_transform(y)
+
+        indices = rng.choice(len(X), size=stream_length,
+                             replace=True)  # Replace 'num_samples' with the desired number of samples to pick
+        X = X[indices]
+        y = y[indices]
+
+        noise = rng.normal(loc=0, scale=noise,
+                           size=X.shape)  # Replace 'noise_std' with the desired standard deviation of the noise
+        X = X + noise
+
+        super().__init__(X, y)
