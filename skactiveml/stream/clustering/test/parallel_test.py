@@ -16,7 +16,7 @@ import seaborn as sb
 
 from skactiveml.classifier import ParzenWindowClassifier, SklearnClassifier
 from skactiveml.classifier._clu_stream_classifier import CluStreamClassifier
-from skactiveml.stream import StreamProbabilisticAL
+from skactiveml.stream import StreamProbabilisticAL, StreamRandomSampling
 
 import os
 
@@ -40,14 +40,14 @@ if __name__ == '__main__':
     shuffle_data = True
 
     n_cluster = 10
-    n_budget = 10
+    n_budget = 11
     init_budget = 0.01
     budget_step_size = 0.1
     n_reps = 30
     n_bandwidths = 1
     bandwidth_step_size = 0.5
     init_bandwidth = 1
-    n_approaches = 3
+    n_approaches = 4
 
     base_classifier = HoeffdingTreeClassifier
 
@@ -95,13 +95,11 @@ if __name__ == '__main__':
                     'OPALBatch':
                         (StreamProbabilisticAL(random_state=random_state, metric="rbf",
                                                budget=budget, metric_dict=metric_dict),
-                                         # VariableUncertainty(random_state=random_state),
                         SklearnClassifier(base_classifier(), classes=classes,
                                             random_state=random_state, missing_label=None)),
                     'OPALIncremental':
                         (StreamProbabilisticAL(random_state=random_state, metric="rbf",
                                                budget=budget, metric_dict=metric_dict),
-                         # VariableUncertainty(random_state=random_state),
                          SklearnClassifier(base_classifier(), classes=classes,
                                            random_state=random_state, missing_label=None)),
                     'ClusteringBased': (StreamProbabilisticAL(random_state=random_state, budget=budget),
@@ -116,7 +114,11 @@ if __name__ == '__main__':
                                                 n_init_train=init_train_length
                                             ),
                                             metric_dict=metric_dict,
-                                            missing_label=None))
+                                            missing_label=None)),
+                    'RandomIncremental':
+                        (StreamRandomSampling(random_state=random_state, budget=budget),
+                         SklearnClassifier(base_classifier(), classes=classes,
+                                           random_state=random_state, missing_label=None)),
                 }
                 assert len(query_strategies) == n_approaches, "Number of approaches does not match n_approaches"
 
