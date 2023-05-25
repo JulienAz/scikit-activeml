@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
-            budget += budget_step_size
+            budget = min(budget + budget_step_size, 1.0)
 
     # Parallel execution of run()
     results = run_async(run, args, multiprocessing.cpu_count() - 1)

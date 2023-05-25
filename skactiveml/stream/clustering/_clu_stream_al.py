@@ -2,6 +2,7 @@ import math
 import typing
 
 import numpy as np
+from numpy import float64
 from sklearn.cluster import KMeans
 
 import scipy.stats as sps
@@ -21,7 +22,7 @@ class MicroCluster:
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
             "ls_t": time_stamp,
-            "ss_t": np.square(time_stamp),
+            "ss_t": float64(np.square(time_stamp)),
             "n": len(x),
             "M": np.square(x[0] - np.divide(x[0], len(x))),
         }
@@ -66,7 +67,7 @@ class MicroCluster:
         self.features["ls_x"] += x
 
         self.features["ls_t"] += t
-        self.features["ss_t"] += np.square(t)
+        self.features["ss_t"] += float64(np.square(t))
 
         self.features["n"] += 1
 
