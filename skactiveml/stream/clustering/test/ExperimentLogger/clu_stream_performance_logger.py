@@ -8,6 +8,7 @@ TIMESTEP = "round"
 APPROACH = "Approach"
 ACCURACY = "Accuracy"
 CLUSTER = "Cluster"
+DATASET = "Dataset"
 CLASSIFIER = "Classifier"
 TIME = "time"
 BUDGET = "Budget"
@@ -17,6 +18,7 @@ X2 = "X2"
 Y = "Prediction"
 LABEL = "Label"
 GT = "GT_Label"
+CLU_TIMEWINDOW = "CluStreamTimewindow"
 LABEL_FREQUENCY = "Lbl_frequency"
 
 # Add column names to list
@@ -25,6 +27,7 @@ all_ids = [
     TIMESTEP,
     ACCURACY,
     CLUSTER,
+    DATASET,
     CLASSIFIER,
     BUDGET,
     BANDWIDTH,
@@ -33,6 +36,7 @@ all_ids = [
     Y,
     LABEL,
     GT,
+    CLU_TIMEWINDOW,
     LABEL_FREQUENCY
 ]
 
@@ -49,6 +53,9 @@ class CluStreamPerformanceLogger:
     # Add own functions for tracking different metrics
     def track_rep(self, value: int):
         self._track_value(value, REP)
+
+    def track_dataset(self, value: str):
+        self._track_value(value, DATASET)
 
     def track_classifier(self, value: str):
         self._track_value(value, CLASSIFIER)
@@ -85,6 +92,9 @@ class CluStreamPerformanceLogger:
 
     def track_lbl_frequency(self, value):
         self._track_value(value, LABEL_FREQUENCY)
+
+    def track_clu_time_window(self, value):
+        self._track_value(value, CLU_TIMEWINDOW)
 
     def finalize_round(self):
         self._data.append(self._current_row)

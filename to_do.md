@@ -1,10 +1,11 @@
 # Daily To-do
 ## General Todos:
 - Testscript anpassen
+  - Args mit append
   - mehrere Datensätze parallel
     - Logging von Datensatz
   - Approaches struktur verbessern (Erweiterbarer)
-- CluStream Timestamp overflow
+- Refactor to Dataset class
 ## Bugs
 -Wieso ClusterIDs Nan bei budget=0.01?
 ## 25.05

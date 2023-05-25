@@ -11,7 +11,7 @@ from sklearn.neighbors import KernelDensity
 from skactiveml.utils import call_func
 
 
-def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n_init_traing=10, rep=0, band_width=0.1, fit_clf=False):
+def run(X, y, approach_name, query_strategy, clf, logger, dataset_name=None, n_training_size=100, n_init_traing=10, rep=0, band_width=0.1, fit_clf=False):
     logger = logger()
 
     # Dividing Pretraining and Stream data
@@ -88,6 +88,9 @@ def run(X, y, approach_name, query_strategy, clf, logger, n_training_size=100, n
             if not al_label is clf.missing_label:
                 clf.partial_fit(X_cand, np.array([al_label]))
 
+        if approach_name.startswith('Clustering'):
+            logger.track_clu_time_window(clf.clustering.time_window)
+        logger.track_dataset(dataset_name)
         logger.track_timestep(t)
         logger.track_y(prediction)
         logger.track_label(al_label)
