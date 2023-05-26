@@ -3,7 +3,7 @@ import multiprocessing
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 from skactiveml.stream.clustering import CluStream
-from skactiveml.stream.clustering.datasets import ABALONE_BIN, COVERTYPE, generate_data, HYPERPLANE, IRIS
+from skactiveml.stream.clustering.data.datasets import ABALONE_BIN, COVERTYPE, generate_data, HYPERPLANE, IRIS, ELECTRICITY
 from skactiveml.stream.clustering.test.stream_runner import *
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamPerformanceLogger, \
     ACCURACY, BUDGET, CLASSIFIER, REP, BANDWIDTH
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     target_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'target')
     csv_filepath = os.path.join(target_directory, 'output.csv')
 
-    datasetId = IRIS
+    dataset = ELECTRICITY
     # number of instances that are provided to the classifier
     init_train_length = 10
     # the length of the data stream
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     # the parameter dedicated to decide if the classifier needs to be refited with X and y.
     fit_clf = False
 
-    shuffle_data = True
+    shuffle_data = False
 
     n_cluster = 10
     n_budget = 11
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     logger = CluStreamPerformanceLogger
 
     res = [0] * n_bandwidths * n_budget * n_approaches * n_reps
-    args = [0] * n_bandwidths * n_budget * n_approaches * n_reps
+    args = []
 
     assert n_cluster <= init_train_length
     # It might be easier (and better readable) to create a parameter grid
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         random_state = rep
 
         # Generating Datastream
-        X, y = generate_data(datasetId, init_train_length, shuffle=shuffle_data, random_state=random_state, stream_length=stream_length, n_features=n_features, mag_change=mag_change)
+        X, y = generate_data(dataset, init_train_length, shuffle=shuffle_data, random_state=random_state, stream_length=stream_length, n_features=n_features, mag_change=mag_change)
 
         # Looping over n_budget budgets with stepsize 0.1
         for k in range(n_budget):
@@ -125,11 +125,11 @@ if __name__ == '__main__':
                 for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
                     index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
                             k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
-                    args[index] = [X, y,
-                                   query_strategy_name, query_strategy,
-                                   clf, logger,
-                                   training_size, init_train_length,
-                                   rep, bandwidth]
+                    args.append([X, y,
+                                 query_strategy_name, query_strategy,
+                                 clf, logger, dataset['name'],
+                                 training_size, init_train_length,
+                                 rep, bandwidth])
 
                     # Sequential execution for debuggin
                     #res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, training_size, init_train_length, rep, bandwidth)
@@ -137,6 +137,7 @@ if __name__ == '__main__':
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget = min(budget + budget_step_size, 1.0)
+    args = np.array(args, dtype=object)
 
     # Parallel execution of run()
     results = run_async(run, args, multiprocessing.cpu_count() - 1)

@@ -1,5 +1,6 @@
 import numpy as np
 import openml
+import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 
@@ -106,4 +107,29 @@ class ArtificialStreamGenerator(StreamGenerator):
                            size=X.shape)  # Replace 'noise_std' with the desired standard deviation of the noise
         X = X + noise
 
+        super().__init__(X, y)
+
+
+class CsvStreamGenerator(StreamGenerator):
+    def __init__(self, path, rng, shuffle: bool, stream_length):
+        dataset = pd.read_csv(path)
+        self.rng = rng
+
+        # Extract feature matrix and target array
+        y = dataset['target']
+        X = dataset.drop(columns='target')
+
+        # random shuffle of data
+        if shuffle:
+            indices = np.arange(len(y))
+            rng.shuffle(indices)
+            X = X.iloc[indices]
+            y = y.iloc[indices]
+
+        X = X.values
+        y = y.values
+
+        if stream_length is not None:
+            X = X[:stream_length,:]
+            y = y[:stream_length]
         super().__init__(X, y)
