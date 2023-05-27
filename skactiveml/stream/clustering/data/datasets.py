@@ -17,8 +17,11 @@ IRIS = {'name': 'Abalone_binary', 'type': 'openml', 'id': 61, 'toy': True}
 HYPERPLANE = {'name': 'Hyperplane', 'type': 'hyperplane'}
 
 # Local csv sets
+# Real World
 ELECTRICITY = {'name': 'Electricity', 'type': 'local', 'path': os.path.join('real-world', 'elec.csv')}
 
+# Artificial
+CHESSBOARD = {'name': 'ChessBoard', 'type': 'local', 'path': os.path.join('artificial', 'transientChessboard.csv')}
 
 def generate_data(dataset, init_train_length, shuffle, random_state, n_features=0, stream_length=4000, mag_change=0,
                   noise=0.1):
