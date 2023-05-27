@@ -1,3 +1,4 @@
+import numpy as np
 from matplotlib import pyplot as plt
 
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import ACCURACY, BUDGET, \
@@ -21,14 +22,17 @@ if __name__ == '__main__':
     f = sb.relplot(data=df_budget, x=BUDGET, y=ACCURACY, kind="line", hue=CLASSIFIER)
     f.set(title='Accuracy')
 
-    # Plotting label aquisition counts
-    label_acquisition = df.groupby([BANDWIDTH, CLASSIFIER, REP, BUDGET])[LABEL].apply(lambda x: (pd.notna(x)).sum())
+    # Plotting label aquisition counts (Probably not needed anymore)
+    '''
+    label_acquisition = df.groupby([BANDWIDTH, CLASSIFIER, REP, BUDGET, CLU_TIMEWINDOW])[LABEL].apply(lambda x: (pd.notna(x)).sum())
     df_label_acquisition = pd.DataFrame(label_acquisition.reset_index())
 
     g = sb.relplot(
         data=df_label_acquisition, x=BUDGET, y=LABEL, kind="line", hue=CLASSIFIER
     )
     g.set(title='Label Acquisition Count')
+    '''
+
     image_filepath = os.path.join(this_dir, "..", target_directory, 'output_accuracy.pdf')
 
     save_image(image_filepath)
