@@ -3,7 +3,8 @@ import multiprocessing
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 from skactiveml.stream.clustering import CluStream
-from skactiveml.stream.clustering.data.datasets import ABALONE_BIN, COVERTYPE, generate_data, HYPERPLANE, IRIS, ELECTRICITY
+from skactiveml.stream.clustering.data.datasets import ABALONE_BIN, COVERTYPE, generate_data, HYPERPLANE, IRIS, \
+    ELECTRICITY, CHESSBOARD, INTERCHANGING_RBF
 from skactiveml.stream.clustering.test.stream_runner import *
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamPerformanceLogger, \
     ACCURACY, BUDGET, CLASSIFIER, REP, BANDWIDTH
@@ -25,11 +26,11 @@ if __name__ == '__main__':
     target_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'target')
     csv_filepath = os.path.join(target_directory, 'output.csv')
 
-    dataset = ELECTRICITY
+    dataset = INTERCHANGING_RBF
     # number of instances that are provided to the classifier
     init_train_length = 10
     # the length of the data stream
-    stream_length = 4000
+    stream_length = 10000
     n_features = 2
     mag_change = 0.2
     # the size of the sliding window that limits the training data

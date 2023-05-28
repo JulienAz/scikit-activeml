@@ -90,6 +90,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, dataset_name=None, n_t
 
         if approach_name.startswith('Clustering'):
             logger.track_clu_time_window(clf.clustering.time_window)
+
         logger.track_dataset(dataset_name)
         logger.track_timestep(t)
         logger.track_y(prediction)

@@ -27,9 +27,16 @@
     - Data generator anpassen
 
 ## 27.05
-- [ ] Neue Datensätze ausprobieren
-  - [ ] Analyse auf neuen Datensätzen
-    - Electricity
+- [X] Neue Datensätze ausprobieren
+  - [X] Analyse auf neuen Datensätzen
+    - ~~Electricity~~
     - Ggf. Airline
-    - Artifical streams
-      - Rausfinden wie die aufgebaut sind
+    - ~~Artifical streams~~
+      - ~~Rausfinden wie die aufgebaut sind~~
+
+## 28.05
+- [ ] Weitere Analysen
+  - [ ] verschieden CluStream Windows ausprobieren/vergleichen
+- [ ] Weitere Datensätze betrachten
+  - Ggf. Airline
+- [ ] Datensätze übersicht in Overleaf schreiben

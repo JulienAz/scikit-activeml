@@ -33,7 +33,7 @@ if __name__ == '__main__':
     )
     g.set(title='Label Acquisition Count')'''
 
-    image_filepath = os.path.join(this_dir, "..", target_directory, 'output_accuracy_over_time.pdf')
+    image_filepath = os.path.join(this_dir, "..", target_directory, 'output_acc_over_time.pdf')
 
     save_image(image_filepath)
 
