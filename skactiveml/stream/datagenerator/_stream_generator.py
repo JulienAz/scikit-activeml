@@ -116,11 +116,9 @@ class CsvStreamGenerator(StreamGenerator):
         self.rng = rng
 
         # Extract feature matrix and target array
-        if 'target' in dataset.columns:
-            y = dataset['target']
-        else:
-            y = dataset['class']
-        X = dataset.drop(columns='target')
+        target_column = 'target' if 'target' in dataset.columns else 'class'
+        y = dataset[target_column]
+        X = dataset.drop(columns=target_column)
 
         # random shuffle of data
         if shuffle:
