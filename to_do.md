@@ -6,6 +6,7 @@
 - Refactor to Dataset class
   - ~~Logging von Datensatz~~
   - mehrere Datensätze parallel
+  - Farben in plots einheitlich
 ## Bugs
 - ~~Overflow von timestamps~~ 
 - Wieso ClusterIDs Nan bei budget=0.01?
@@ -35,8 +36,18 @@
       - ~~Rausfinden wie die aufgebaut sind~~
 
 ## 28.05
-- [ ] Weitere Analysen
+- [X] Weitere Analysen
   - [ ] verschieden CluStream Windows ausprobieren/vergleichen
-- [ ] Weitere Datensätze betrachten
+- [X] Weitere Datensätze betrachten
   - Ggf. Airline
 - [ ] Datensätze übersicht in Overleaf schreiben
+
+## Meetiningpunkte
+- Electricity CLusterverteilung bei kleinen Budget
+  - ggf. 1 CLuster und kleines Timewindow
+- Batch Classifier auf 100000 setzen == Inkrementell?
+- CluStream mit Batch classifier
+- Clustering Splitten
+  - AUf clusterdaten fitten wenn cluster gelöscht wird
+  - Schematisch aufzeichen
+- Chess board clustering angucken
