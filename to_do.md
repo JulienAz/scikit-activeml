@@ -42,6 +42,10 @@
   - Ggf. Airline
 - [ ] Datensätze übersicht in Overleaf schreiben
 
+## 02.06
+- [ ] Electricity Clusterverteilungen anschauen
+- [ ] Batch CluStream Classifier
+
 ## Meetiningpunkte
 - Electricity CLusterverteilung bei kleinen Budget
   - ggf. 1 CLuster und kleines Timewindow
