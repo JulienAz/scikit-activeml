@@ -34,13 +34,17 @@ class CluStreamClassifier(SkactivemlClassifier):
     def fit(self, X, y, sample_weight=None, **fit_kwargs):
         for t, (x_t, y_t) in enumerate(zip(X, y)):
             self.clustering.fit_one(x_t, y_t)
-        return self.estimator_clf.fit(X, y, sample_weight=None, **fit_kwargs)
+        return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def partial_fit(self, X, y, sample_weight=None, **fit_kwargs):
         self.clustering.fit_one(X[0], y[0])
         if y[0] is not self.estimator_clf.missing_label:
             self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]), **fit_kwargs)
         #return self.estimator_clf.partial_fit(X, y, sample_weight)
+
+    def fit_window(self, X, y, sample_weight=None, **fit_kwargs):
+        self.clustering.fit_one(X[-1], y[-1])
+        return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def predict_proba(self, X):
         return self.estimator_clf.predict_proba(X)
