@@ -31,7 +31,7 @@ class MicroCluster:
         self.labeled_samples = np.empty((0,), dtype=object)
 
         if (y is not None) and (not np.isnan(y)):
-            self.labeled_samples = np.array((x[0], y), dtype=object)
+            self.labeled_samples = np.array((x[0], y), dtype=object).reshape(1, 2)
 
     @property
     def center(self):
@@ -75,7 +75,7 @@ class MicroCluster:
 
         if y is not None:   ####TODO: Missing Label hinzufügen
             if len(self.labeled_samples) == 0:
-                self.labeled_samples = np.array((x, y), dtype=object)
+                self.labeled_samples = np.array([x, y], dtype=object).reshape(1, 2)
             else:
                 self.labeled_samples = np.vstack([self.labeled_samples, np.array((x, y), dtype=object)])
 

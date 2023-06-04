@@ -42,6 +42,23 @@ class CluStreamClassifier(SkactivemlClassifier):
             self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]), **fit_kwargs)
         #return self.estimator_clf.partial_fit(X, y, sample_weight)
 
+    def fit_cluster(self, X, y, sample_weight=None, **fit_kwargs):
+        self.clustering.fit_one(X[-1], y[-1])
+        #labeled_data = np.array([np.array(mc.labeled_samples) for mc_id, mc in self.clustering.micro_clusters.items()])
+        X = []
+        y = []
+        for mc_id, mc in self.clustering.micro_clusters.items():
+            if not len(mc.labeled_samples) == 0:
+                features, targets = zip(*mc.labeled_samples)
+                X.extend(features)
+                y.extend(targets)
+
+        # Convert the lists to NumPy arrays
+        if not len(X) == 0:
+            X = np.vstack(X)
+            y = np.array(y)
+            return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
+
     def fit_window(self, X, y, sample_weight=None, **fit_kwargs):
         self.clustering.fit_one(X[-1], y[-1])
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)

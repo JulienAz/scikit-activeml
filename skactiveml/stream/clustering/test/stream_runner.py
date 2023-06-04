@@ -88,7 +88,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, dataset_name=None, n_t
             #clf.partial_fit(X_cand, np.array([al_label]))
 
             # Batch Fit
-            clf.fit_window(X_train, y_train, classes=unique_classes)
+            clf.fit_cluster(X_train, y_train, classes=unique_classes)
 
         else:
             if not al_label is clf.missing_label:
