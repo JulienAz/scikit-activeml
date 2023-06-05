@@ -150,7 +150,7 @@ class CluStream:
             sample = np.array((X, y), dtype=object)
             if len(self.init_train) == 0:
                 self.init_train = sample
-                return X
+                return X, False
 
             self.init_train = np.vstack((self.init_train, sample))
             if len(self.init_train) == self.n_init_train:
@@ -178,11 +178,11 @@ class CluStream:
         if distance < self.r_factor * radius:
             self.micro_clusters[nearest_mc_id].add(((X, y), self._timestamp))
             self.cluster_test[nearest_mc_id] = np.vstack([self.cluster_test[nearest_mc_id], np.array((X, y), dtype=object)])
-            return nearest_mc_id
+            return nearest_mc_id, False
 
         # Else Merge or delete Cluster
-        nearest_mc_id = self._update_clusters((X,y))
-        return nearest_mc_id
+        nearest_mc_id, deletion = self._update_clusters((X,y))
+        return nearest_mc_id, deletion
 
     def n_sum(self):
         ns = [mc.features["n"] for i, mc in self.micro_clusters.items()]
@@ -217,7 +217,7 @@ class CluStream:
         if del_id is not None:
             self.micro_clusters[del_id] = MicroCluster(X[np.newaxis, ...], y, self._timestamp)
             self.cluster_test[del_id] = np.array((X, y), dtype=object)
-            return del_id
+            return del_id, True
 
         # Else merge the two closest clusters
         closest_a = 0
@@ -241,7 +241,7 @@ class CluStream:
 
         self.micro_clusters[closest_b] = MicroCluster(X[np.newaxis, ...], y, self._timestamp)
 
-        return closest_b
+        return closest_b, False
 
     def nearest_cluster(self, X):
         closest_distance = math.inf

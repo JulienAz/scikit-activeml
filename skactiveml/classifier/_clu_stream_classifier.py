@@ -37,12 +37,13 @@ class CluStreamClassifier(SkactivemlClassifier):
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def partial_fit(self, X, y, sample_weight=None, **fit_kwargs):
-        self.clustering.fit_one(X[0], y[0])
+        mc_id, deletion = self.clustering.fit_one(X[0], y[0])
+        if deletion:
+            return self.fit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
         if y[0] is not self.estimator_clf.missing_label:
-            self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]), **fit_kwargs)
-        #return self.estimator_clf.partial_fit(X, y, sample_weight)
+            return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
 
-    def fit_cluster(self, X, y, sample_weight=None, **fit_kwargs):
+    def fit_on_cluster(self, X, y, sample_weight=None, **fit_kwargs):
         self.clustering.fit_one(X[-1], y[-1])
         #labeled_data = np.array([np.array(mc.labeled_samples) for mc_id, mc in self.clustering.micro_clusters.items()])
         X = []
