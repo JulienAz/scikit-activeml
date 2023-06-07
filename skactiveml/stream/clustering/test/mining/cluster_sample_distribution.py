@@ -1,4 +1,3 @@
-import np as np
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -18,7 +17,7 @@ if __name__ == '__main__':
 
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
-    csv_filepath = os.path.join(this_dir, "..", target_directory, 'output.csv')
+    csv_filepath = os.path.join(this_dir, "..", target_directory, 'output_time_window.csv')
     df = pd.read_csv(csv_filepath)
 
     # Taking only results of Clustering based approaches

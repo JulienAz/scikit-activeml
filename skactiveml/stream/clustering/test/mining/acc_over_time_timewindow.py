@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
-    csv_filepath = os.path.join(this_dir, "..", target_directory, 'output_time_window.csv')
+    csv_filepath = os.path.join(this_dir, "..", target_directory, 'accuracy_time_window.csv')
     df = pd.read_csv(csv_filepath)
 
     sb.set_theme()

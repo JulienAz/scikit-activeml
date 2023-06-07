@@ -8,11 +8,14 @@ import pandas as pd
 from scipy.ndimage import gaussian_filter1d
 from sklearn.neighbors import KernelDensity
 
+from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamClusteringLogger, \
+    CluStreamPerformanceLogger
 from skactiveml.utils import call_func
 
 
-def run(X, y, approach_name, query_strategy, clf, logger, dataset_name=None, n_training_size=100, n_init_traing=10, rep=0, band_width=0.1, fit_clf=False):
-    logger = logger()
+def run(X, y, approach_name, query_strategy, clf, dataset_name=None, n_training_size=100, n_init_traing=10, rep=0, band_width=0.1, fit_clf=False):
+    acc_logger = CluStreamPerformanceLogger()
+    clu_logger = CluStreamClusteringLogger()
 
     # Dividing Pretraining and Stream data
     X_init = X[:n_init_traing, :]
@@ -54,7 +57,7 @@ def run(X, y, approach_name, query_strategy, clf, logger, dataset_name=None, n_t
         # Query decision
         sampled_indices, utilities = call_func(query_strategy.query, candidates=X_cand, X=X_train, y=y_train,
                                                # utility_weight=X_candidate_density,
-                                               clf=clf, return_utilities=True, fit_clf=fit_clf, logger=logger)
+                                               clf=clf, return_utilities=True, fit_clf=fit_clf, logger=acc_logger)
 
         # create budget_manager_param_dict for BalancedIncrementalQuantileFilter
         budget_manager_param_dict = {"utilities": utilities}
@@ -95,34 +98,58 @@ def run(X, y, approach_name, query_strategy, clf, logger, dataset_name=None, n_t
                 clf.partial_fit(X_cand, np.array([al_label]))
 
         if approach_name.startswith('Clustering'):
-            logger.track_clu_time_window(clf.clustering.time_window)
+            acc_logger.track_clu_time_window(clf.clustering.time_window)
 
-        logger.track_dataset(dataset_name)
-        logger.track_timestep(t)
-        logger.track_y(prediction)
-        logger.track_label(al_label)
-        logger.track_gt(y_cand)
-        logger.track_budget(budget)
-        logger.track_bandwidth(band_width)
-        logger.track_x1(X_cand[0][0])
-        logger.track_x2(X_cand[0][1])
-        logger.track_rep(rep)
+        acc_logger.track_dataset(dataset_name)
+        acc_logger.track_timestep(t)
+        acc_logger.track_y(prediction)
+        acc_logger.track_label(al_label)
+        acc_logger.track_gt(y_cand)
+        acc_logger.track_budget(budget)
+        acc_logger.track_bandwidth(band_width)
+        acc_logger.track_x1(X_cand[0][0])
+        acc_logger.track_x2(X_cand[0][1])
+        acc_logger.track_rep(rep)
         tmp_accuracy.append(prediction == y_cand)
         # classification_logger.track_accuracy(sum(accuracy) / len(accuracy))
-        logger.track_classifier(approach_name)
-        logger.finalize_round()
+        acc_logger.track_classifier(approach_name)
+        acc_logger.finalize_round()
 
-    df = logger.get_dataframe()
+    df_acc = acc_logger.get_dataframe()
     acc_series = pd.Series(tmp_accuracy)
     accuracy = acc_series.rolling(window=30).mean()
 
-    df["Accuracy"] = accuracy
+    df_acc["Accuracy"] = accuracy
 
     # calculate and show the average accuracy
     print("Repition", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: " , band_width, ", Avg Accuracy: ", np.mean(correct_classifications),
           ", Acquisition count:", count)
 
-    return df
+    # Create Dataframe of Clustering
+    if approach_name.startswith('Clustering'):
+        for i, cluster_samples in enumerate(clf.clustering.cluster_test):
+            center = clf.clustering.micro_clusters[i].center
+            radius = clf.clustering.micro_clusters[i].radius()
+            if np.shape(cluster_samples) == (2,):
+                cluster_samples = cluster_samples.reshape((1, 2))
+            for (X_tmp, y_tmp) in cluster_samples:
+                clu_logger.track_rep(rep)
+                clu_logger.track_budget(budget)
+                clu_logger.track_bandwidth(band_width)
+
+                clu_logger.track_cluster(i)
+                clu_logger.track_x1(X_tmp[0])
+                clu_logger.track_x2(X_tmp[1])
+                clu_logger.track_label(y_tmp)
+                clu_logger.track_classifier(approach_name)
+                clu_logger.track_cluster_center(center)
+                clu_logger.track_cluster_radi(radius)
+                clu_logger.track_clu_time_window(clf.clustering.time_window)
+                clu_logger.finalize_round()
+
+        df_clu = clu_logger.get_dataframe()
+
+    return df_acc, df_clu
 
 
 def run_multiple(query_strategies: dict, X, y, logger, n_training_size=0, n_init_traing=10, rep=0, bandwidth=0.1, fit_clf=False):

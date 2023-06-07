@@ -7,7 +7,7 @@ from skactiveml.stream.clustering.data.datasets import ABALONE_BIN, COVERTYPE, g
     ELECTRICITY, INTERCHANGING_RBF, CHESSBOARD
 from skactiveml.stream.clustering.test.stream_runner import *
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamPerformanceLogger, \
-    ACCURACY, BUDGET, CLASSIFIER, REP, BANDWIDTH
+    ACCURACY, BUDGET, CLASSIFIER, REP, BANDWIDTH, CluStreamClusteringLogger
 from skactiveml.stream.clustering.util import save_image, run_async
 
 import numpy as np
@@ -24,9 +24,10 @@ import os
 
 if __name__ == '__main__':
     target_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'target')
-    csv_filepath = os.path.join(target_directory, 'output.csv')
+    csv_acc_filepath = os.path.join(target_directory, 'accuracy_time_window.csv')
+    csv_clu_filepath = os.path.join(target_directory, 'clustering_time_window.csv')
 
-    dataset = CHESSBOARD
+    dataset = INTERCHANGING_RBF
 
     # number of instances that are provided to the classifier
     init_train_length = 10
@@ -45,7 +46,7 @@ if __name__ == '__main__':
     # Influences when clusters are deleted due to irrelevance (High -> less deletions/ low -> many deletions)
     clu_time_windows = [500, 1000, 1500, np.inf]
 
-    shuffle_data = True
+    shuffle_data = False
 
     n_cluster = 10
     n_budget = 2
@@ -58,8 +59,6 @@ if __name__ == '__main__':
     n_approaches = 1
 
     base_classifier = HoeffdingTreeClassifier
-
-    logger = CluStreamPerformanceLogger
 
     res = [0] * n_bandwidths * n_budget * n_approaches * n_reps * len(clu_time_windows)
     args = []
@@ -116,19 +115,28 @@ if __name__ == '__main__':
                         index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
                                 k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
                         args.append([X, y,
-                                       query_strategy_name, query_strategy,
-                                       clf, logger, dataset['name'],
-                                       training_size, init_train_length,
-                                       rep, bandwidth])
+                                     query_strategy_name, query_strategy,
+                                     clf, dataset['name'],
+                                     training_size, init_train_length,
+                                     rep, bandwidth])
 
                         # Sequential execution for debuggin
-                        res[index] = run(X, y, query_strategy_name, query_strategy, clf, logger, dataset['name'], training_size, init_train_length, rep, bandwidth)
+                        #res[index] = run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth)
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget = min(budget + budget_step_size, 1.0)
     args = np.array(args, dtype=object)
     # Parallel execution of run()
     results = run_async(run, args, multiprocessing.cpu_count() - 1)
-    df = pd.concat(results)
+
+    df_acc = pd.concat([t[0] for t in results])
+
+    # Concatenate the second entries (df2)
+    df_clu = pd.concat([t[1] for t in results])
+
+    #df = pd.concat(results)
+
     os.makedirs(target_directory, exist_ok=True)
-    df.to_csv(csv_filepath, index=False)
+
+    df_acc.to_csv(csv_acc_filepath, index=False)
+    df_clu.to_csv(csv_clu_filepath)
