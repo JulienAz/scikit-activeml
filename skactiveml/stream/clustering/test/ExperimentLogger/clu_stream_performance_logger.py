@@ -20,7 +20,8 @@ LABEL = "Label"
 GT = "GT_Label"
 CLU_TIMEWINDOW = "CluStreamTimewindow"
 LABEL_FREQUENCY = "Lbl_frequency"
-CENTER = "Center"
+C1 = "C1"
+C2 = "C2"
 RADIUS = "Radius"
 
 # Add column names to list
@@ -136,7 +137,8 @@ ids_clustering = [
     X1,
     X2,
     LABEL,
-    CENTER,
+    C1,
+    C2,
     RADIUS,
     CLU_TIMEWINDOW
 ]
@@ -178,8 +180,11 @@ class CluStreamClusteringLogger:
     def track_clu_time_window(self, value):
         self._track_value(value, CLU_TIMEWINDOW)
 
-    def track_cluster_center(self, value):
-        self._track_value(value, CENTER)
+    def track_cluster_c1(self, value):
+        self._track_value(value, C1)
+
+    def track_cluster_c2(self, value):
+        self._track_value(value, C2)
 
     def track_cluster_radi(self, value):
         self._track_value(value, RADIUS)

@@ -8,6 +8,7 @@
   - mehrere Datensätze parallel
   - Farben in plots einheitlich
   - Datensätze übersicht in Overleaf schreiben
+  - Anzahl Cluster experimente
 ## Bugs
 - ~~Overflow von timestamps~~ 
 - Wieso ClusterIDs Nan bei budget=0.01?
@@ -54,13 +55,13 @@
 
 ## ToDo vor Meeting
 - [X] Clustream auf window fitten
-- [ ] Clustream auf cluster daten fitten
+- [X] Clustream auf cluster daten fitten
 - [ ] Clustering betrachten
-- [ ] CluStream Classifier refitten wenn cluster gelöscht
+- [X] CluStream Classifier refitten wenn cluster gelöscht
 
 ## 02.06
 - [X] Batch CluStream Classifier
-- [ ] CluStream Cluster fitting
+- [X] CluStream Cluster fitting
 - [ ] Clusterverteilung Experimente
 
 ## Idee
