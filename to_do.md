@@ -67,3 +67,16 @@
 ## Idee
 - Clustering abhängig von Classifier machen
   - z.B. Cluster löschen wenn accuracy auf samples die in das Cluster fallen schlechter werden
+
+## Meeting 07.06
+- Wird bei Runtime error und budget 1 trotzdem gelabelt?
+  - Kleinen wert aufaddieren oder abfangen
+- RBF anzahl Cluster auf Anzahl Klassen
+- Vergleich
+  - 3 Clustering ansätze
+    - ~gleiche time windows (Batch 300, timewindow 150...)
+- Classifier approximieren mit Clusterstatistiken
+- Utility mit aggregierten statistiken
+- Aggregierte statistiken loggen
+  - Schauen wie sich verändert über zeit
+  - Changes erkennbar?

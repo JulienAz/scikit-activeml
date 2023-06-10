@@ -18,7 +18,8 @@ class CluStreamClassifier(SkactivemlClassifier):
         missing_label=MISSING_LABEL,
         cost_matrix=None,
         random_state=None,
-        metric_dict=None
+        metric_dict=None,
+        refit=False
     ):
         super().__init__(
             classes=classes,
@@ -31,6 +32,10 @@ class CluStreamClassifier(SkactivemlClassifier):
         self.freq_pred_clf = freq_pred_clf
         self.clustering = clustering
 
+        self.random_state = random_state
+
+        self.refit = refit
+
     def fit(self, X, y, sample_weight=None, **fit_kwargs):
         for t, (x_t, y_t) in enumerate(zip(X, y)):
             self.clustering.fit_one(x_t, y_t)
@@ -38,7 +43,7 @@ class CluStreamClassifier(SkactivemlClassifier):
 
     def partial_fit(self, X, y, sample_weight=None, **fit_kwargs):
         mc_id, deletion = self.clustering.fit_one(X[0], y[0])
-        if deletion:
+        if self.refit & deletion:
             return self.fit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
         if y[0] is not self.estimator_clf.missing_label:
             return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))

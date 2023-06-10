@@ -107,7 +107,8 @@ class CluStream:
             init_train=None,
             r_factor=3,
             micro_cluster=MicroCluster,
-            time_window=1000
+            time_window=1000,
+            random_state=None
     ):
         self.mc = micro_cluster
 
@@ -122,7 +123,7 @@ class CluStream:
         self.time_window = time_window
         self._initialized = False
 
-        self._kmeans_mc = KMeans(n_clusters=n_micro_clusters, n_init=n_init_train)
+        self._kmeans_mc = KMeans(n_clusters=n_micro_clusters, n_init=n_init_train, random_state=random_state)
 
         self.n_init_train = n_init_train
 
