@@ -13,7 +13,7 @@ from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_l
 from skactiveml.utils import call_func
 
 
-def run(X, y, approach_name, query_strategy, clf, dataset_name=None, n_training_size=100, n_init_traing=10, rep=0, band_width=0.1, fit_clf=False):
+def run(X, y, approach_name, query_strategy, clf, dataset_name=None, n_training_size=100, n_init_traing=10, rep=0, band_width=0.1, log_clustering=False, fit_clf=False):
     acc_logger = CluStreamPerformanceLogger()
     clu_logger = CluStreamClusteringLogger()
     clu_statistic_logger = CluStreamStatisticLogger()
@@ -147,7 +147,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None, n_training_
           ", Acquisition count:", count)
 
     # Create Dataframe of Clustering
-    if approach_name.startswith('Clustering'):
+    if approach_name.startswith('Clustering') & log_clustering:
         for i, cluster_samples in enumerate(clf.clustering.cluster_test):
             center = clf.clustering.micro_clusters[i].center
             radius = clf.clustering.micro_clusters[i].radius()
@@ -169,7 +169,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None, n_training_
                 clu_logger.track_clu_time_window(clf.clustering.time_window)
                 clu_logger.finalize_round()
 
-        df_clu = clu_logger.get_dataframe()
+    df_clu = clu_logger.get_dataframe()
 
     return df_acc, df_clu, df_clu_statistics
 

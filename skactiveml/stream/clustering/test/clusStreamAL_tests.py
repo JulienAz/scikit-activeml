@@ -48,6 +48,7 @@ if __name__ == '__main__':
     clu_time_windows = [100, 200, 500, 1000, np.inf]
 
     shuffle_data = False
+    log_clustering = False
 
     n_cluster = 15
     n_budget = 11
@@ -141,7 +142,7 @@ if __name__ == '__main__':
                                      query_strategy_name, query_strategy,
                                      clf, dataset['name'],
                                      training_size, init_train_length,
-                                     rep, bandwidth])
+                                     rep, bandwidth, log_clustering])
 
                         # Sequential execution for debuggin
                         #res[index] = run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth)
@@ -164,5 +165,6 @@ if __name__ == '__main__':
     os.makedirs(target_directory, exist_ok=True)
 
     df_acc.to_csv(csv_acc_filepath, index=False)
-    df_clu.to_csv(csv_clu_filepath, index=False)
+    if log_clustering:
+        df_clu.to_csv(csv_clu_filepath, index=False)
     df_clu_statistics.to_csv(csv_clu_stat_filepath, index=False)
