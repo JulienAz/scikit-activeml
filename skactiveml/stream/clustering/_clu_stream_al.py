@@ -17,13 +17,15 @@ class MicroCluster:
             self,
             x=np.random.rand(100, 5),
             y=None,
-            time_stamp=1
+            time_stamp=1,
+            n_classes=None
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
             "ls_t": time_stamp,
             "ss_t": float64(np.square(time_stamp)),
             "n": len(x),
+            "n_classes": np.zeros(n_classes),
             "M": np.square(x[0] - np.divide(x[0], len(x))),
         }
         self.x = x
@@ -31,6 +33,7 @@ class MicroCluster:
         self.labeled_samples = np.empty((0,), dtype=object)
 
         if (y is not None) and (not np.isnan(y)):
+            self.features["n_classes"][y] += 1
             self.labeled_samples = np.array((x[0], y), dtype=object).reshape(1, 2)
 
     @property
@@ -74,6 +77,7 @@ class MicroCluster:
         self.features["M"] += (x - past_mean) * (x - (self.features["ls_x"] / self.features["n"]))
 
         if y is not None:   ####TODO: Missing Label hinzufügen
+            self.features["n_classes"][y] += 1
             if len(self.labeled_samples) == 0:
                 self.labeled_samples = np.array([x, y], dtype=object).reshape(1, 2)
             else:
@@ -108,13 +112,15 @@ class CluStream:
             r_factor=3,
             micro_cluster=MicroCluster,
             time_window=1000,
-            random_state=None
+            random_state=None,
+            n_classes=None
     ):
         self.mc = micro_cluster
 
         self.n_micro_clusters = n_micro_clusters
         self.r_factor = r_factor
         self.seed = seed
+        self.n_classes = n_classes
 
         self.centers: dict[int, []] = {}
         self.micro_clusters: dict[int, micro_cluster] = {}
@@ -194,7 +200,10 @@ class CluStream:
         y_init = self.init_train[:, 1]
         self._kmeans_mc.fit(x_init)
         self.centers = {i: X for i, X in enumerate(self._kmeans_mc.cluster_centers_)}
-        self.micro_clusters = {i: self.mc(x=X[np.newaxis, ...], time_stamp=self.n_micro_clusters - 1) for i, X in
+        self.micro_clusters = {i: self.mc(x=X[np.newaxis, ...],
+                                          time_stamp=self.n_micro_clusters - 1,
+                                          n_classes=self.n_classes)
+                               for i, X in
                                self.centers.items()}
         self.cluster_test = [np.array((X, np.nan), dtype=object) for X in self._kmeans_mc.cluster_centers_]
         self._initialized = True
@@ -216,7 +225,7 @@ class CluStream:
                 break
 
         if del_id is not None:
-            self.micro_clusters[del_id] = MicroCluster(X[np.newaxis, ...], y, self._timestamp)
+            self.micro_clusters[del_id] = MicroCluster(X[np.newaxis, ...], y, self._timestamp, self.n_classes)
             self.cluster_test[del_id] = np.array((X, y), dtype=object)
             return del_id, True
 
@@ -240,7 +249,7 @@ class CluStream:
         self.micro_clusters[closest_a] += self.micro_clusters[closest_b]
         self.micro_clusters[closest_a].x = np.vstack([self.micro_clusters[closest_a].x, self.micro_clusters[closest_b].x])
 
-        self.micro_clusters[closest_b] = MicroCluster(X[np.newaxis, ...], y, self._timestamp)
+        self.micro_clusters[closest_b] = MicroCluster(X[np.newaxis, ...], y, self._timestamp, self.n_classes)
 
         return closest_b, False
 

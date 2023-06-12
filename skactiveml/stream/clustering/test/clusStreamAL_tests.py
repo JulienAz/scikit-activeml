@@ -26,11 +26,12 @@ if __name__ == '__main__':
     target_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'target')
     csv_acc_filepath = os.path.join(target_directory, 'accuracy_time_window.csv')
     csv_clu_filepath = os.path.join(target_directory, 'clustering_time_window.csv')
+    csv_clu_stat_filepath = os.path.join(target_directory, 'cluster_statistics_time_window.csv')
 
     dataset = INTERCHANGING_RBF
 
     # number of instances that are provided to the classifier
-    init_train_length = 10
+    init_train_length = 20
     # the length of the data stream
     stream_length = 30000
 
@@ -49,14 +50,14 @@ if __name__ == '__main__':
     shuffle_data = False
 
     n_cluster = 15
-    n_budget = 2
+    n_budget = 11
     init_budget = 0.01
     budget_step_size = 0.1
-    n_reps = 2
+    n_reps = 1
     n_bandwidths = 1
     bandwidth_step_size = 0.5
     init_bandwidth = 1
-    n_approaches = 3
+    n_approaches = 1
 
     base_classifier = HoeffdingTreeClassifier
 
@@ -93,7 +94,8 @@ if __name__ == '__main__':
                     clustering = CluStream(
                         n_micro_clusters=n_cluster,
                         n_init_train=init_train_length,
-                        time_window=clu_time_window
+                        time_window=clu_time_window,
+                        n_classes=len(classes)
                     )
 
                     # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
@@ -108,27 +110,27 @@ if __name__ == '__main__':
                                                       clustering=clustering,
                                                       metric_dict=metric_dict,
                                                       missing_label=None)),
-                        'ClusteringRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                                            # VariableUncertainty(random_state=random_state),
-                                            CluStreamClassifier(estimator_clf=SklearnClassifier(
-                                                base_classifier(),
-                                                missing_label=None,
-                                                classes=classes,
-                                                random_state=random_state),
-                                                clustering=clustering,
-                                                metric_dict=metric_dict,
-                                                missing_label=None,
-                                                refit=True)),
-                        'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                                            # VariableUncertainty(random_state=random_state),
-                                            CluStreamClassifier(estimator_clf=SklearnClassifier(
-                                                base_classifier(),
-                                                missing_label=None,
-                                                classes=classes,
-                                                random_state=random_state),
-                                                clustering=clustering,
-                                                metric_dict=metric_dict,
-                                                missing_label=None)),
+                        #'ClusteringRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                        #                    # VariableUncertainty(random_state=random_state),
+                        #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
+                        #                        base_classifier(),
+                        #                        missing_label=None,
+                        #                        classes=classes,
+                        #                       random_state=random_state),
+                        #                        clustering=clustering,
+                        #                        metric_dict=metric_dict,
+                        #                        missing_label=None,
+                        #                        refit=True)),
+                        #'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                        #                    # VariableUncertainty(random_state=random_state),
+                        #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
+                        #                        base_classifier(),
+                        #                        missing_label=None,
+                        #                        classes=classes,
+                        #                        random_state=random_state),
+                        #                        clustering=clustering,
+                        #                        metric_dict=metric_dict,
+                       #                         missing_label=None)),
                     }
                     assert len(query_strategies) == n_approaches, "Number of approaches does not match n_approaches"
 
@@ -155,9 +157,12 @@ if __name__ == '__main__':
     # Concatenate the second entries (df2)
     df_clu = pd.concat([t[1] for t in results])
 
+    df_clu_statistics = pd.concat([t[2] for t in results])
+
     #df = pd.concat(results)
 
     os.makedirs(target_directory, exist_ok=True)
 
     df_acc.to_csv(csv_acc_filepath, index=False)
-    df_clu.to_csv(csv_clu_filepath)
+    df_clu.to_csv(csv_clu_filepath, index=False)
+    df_clu_statistics.to_csv(csv_clu_stat_filepath, index=False)

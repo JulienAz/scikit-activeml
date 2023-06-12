@@ -23,6 +23,11 @@ LABEL_FREQUENCY = "Lbl_frequency"
 C1 = "C1"
 C2 = "C2"
 RADIUS = "Radius"
+CENTERS = "Centers"
+RADI = "Radi"
+N_CLASSES = "N_Classes"
+N_SAMPLES = "N_Samples"
+LS_X = "LS_x"
 
 # Add column names to list
 ids_acc = [
@@ -127,6 +132,7 @@ class CluStreamPerformanceLogger:
     def data(self):
         return self._data
 
+
 ids_clustering = [
     REP,
     CLUSTER,
@@ -142,6 +148,8 @@ ids_clustering = [
     RADIUS,
     CLU_TIMEWINDOW
 ]
+
+
 class CluStreamClusteringLogger:
     def __init__(self):
         self._columns = ids_clustering
@@ -188,6 +196,93 @@ class CluStreamClusteringLogger:
 
     def track_cluster_radi(self, value):
         self._track_value(value, RADIUS)
+
+    def finalize_round(self):
+        self._data.append(self._current_row)
+        self._current_row = [np.nan for _ in range(len(self._columns))]
+
+    def get_dataframe(self) -> pd.DataFrame:
+        df = pd.DataFrame(self._data, columns=self._columns)
+        self._reset()
+        return df
+
+    def track_time(self):
+        current_time = time.perf_counter_ns()
+        self._track_value(current_time, "time")
+
+    def _track_value(self, newval, id):
+        self._current_row[self._index_of(id)] = newval
+
+    def _index_of(self, id):
+        return self._column_indices[id]
+
+    def _reset(self):
+        self._current_row = [np.nan for _ in range(len(self._columns))]
+        self._data = []
+
+    @property
+    def data(self):
+        return self._data
+
+ids_cluster_statistics = [
+    TIMESTEP,
+    REP,
+    DATASET,
+    CLASSIFIER,
+    BUDGET,
+    BANDWIDTH,
+    CLU_TIMEWINDOW,
+    N_CLASSES,
+    CENTERS,
+    RADI,
+    N_SAMPLES,
+    LS_X
+]
+
+
+class CluStreamStatisticLogger:
+    def __init__(self):
+        self._columns = ids_cluster_statistics
+        self._data = []
+        self._current_row = [np.nan for _ in range(len(self._columns))]
+        self._column_indices = {key: i for (i, key) in enumerate(self._columns)}
+
+    # Add own functions for tracking different metrics
+    def track_timestep(self, value: int):
+        self._track_value(value, TIMESTEP)
+
+    def track_rep(self, value: int):
+        self._track_value(value, REP)
+
+    def track_dataset(self, value: str):
+        self._track_value(value, DATASET)
+
+    def track_classifier(self, value: str):
+        self._track_value(value, CLASSIFIER)
+
+    def track_budget(self, value: int):
+        self._track_value(value, BUDGET)
+
+    def track_bandwidth(self, value: float):
+        self._track_value(value, BANDWIDTH)
+
+    def track_clu_time_window(self, value):
+        self._track_value(value, CLU_TIMEWINDOW)
+
+    def track_cluster_centers(self, value):
+        self._track_value(value, CENTERS)
+
+    def track_cluster_radi(self, value):
+        self._track_value(value, RADI)
+
+    def track_n_classes(self, value):
+        self._track_value(value, N_CLASSES)
+
+    def track_n_samples(self, value):
+        self._track_value(value, N_SAMPLES)
+
+    def track_ls_x(self, value):
+        self._track_value(value, LS_X)
 
     def finalize_round(self):
         self._data.append(self._current_row)

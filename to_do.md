@@ -80,3 +80,7 @@
 - Aggregierte statistiken loggen
   - Schauen wie sich verändert über zeit
   - Changes erkennbar?
+
+# 12.06
+- [ ] 3 Cluster based vergleich
+- [ ] Clusterstatistiken analysieren
