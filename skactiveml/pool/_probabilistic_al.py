@@ -266,7 +266,7 @@ def cost_reduction(k_vec_list, C=None, m_max=2, prior=1.0e-3):
     )
 
     # three factors of the closed form solution
-    factor_1 = 1 / _euler_beta(k_vec_list)
+    factor_1 = 1 / (_euler_beta(k_vec_list) + np.finfo(np.float64).eps)
     factor_2 = _multinomial(l_vec_list)
     factor_3 = _euler_beta(np.sum(combs, axis=1)).reshape(
         n_samples, n_l_vecs, n_classes

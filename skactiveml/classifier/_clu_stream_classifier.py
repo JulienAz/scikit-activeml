@@ -37,8 +37,11 @@ class CluStreamClassifier(SkactivemlClassifier):
         self.refit = refit
 
     def fit(self, X, y, sample_weight=None, **fit_kwargs):
-        for t, (x_t, y_t) in enumerate(zip(X, y)):
-            self.clustering.fit_one(x_t, y_t)
+        if self.clustering.initialized:
+            self.clustering.fit_one(X[-1], y[-1])
+        else:
+            for t, (x_t, y_t) in enumerate(zip(X, y)):
+                self.clustering.fit_one(x_t, y_t)
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def partial_fit(self, X, y, sample_weight=None, **fit_kwargs):
