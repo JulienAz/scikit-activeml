@@ -13,7 +13,9 @@ from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_l
 from skactiveml.utils import call_func
 
 
-def run(X, y, approach_name, query_strategy, clf, dataset_name=None, n_training_size=100, n_init_traing=10, rep=0, band_width=0.1, log_clustering=False, fit_clf=False):
+def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
+        n_training_size=100, n_init_traing=10, rep=0, band_width=0.1,
+        log_clustering=False, log_clu_statistics=False, fit_clf=False):
     acc_logger = CluStreamPerformanceLogger()
     clu_logger = CluStreamClusteringLogger()
     clu_statistic_logger = CluStreamStatisticLogger()
@@ -96,28 +98,31 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None, n_training_
 
         if approach_name.startswith('Clustering'):
             acc_logger.track_clu_time_window(clf.clustering.time_window)
-            clu_statistic_logger.track_rep(rep)
-            clu_statistic_logger.track_timestep(t)
-            clu_statistic_logger.track_bandwidth(band_width)
-            clu_statistic_logger.track_budget(budget)
-            clu_statistic_logger.track_clu_time_window(clf.clustering.time_window)
+            if log_clu_statistics:
+                clu_statistic_logger.track_dataset(dataset_name)
+                clu_statistic_logger.track_classifier(approach_name)
+                clu_statistic_logger.track_rep(rep)
+                clu_statistic_logger.track_timestep(t)
+                clu_statistic_logger.track_bandwidth(band_width)
+                clu_statistic_logger.track_budget(budget)
+                clu_statistic_logger.track_clu_time_window(clf.clustering.time_window)
 
-            centers = [mc.center for i, mc in clf.clustering.micro_clusters.items()]
-            clu_statistic_logger.track_cluster_centers(centers)
+                centers = [mc.center for i, mc in clf.clustering.micro_clusters.items()]
+                clu_statistic_logger.track_cluster_centers(centers)
 
-            radi = [mc.radius() for i, mc in clf.clustering.micro_clusters.items()]
-            clu_statistic_logger.track_cluster_radi(radi)
+                radi = [mc.radius() for i, mc in clf.clustering.micro_clusters.items()]
+                clu_statistic_logger.track_cluster_radi(radi)
 
-            n_samples = [mc.features["n"] for i, mc in clf.clustering.micro_clusters.items()]
-            clu_statistic_logger.track_n_samples(n_samples)
+                n_samples = [mc.features["n"] for i, mc in clf.clustering.micro_clusters.items()]
+                clu_statistic_logger.track_n_samples(n_samples)
 
-            ls_x = [mc.features["ls_x"] for i, mc in clf.clustering.micro_clusters.items()]
-            clu_statistic_logger.track_ls_x(ls_x)
+                ls_x = [mc.features["ls_x"] for i, mc in clf.clustering.micro_clusters.items()]
+                clu_statistic_logger.track_ls_x(ls_x)
 
-            cluster_classes = [np.sum(mc.features["n_classes"]) for i, mc in clf.clustering.micro_clusters.items()]
-            clu_statistic_logger.track_n_classes(cluster_classes)
+                cluster_classes = [np.sum(mc.features["n_classes"]) for i, mc in clf.clustering.micro_clusters.items()]
+                clu_statistic_logger.track_n_classes(cluster_classes)
 
-            clu_statistic_logger.finalize_round()
+                clu_statistic_logger.finalize_round()
 
         acc_logger.track_dataset(dataset_name)
         acc_logger.track_timestep(t)

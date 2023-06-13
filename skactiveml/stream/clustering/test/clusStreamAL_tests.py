@@ -48,11 +48,12 @@ if __name__ == '__main__':
     clu_time_windows = [100, 200, 500, 1000, np.inf]
 
     shuffle_data = False
-    log_clustering = False
+    log_clustering = True
+    log_clu_statistics = True
 
     n_cluster = 15
-    n_budget = 11
-    init_budget = 0.01
+    n_budget = 1
+    init_budget = 0.1
     budget_step_size = 0.1
     n_reps = 1
     n_bandwidths = 1
@@ -142,10 +143,10 @@ if __name__ == '__main__':
                                      query_strategy_name, query_strategy,
                                      clf, dataset['name'],
                                      training_size, init_train_length,
-                                     rep, bandwidth, log_clustering])
+                                     rep, bandwidth, log_clustering, log_clu_statistics])
 
                         # Sequential execution for debuggin
-                        #res[index] = run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth)
+                        #res[index] = run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, log_clustering, log_clu_statistics)
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget = min(budget + budget_step_size, 1.0)
@@ -167,4 +168,6 @@ if __name__ == '__main__':
     df_acc.to_csv(csv_acc_filepath, index=False)
     if log_clustering:
         df_clu.to_csv(csv_clu_filepath, index=False)
-    df_clu_statistics.to_csv(csv_clu_stat_filepath, index=False)
+
+    if log_clu_statistics:
+        df_clu_statistics.to_csv(csv_clu_stat_filepath, index=False)

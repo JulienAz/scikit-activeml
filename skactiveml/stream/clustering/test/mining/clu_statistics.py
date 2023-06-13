@@ -13,15 +13,18 @@ import os
 
 if __name__ == '__main__':
     rep_to_plot = 0
-    budget_to_plot = 0.5
+    budget_to_plot = 0.21
 
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
     csv_filepath = os.path.join(this_dir, "..", target_directory, 'cluster_statistics_time_window.csv')
     df = pd.read_csv(csv_filepath)
 
+    budget_to_plot = np.random.choice(np.unique(df[BUDGET]))
     df = df.loc[df[REP] == rep_to_plot]
+    df = df.loc[df[BUDGET] == budget_to_plot]
 
+    # Plotting Cluster Radi over time
     df_radi = df[[REP, BUDGET, TIMESTEP, RADI, CLU_TIMEWINDOW]].copy()
     df_radi = df_radi.loc[df_radi[BUDGET] == budget_to_plot]
 
@@ -32,8 +35,11 @@ if __name__ == '__main__':
 
     sb.set_theme()
 
-    f = sb.relplot(data=df_radi, x=TIMESTEP, y=RADI, errorbar=None, kind="line", hue='index', col=CLU_TIMEWINDOW, palette='tab10', facet_kws={'sharey': False})
+    f = sb.relplot(data=df_radi, x=TIMESTEP, y=RADI,
+                   errorbar=None, kind="line", hue='index', col=CLU_TIMEWINDOW,
+                   palette='tab10', facet_kws={'sharey': False})
 
+    # Plotting Cluster Number of Samples (n) over time
     df_samples = df[[REP, BUDGET, TIMESTEP, N_SAMPLES, CLU_TIMEWINDOW]].copy()
     df_samples = df_samples.loc[df_samples[BUDGET] == budget_to_plot]
 
@@ -46,6 +52,7 @@ if __name__ == '__main__':
     g = sb.relplot(data=df_samples, x=TIMESTEP, y=N_SAMPLES, errorbar=None, kind="line", hue='index',
                    col=CLU_TIMEWINDOW, palette='tab10', facet_kws={'sharey': False})
 
+    # Plotting Cluster Number of Labeled Samples over time
     df_labels = df[[REP, BUDGET, TIMESTEP, N_CLASSES, CLU_TIMEWINDOW]].copy()
     df_labels[N_CLASSES] = df_labels[N_CLASSES].apply(ast.literal_eval)
     df_labels['N_CLASSES_index'] = df_labels.apply(

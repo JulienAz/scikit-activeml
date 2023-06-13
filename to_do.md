@@ -82,5 +82,5 @@
   - Changes erkennbar?
 
 # 12.06
-- [ ] 3 Cluster based vergleich
-- [ ] Clusterstatistiken analysieren
+- [X] 3 Cluster based vergleich
+- [X] Clusterstatistiken analysieren
