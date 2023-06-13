@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
-    csv_filepath = os.path.join(this_dir, "..", target_directory, 'cluster_statistics_time_window.csv')
+    csv_filepath = os.path.join(this_dir, "..", "..", target_directory, 'cluster_statistics_time_window.csv')
     df = pd.read_csv(csv_filepath)
 
     budget_to_plot = np.random.choice(np.unique(df[BUDGET]))
@@ -63,6 +63,6 @@ if __name__ == '__main__':
     h = sb.relplot(data=df_labels, x=TIMESTEP, y=N_CLASSES, errorbar=None, kind="line", hue='index',
                    col=CLU_TIMEWINDOW, row=BUDGET, palette='tab10', facet_kws={'sharey': False})
 
-    image_filepath = os.path.join(this_dir, "..", target_directory, 'output_clu_statistics.pdf')
+    image_filepath = os.path.join(this_dir, "..", "..", target_directory, 'output_clu_statistics.pdf')
 
     save_image(image_filepath)

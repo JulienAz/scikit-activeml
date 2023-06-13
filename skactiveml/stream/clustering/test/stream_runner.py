@@ -119,8 +119,11 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
                 ls_x = [mc.features["ls_x"] for i, mc in clf.clustering.micro_clusters.items()]
                 clu_statistic_logger.track_ls_x(ls_x)
 
-                cluster_classes = [np.sum(mc.features["n_classes"]) for i, mc in clf.clustering.micro_clusters.items()]
-                clu_statistic_logger.track_n_classes(cluster_classes)
+                cluster_classes_sum = [np.sum(mc.features["n_classes"]) for i, mc in clf.clustering.micro_clusters.items()]
+                clu_statistic_logger.track_n_classes(cluster_classes_sum)
+
+                cluster_classes = np.array([mc.features["n_classes"] for i, mc in clf.clustering.micro_clusters.items()])
+                clu_statistic_logger.track_classes_dist(repr(cluster_classes))
 
                 clu_statistic_logger.finalize_round()
 

@@ -9,29 +9,21 @@ import pandas as pd
 import seaborn as sb
 import os
 
-def add_points(x, y, dataframe, **kwargs):
-    # Access the column and row values of the current subplot
-    column_value = dataframe[CLU_TIMEWINDOW]
-    row_value = dataframe[BUDGET]
-
-    df_filtered = dataframe.loc[(dataframe[BUDGET] == row_value)& (dataframe[CLU_TIMEWINDOW] == column_value)]
-    plt.scatter(df_filtered[x], df_filtered[y], edgecolor='red', s=50)
-
 if __name__ == '__main__':
 
     n_reps_to_plot = 3
     rep = 0
-    budget_to_plot = 0.51
 
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
 
-    csv_clustering_filepath = os.path.join(this_dir, "..", target_directory, 'clustering_time_window.csv')
+    csv_clustering_filepath = os.path.join(this_dir, "..", "..", target_directory, 'clustering_time_window.csv')
     df_clustering = pd.read_csv(csv_clustering_filepath)
 
-    csv_clustering_filepath = os.path.join(this_dir, "..", target_directory, 'accuracy_time_window.csv')
+    csv_clustering_filepath = os.path.join(this_dir, "..", "..", target_directory, 'accuracy_time_window.csv')
     df_acc = pd.read_csv(csv_clustering_filepath)
 
+    budget_to_plot = np.random.choice(np.unique(df_acc[BUDGET]))
     df_clustering = df_clustering.loc[df_clustering[REP] == rep]
     df_clustering = df_clustering.loc[df_clustering[BUDGET] == budget_to_plot]
 
@@ -63,6 +55,6 @@ if __name__ == '__main__':
             radi = center_radi[c + t * n_timewindow][2]
             axes[t].add_patch(patches.Circle([c1, c2], radius=radi * 3, fill=False, color="turquoise"))
 
-    image_filepath = os.path.join(this_dir, "..", target_directory, 'output_clustering.pdf')
+    image_filepath = os.path.join(this_dir, "..", "..", target_directory, 'output_clustering.pdf')
     save_image(image_filepath)
 

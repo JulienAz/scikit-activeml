@@ -26,6 +26,7 @@ RADIUS = "Radius"
 CENTERS = "Centers"
 RADI = "Radi"
 N_CLASSES = "N_Classes"
+CLASS_DIST = "Class_Distribution"
 N_SAMPLES = "N_Samples"
 LS_X = "LS_x"
 
@@ -233,6 +234,7 @@ ids_cluster_statistics = [
     BANDWIDTH,
     CLU_TIMEWINDOW,
     N_CLASSES,
+    CLASS_DIST,
     CENTERS,
     RADI,
     N_SAMPLES,
@@ -277,6 +279,9 @@ class CluStreamStatisticLogger:
 
     def track_n_classes(self, value):
         self._track_value(value, N_CLASSES)
+
+    def track_classes_dist(self, value):
+        self._track_value(value, CLASS_DIST)
 
     def track_n_samples(self, value):
         self._track_value(value, N_SAMPLES)
