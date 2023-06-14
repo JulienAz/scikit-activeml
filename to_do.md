@@ -9,6 +9,7 @@
   - Farben in plots einheitlich
   - Datensätze übersicht in Overleaf schreiben
   - Anzahl Cluster experimente
+  - Logger Überklasse
 ## Bugs
 - ~~Overflow von timestamps~~ 
 - Wieso ClusterIDs Nan bei budget=0.01?
@@ -84,3 +85,12 @@
 # 12.06
 - [X] 3 Cluster based vergleich
 - [X] Clusterstatistiken analysieren
+
+# Mögliche Probleme:
+  - Merges verändern statistiken
+    - Radi steigt an und sinkt dann wieder
+    - N Springt
+    - Entropy womöglich veränderunt
+  - Entropy bei binären Classification
+    - Oszilliert stark zwischen 0-1 mit Merges
+    - Relative Entropy abhängig von Anzahl an Samples?

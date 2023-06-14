@@ -7,6 +7,7 @@ REP = "rep"
 TIMESTEP = "round"
 APPROACH = "Approach"
 ACCURACY = "Accuracy"
+N_CLUSTER = "n_Cluster"
 CLUSTER = "Cluster"
 DATASET = "Dataset"
 CLASSIFIER = "Classifier"
@@ -35,6 +36,7 @@ ids_acc = [
     REP,
     TIMESTEP,
     ACCURACY,
+    N_CLUSTER,
     CLUSTER,
     DATASET,
     CLASSIFIER,
@@ -80,6 +82,9 @@ class CluStreamPerformanceLogger:
 
     def track_bandwidth(self, value: float):
         self._track_value(value, BANDWIDTH)
+
+    def track_n_cluster(self, value: int):
+        self._track_value(value, N_CLUSTER)
 
     def track_cluster(self, value: int):
         self._track_value(value, CLUSTER)
@@ -141,6 +146,7 @@ ids_clustering = [
     CLASSIFIER,
     BUDGET,
     BANDWIDTH,
+    N_CLUSTER,
     X1,
     X2,
     LABEL,
@@ -173,6 +179,9 @@ class CluStreamClusteringLogger:
 
     def track_bandwidth(self, value: float):
         self._track_value(value, BANDWIDTH)
+
+    def track_n_cluster(self, value: int):
+        self._track_value(value, N_CLUSTER)
 
     def track_cluster(self, value: int):
         self._track_value(value, CLUSTER)
@@ -234,6 +243,7 @@ ids_cluster_statistics = [
     BANDWIDTH,
     CLU_TIMEWINDOW,
     N_CLASSES,
+    N_CLUSTER,
     CLASS_DIST,
     CENTERS,
     RADI,
@@ -267,6 +277,9 @@ class CluStreamStatisticLogger:
 
     def track_bandwidth(self, value: float):
         self._track_value(value, BANDWIDTH)
+
+    def track_n_cluster(self, value: int):
+        self._track_value(value, N_CLUSTER)
 
     def track_clu_time_window(self, value):
         self._track_value(value, CLU_TIMEWINDOW)

@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # number of instances that are provided to the classifier
     init_train_length = 20
     # the length of the data stream
-    stream_length = 30000
+    stream_length = 1000
 
     # Configurable when using Hyperplane
     n_features = 2
@@ -45,13 +45,13 @@ if __name__ == '__main__':
     fit_clf = False
 
     # Influences when clusters are deleted due to irrelevance (High -> less deletions/ low -> many deletions)
-    clu_time_windows = [100, 200, 500, 1000, np.inf]
+    clu_time_windows = [np.inf]
+    cluster_sizes = [2, 5, 10, 25]
 
     shuffle_data = False
     log_clustering = True
     log_clu_statistics = True
 
-    n_cluster = 15
     n_budget = 1
     init_budget = 0.1
     budget_step_size = 0.1
@@ -65,7 +65,6 @@ if __name__ == '__main__':
 
     res = [0] * n_bandwidths * n_budget * n_approaches * n_reps * len(clu_time_windows)
     args = []
-    assert n_cluster <= init_train_length
     # It might be easier (and better readable) to create a parameter grid
     # (https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.ParameterGrid.html#sklearn.model_selection.ParameterGrid)
     # convert it to a list and then simply loop over the grid
@@ -78,7 +77,7 @@ if __name__ == '__main__':
 
         # Generating Datastream
         X, y = generate_data(dataset, init_train_length, shuffle=shuffle_data, random_state=random_state, stream_length=stream_length, n_features=n_features, mag_change=mag_change)
-
+        classes = np.unique(y)
         # Looping over n_budget budgets with stepsize 0.1
         for k in range(n_budget):
 
@@ -90,60 +89,63 @@ if __name__ == '__main__':
                     'gamma': bandwidth
                 }
                 for c, clu_time_window in enumerate(clu_time_windows):
-                    classes = np.unique(y)
+                    # Looping over Number of clusters configured
+                    for n_cluster in cluster_sizes:
+                        if n_cluster > init_train_length:
+                            init_train_length = n_cluster
 
-                    # Init Clustering
-                    clustering = CluStream(
-                        n_micro_clusters=n_cluster,
-                        n_init_train=init_train_length,
-                        time_window=clu_time_window,
-                        n_classes=len(classes)
-                    )
+                        # Init Clustering
+                        clustering = CluStream(
+                            n_micro_clusters=n_cluster,
+                            n_init_train=init_train_length,
+                            time_window=clu_time_window,
+                            n_classes=len(classes)
+                        )
 
-                    # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
-                    query_strategies = {
-                        'ClusteringIncremental': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                                                  # VariableUncertainty(random_state=random_state),
-                                                  CluStreamClassifier(estimator_clf=SklearnClassifier(
-                                                      base_classifier(),
-                                                      missing_label=None,
-                                                      classes=classes,
-                                                      random_state=random_state),
-                                                      clustering=clustering,
-                                                      metric_dict=metric_dict,
-                                                      missing_label=None)),
-                        #'ClusteringRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                        #                    # VariableUncertainty(random_state=random_state),
-                        #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
-                        #                        base_classifier(),
-                        #                        missing_label=None,
-                        #                        classes=classes,
-                        #                       random_state=random_state),
-                        #                        clustering=clustering,
-                        #                        metric_dict=metric_dict,
-                        #                        missing_label=None,
-                        #                        refit=True)),
-                        #'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                        #                    # VariableUncertainty(random_state=random_state),
-                        #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
-                        #                        base_classifier(),
-                        #                        missing_label=None,
-                        #                        classes=classes,
-                        #                        random_state=random_state),
-                        #                        clustering=clustering,
-                        #                        metric_dict=metric_dict,
-                       #                         missing_label=None)),
-                    }
-                    assert len(query_strategies) == n_approaches, "Number of approaches does not match n_approaches"
+                        # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
+                        query_strategies = {
+                            'ClusteringIncremental': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                                      # VariableUncertainty(random_state=random_state),
+                                                      CluStreamClassifier(estimator_clf=SklearnClassifier(
+                                                          base_classifier(),
+                                                          missing_label=None,
+                                                          classes=classes,
+                                                          random_state=random_state),
+                                                          clustering=clustering,
+                                                          metric_dict=metric_dict,
+                                                          missing_label=None)),
+                            #'ClusteringRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                            #                    # VariableUncertainty(random_state=random_state),
+                            #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
+                            #                        base_classifier(),
+                            #                        missing_label=None,
+                            #                        classes=classes,
+                            #                       random_state=random_state),
+                            #                        clustering=clustering,
+                            #                        metric_dict=metric_dict,
+                            #                        missing_label=None,
+                            #                        refit=True)),
+                            #'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                            #                    # VariableUncertainty(random_state=random_state),
+                            #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
+                            #                        base_classifier(),
+                            #                        missing_label=None,
+                            #                        classes=classes,
+                            #                        random_state=random_state),
+                            #                        clustering=clustering,
+                            #                        metric_dict=metric_dict,
+                           #                         missing_label=None)),
+                        }
+                        assert len(query_strategies) == n_approaches, "Number of approaches does not match n_approaches"
 
-                    for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
-                        index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
-                                k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
-                        args.append([X, y,
-                                     query_strategy_name, query_strategy,
-                                     clf, dataset['name'],
-                                     training_size, init_train_length,
-                                     rep, bandwidth, log_clustering, log_clu_statistics])
+                        for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
+                            index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
+                                    k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
+                            args.append([X, y,
+                                         query_strategy_name, query_strategy,
+                                         clf, dataset['name'],
+                                         training_size, init_train_length,
+                                         rep, bandwidth, log_clustering, log_clu_statistics])
 
                         # Sequential execution for debuggin
                         #res[index] = run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, log_clustering, log_clu_statistics)

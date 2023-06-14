@@ -98,7 +98,9 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
 
         if approach_name.startswith('Clustering'):
             acc_logger.track_clu_time_window(clf.clustering.time_window)
+            acc_logger.track_n_cluster(clf.clustering.n_micro_clusters)
             if log_clu_statistics:
+                clu_statistic_logger.track_n_cluster(clf.clustering.n_micro_clusters)
                 clu_statistic_logger.track_dataset(dataset_name)
                 clu_statistic_logger.track_classifier(approach_name)
                 clu_statistic_logger.track_rep(rep)
@@ -166,6 +168,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
                 clu_logger.track_budget(budget)
                 clu_logger.track_bandwidth(band_width)
 
+                clu_logger.track_n_cluster(clf.clustering.n_micro_clusters)
                 clu_logger.track_cluster(i)
                 clu_logger.track_x1(X_tmp[0])
                 clu_logger.track_x2(X_tmp[1])
