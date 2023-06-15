@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
-    csv_filepath = os.path.join(this_dir, "..", target_directory, 'accuracy_time_window.csv')
+    csv_filepath = os.path.join(this_dir, "../..", target_directory, 'accuracy_time_window.csv')
     df = pd.read_csv(csv_filepath)
 
     sb.set_theme()
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     f = sb.relplot(data=df, x=TIMESTEP, y=ACCURACY, kind="line", hue=CLU_TIMEWINDOW, col=BUDGET, col_wrap=3, errorbar=None)
     #f.set(title='Accuracy')
 
-    image_filepath = os.path.join(this_dir, "..", target_directory, 'output_acc_over_time_timewindow.pdf')
+    image_filepath = os.path.join(this_dir, "../..", target_directory, 'output_acc_over_time_timewindow.pdf')
 
     save_image(image_filepath)
 

@@ -22,28 +22,32 @@ def calculate_entropy_per_timestep(df):
     for _, row in df.iterrows():
         timestep = row[TIMESTEP]
         class_distributions = row[CLASS_DIST]
+        clu_timewindow = row[CLU_TIMEWINDOW]
         class_entropies = []
 
         for i, class_distribution in enumerate(class_distributions):
             class_distribution = np.array(class_distribution)
             class_probabilities = class_distribution / np.sum(class_distribution)
             class_entropy = entropy(class_probabilities, base=2)
-            class_entropies.append([timestep, i + 1, class_entropy])
+            class_entropies.append([timestep, clu_timewindow, i + 1, class_entropy])
 
         entropy_per_timestep.extend(class_entropies)
-        column_names = [TIMESTEP, 'Cluster', 'ClassEntropy']
+        column_names = [TIMESTEP, CLU_TIMEWINDOW,'Cluster', 'ClassEntropy']
 
     return pd.DataFrame(entropy_per_timestep, columns=column_names)
 
 if __name__ == '__main__':
     rep_to_plot = 0
     budget_to_plot = 0.21
+    subset = 20000
 
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
     csv_filepath = os.path.join(this_dir, "..", "..", target_directory, 'cluster_statistics_time_window.csv')
     df = pd.read_csv(csv_filepath)
 
+    if subset > 0:
+        df = df.loc[df[TIMESTEP] < subset]
     budget_to_plot = np.random.choice(np.unique(df[BUDGET]))
     df = df.loc[df[REP] == rep_to_plot]
     df = df.loc[df[BUDGET] == budget_to_plot]
@@ -55,6 +59,7 @@ if __name__ == '__main__':
 
     f = sb.relplot(data=df_entropy, x=TIMESTEP, y='ClassEntropy',
                    errorbar=None, kind="line", hue='Cluster',
+                   col=CLU_TIMEWINDOW,
                    palette='tab10', facet_kws={'sharey': False})
 
 

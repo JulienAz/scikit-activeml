@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import ACCURACY, BUDGET, \
-    CLASSIFIER, BANDWIDTH, REP, LABEL, CLU_TIMEWINDOW, TIMESTEP, RADI, N_SAMPLES, N_CLASSES
+    CLASSIFIER, BANDWIDTH, REP, LABEL, CLU_TIMEWINDOW, TIMESTEP, RADI, N_SAMPLES, N_CLASSES, N_CLUSTER
 from skactiveml.stream.clustering.util import save_image, run_async
 
 import pandas as pd
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     df = df.loc[df[BUDGET] == budget_to_plot]
 
     # Plotting Cluster Radi over time
-    df_radi = df[[REP, BUDGET, TIMESTEP, RADI, CLU_TIMEWINDOW]].copy()
+    df_radi = df[[REP, BUDGET, TIMESTEP, RADI, CLU_TIMEWINDOW, N_CLUSTER]].copy()
     df_radi = df_radi.loc[df_radi[BUDGET] == budget_to_plot]
 
     df_radi[RADI] = df_radi[RADI].apply(ast.literal_eval)
@@ -36,11 +36,11 @@ if __name__ == '__main__':
     sb.set_theme()
 
     f = sb.relplot(data=df_radi, x=TIMESTEP, y=RADI,
-                   errorbar=None, kind="line", hue='index', col=CLU_TIMEWINDOW,
+                   errorbar=None, kind="line", hue='index', col=N_CLUSTER,
                    palette='tab10', facet_kws={'sharey': False})
 
     # Plotting Cluster Number of Samples (n) over time
-    df_samples = df[[REP, BUDGET, TIMESTEP, N_SAMPLES, CLU_TIMEWINDOW]].copy()
+    df_samples = df[[REP, BUDGET, TIMESTEP, N_SAMPLES, CLU_TIMEWINDOW, N_CLUSTER]].copy()
     df_samples = df_samples.loc[df_samples[BUDGET] == budget_to_plot]
 
     df_samples[N_SAMPLES] = df_samples[N_SAMPLES].apply(ast.literal_eval)
@@ -50,10 +50,10 @@ if __name__ == '__main__':
     df_samples[[N_SAMPLES, 'index']] = pd.DataFrame(df_samples['N_SAMPLE_index'].tolist(), index=df_samples.index)
 
     g = sb.relplot(data=df_samples, x=TIMESTEP, y=N_SAMPLES, errorbar=None, kind="line", hue='index',
-                   col=CLU_TIMEWINDOW, palette='tab10', facet_kws={'sharey': False})
+                   col=N_CLUSTER, palette='tab10', facet_kws={'sharey': False})
 
     # Plotting Cluster Number of Labeled Samples over time
-    df_labels = df[[REP, BUDGET, TIMESTEP, N_CLASSES, CLU_TIMEWINDOW]].copy()
+    df_labels = df[[REP, BUDGET, TIMESTEP, N_CLASSES, N_CLUSTER]].copy()
     df_labels[N_CLASSES] = df_labels[N_CLASSES].apply(ast.literal_eval)
     df_labels['N_CLASSES_index'] = df_labels.apply(
         lambda row: [(value, index) for index, value in enumerate(row[N_CLASSES])], axis=1)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     df_labels[[N_CLASSES, 'index']] = pd.DataFrame(df_labels['N_CLASSES_index'].tolist(), index=df_labels.index)
 
     h = sb.relplot(data=df_labels, x=TIMESTEP, y=N_CLASSES, errorbar=None, kind="line", hue='index',
-                   col=CLU_TIMEWINDOW, row=BUDGET, palette='tab10', facet_kws={'sharey': False})
+                   col=N_CLUSTER    , row=BUDGET, palette='tab10', facet_kws={'sharey': False})
 
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, 'output_clu_statistics.pdf')
 
