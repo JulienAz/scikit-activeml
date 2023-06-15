@@ -159,7 +159,7 @@ class RbfStreamGenerator(StreamGenerator):
         stream_gen.centroids[1].std_dev = std_dev_0
 
 
-        X_tmp, y_tmp = stream_gen.next_sample(int(stream_length / 2))
+        X_tmp, y_tmp = stream_gen.next_sample(int(stream_length / 2) + 1)
         X = np.concatenate((X, X_tmp))
         y = np.concatenate((y, y_tmp))
         super().__init__(X, y)
