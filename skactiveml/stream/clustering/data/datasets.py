@@ -6,6 +6,7 @@ import pandas as pd
 from skmultiflow.data import HyperplaneGenerator
 
 from skactiveml.stream.datagenerator import OpenMlStreamGenerator, ArtificialStreamGenerator, CsvStreamGenerator
+from skactiveml.stream.datagenerator._stream_generator import RbfStreamGenerator
 
 # Open ML datasets
 ABALONE_BIN = {'name': 'Abalone_binary', 'type': 'openml', 'id': 720, 'toy': False}
@@ -15,6 +16,7 @@ IRIS = {'name': 'Abalone_binary', 'type': 'openml', 'id': 61, 'toy': True}
 
 # ScikitMultiflow
 HYPERPLANE = {'name': 'Hyperplane', 'type': 'hyperplane'}
+RBF_GENERATOR = {'name': 'RbfGenerator', 'type': 'rbf'}
 
 # Local csv sets
 # Real World
@@ -33,8 +35,13 @@ def generate_data(dataset, init_train_length, shuffle, random_state, n_features=
     if set_type == 'hyperplane':
         assert n_features > 0, "Please specify the number of features for the hyperplane generator"
         dataGenerator = HyperplaneGenerator(random_state=random_state,
-                                            n_features=2,
+                                            n_features=n_features,
                                             mag_change=mag_change)
+        assert stream_length != None, "Please specify the stream length for hyperplane generator"
+    elif set_type == 'rbf':
+        dataGenerator = RbfStreamGenerator(random_state=random_state,
+                                           stream_length=stream_length + init_train_length,
+                                           )
         assert stream_length != None, "Please specify the stream length for hyperplane generator"
     elif set_type == 'openml':
         if dataset['toy']:

@@ -63,6 +63,6 @@ if __name__ == '__main__':
     h = sb.relplot(data=df_labels, x=TIMESTEP, y=N_CLASSES, errorbar=None, kind="line", hue='index',
                    col=N_CLUSTER    , row=BUDGET, palette='tab10', facet_kws={'sharey': False})
 
-    image_filepath = os.path.join(this_dir, "..", "..", target_directory, 'output_clu_statistics.pdf')
+    image_filepath = os.path.join(this_dir, "..", "..", target_directory, 'output_clu_statistics_per_cluster.pdf')
 
     save_image(image_filepath)

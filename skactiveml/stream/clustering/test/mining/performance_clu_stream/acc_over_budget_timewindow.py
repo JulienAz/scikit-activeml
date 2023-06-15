@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import ACCURACY, BUDGET, \
-    CLASSIFIER, BANDWIDTH, REP, LABEL, CLU_TIMEWINDOW
+    CLASSIFIER, BANDWIDTH, REP, CLU_TIMEWINDOW
 from skactiveml.stream.clustering.util import save_image, run_async
 
 import pandas as pd

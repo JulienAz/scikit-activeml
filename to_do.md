@@ -85,6 +85,46 @@
 # 12.06
 - [X] 3 Cluster based vergleich
 - [X] Clusterstatistiken analysieren
+- [X] Entropy einbauen
+
+# Meeting 13.06
+## Vorher
+- Overflow error fix
+- Vergleich Batch, Incrementell, Refit
+  - Zu lange gedauert
+- Cluster statistiken (Nach identifikatoren für Change gesucht)
+  - logging sehr große dateien
+  - Plotten hat RAM überlastet auf pc
+  - Dann nur noch experimente mit 1 Rep da eh nur für eins Plotbar
+- Geloggte Statistiken
+  - Radius
+  - N_samples
+  - N_labeled_samples
+  - Bessere Möglichkeiten arrays zu loggen?
+- Clustering visualisiert
+- Entropy logging
+  - Changes erkennbar?
+
+# Meetingpunkte
+- Paquet
+- GGf.
+  - Random Sampling um zu Validieren ob N_sample plot und N-labelde korrespondieren
+- Experioment RBF (Reaktion auf Change)
+  - 3 Klassen
+  - RBF Generator (https://scikit-multiflow.readthedocs.io/en/stable/api/generated/skmultiflow.data.RandomRBFGenerator.html)
+  - 3000 Zeitschritte Change wo 2 sich abwechseln und 3 Gleich bleibt
+  - In den beiden Clustern wo change is daten wegwerfen
+    - Wie viele gelabelt wurden loggen, nicht wie viele drin sind
+- Herausfinden ob change erkennen überhaupt was bringt
+- Changedetector für Radius
+  - ADWIN?
+- Überwachen von Radius/ Entropy
+
+-Bei SEA subsamplen (Alle 5 Datenpunkte nehmen)
+
+# Idee
+- Clusterensemble
+  - Bei change in Cluster muss nur der eine Classifier refittet werden
 
 # Mögliche Probleme:
   - Merges verändern statistiken

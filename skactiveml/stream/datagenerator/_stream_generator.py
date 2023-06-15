@@ -3,6 +3,7 @@ import openml
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
+from skmultiflow.data import RandomRBFGenerator
 
 
 class StreamGenerator:
@@ -131,6 +132,34 @@ class CsvStreamGenerator(StreamGenerator):
         y = y.values
 
         if stream_length is not None:
-            X = X[:stream_length,:]
+            X = X[:stream_length, :]
             y = y[:stream_length]
+        super().__init__(X, y)
+
+
+class RbfStreamGenerator(StreamGenerator):
+    def __init__(self, random_state, stream_length, n_features=2, n_classes=3, n_centroids=3, stdv_max=0.03):
+        assert n_classes == n_centroids
+
+        # Extract feature matrix and target array
+        stream_gen = RandomRBFGenerator(model_random_state=random_state, n_classes=n_classes, n_features=n_features, n_centroids=n_centroids)
+        rng = np.random.default_rng(random_state)
+        for i in range(n_classes):
+            stream_gen.centroids[i].class_label = i
+            stream_gen.centroids[i].std_dev = rng.uniform(0, stdv_max)
+        X, y = stream_gen.next_sample(int(stream_length / 2))
+
+        # !!! Hardcoding concept drift by swapping class labels and stdv of RBFs
+        stream_gen.centroids[0].class_label = 1
+        stream_gen.centroids[1].class_label = 0
+
+        std_dev_0 = stream_gen.centroids[0].std_dev
+        std_dev_1 = stream_gen.centroids[1].std_dev
+        stream_gen.centroids[0].std_dev = std_dev_1
+        stream_gen.centroids[1].std_dev = std_dev_0
+
+
+        X_tmp, y_tmp = stream_gen.next_sample(int(stream_length / 2))
+        X = np.concatenate((X, X_tmp))
+        y = np.concatenate((y, y_tmp))
         super().__init__(X, y)
