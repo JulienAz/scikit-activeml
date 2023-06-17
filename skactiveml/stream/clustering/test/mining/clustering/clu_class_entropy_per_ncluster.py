@@ -24,16 +24,17 @@ def calculate_entropy_per_timestep(df):
         class_distributions = row[CLASS_DIST]
         clu_timewindow = row[CLU_TIMEWINDOW]
         n_cluster = row[N_CLUSTER]
+        classifier = row[CLASSIFIER]
         class_entropies = []
 
         for i, class_distribution in enumerate(class_distributions):
             class_distribution = np.array(class_distribution)
             class_probabilities = class_distribution / np.sum(class_distribution)
             class_entropy = entropy(class_probabilities, base=2)
-            class_entropies.append([timestep, clu_timewindow, n_cluster, i + 1, class_entropy])
+            class_entropies.append([timestep, clu_timewindow, n_cluster, classifier, i + 1, class_entropy])
 
         entropy_per_timestep.extend(class_entropies)
-        column_names = [TIMESTEP, CLU_TIMEWINDOW, N_CLUSTER, 'Cluster', 'ClassEntropy']
+        column_names = [TIMESTEP, CLU_TIMEWINDOW, N_CLUSTER, CLASSIFIER, 'Cluster', 'ClassEntropy']
 
     return pd.DataFrame(entropy_per_timestep, columns=column_names)
 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
 
     f = sb.relplot(data=df_entropy, x=TIMESTEP, y='ClassEntropy',
                    errorbar=None, kind="line", hue='Cluster',
-                   col=N_CLUSTER,
+                   col=N_CLUSTER, row=CLASSIFIER,
                    palette='tab10', facet_kws={'sharey': False})
 
 

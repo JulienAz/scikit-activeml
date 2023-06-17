@@ -59,11 +59,11 @@ if __name__ == '__main__':
     n_budget = 1
     init_budget = 0.1
     budget_step_size = 0.1
-    n_reps = 3
+    n_reps = 1
     n_bandwidths = 1
     bandwidth_step_size = 0.5
     init_bandwidth = 1
-    n_approaches = 2
+    n_approaches = 3
 
     base_classifier = HoeffdingTreeClassifier
 
@@ -118,7 +118,7 @@ if __name__ == '__main__':
                                                           clustering=clustering,
                                                           metric_dict=metric_dict,
                                                           missing_label=None)),
-                            'ClusteringRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                            'ClusteringClfReset': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                                                 # VariableUncertainty(random_state=random_state),
                                                 CluStreamClassifier(estimator_clf=SklearnClassifier(
                                                     base_classifier(),
@@ -129,6 +129,17 @@ if __name__ == '__main__':
                                                     metric_dict=metric_dict,
                                                     missing_label=None,
                                                     refit=True)),
+                            'ClusteringClfRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                                   # VariableUncertainty(random_state=random_state),
+                                                   CluStreamClassifier(estimator_clf=SklearnClassifier(
+                                                       base_classifier(),
+                                                       missing_label=None,
+                                                       classes=classes,
+                                                       random_state=random_state),
+                                                       clustering=clustering,
+                                                       metric_dict=metric_dict,
+                                                       missing_label=None,
+                                                       refit=True)),
                             #'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                             #                    # VariableUncertainty(random_state=random_state),
                             #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
