@@ -253,6 +253,11 @@ class CluStream:
 
         return closest_b, False
 
+    # New Cluster initialized with old Centroid as sample
+    def clear_cluster(self, cluster_id):
+        centroid = self.micro_clusters[cluster_id].center
+        self.micro_clusters[cluster_id] = self.mc(centroid[np.newaxis, ...], None, self._timestamp, self.n_classes)
+
     def nearest_cluster(self, X):
         closest_distance = math.inf
         closest_mc_idx = -1

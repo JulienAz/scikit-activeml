@@ -57,7 +57,6 @@ class CluStreamClassifier(SkactivemlClassifier):
         X = []
         y = []
         for mc_id, mc in self.clustering.micro_clusters.items():
-            test = mc
             if not len(mc.labeled_samples) == 0:
                 count_2 = np.count_nonzero(mc.labeled_samples[:, 1] == 2)
                 is_majority_two = count_2 > mc.labeled_samples[:,1].size / 2
@@ -66,6 +65,9 @@ class CluStreamClassifier(SkactivemlClassifier):
                     features, targets = zip(*mc.labeled_samples)
                     X.extend(features)
                     y.extend(targets)
+                else:
+                    self.clustering.clear_cluster(mc_id)
+
 
         # Convert the lists to NumPy arrays
         if not len(X) == 0:
