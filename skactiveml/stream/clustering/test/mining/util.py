@@ -40,10 +40,11 @@ def calculate_entropy_per_timestep_from_class_dist(df):
     return pd.DataFrame(entropy_per_timestep, columns=column_names)
 
 # When Entropy is logged directly, convert to numerical and add to df
-def get_entropy_per_timestep(df):
+def get_entropy_per_timestep(df, change_detection=True):
     entropy_per_timestep = []
     df[ENTROPY] = df[ENTROPY].apply(ast.literal_eval)
-
+    if change_detection:
+        df[CHANGE_DETECTION] = df[CHANGE_DETECTION].apply(ast.literal_eval)
     for _, row in df.iterrows():
         timestep = row[TIMESTEP]
         clu_timewindow = row[CLU_TIMEWINDOW]
@@ -52,22 +53,27 @@ def get_entropy_per_timestep(df):
         rep = row[REP]
         class_entropies = []
         entropy_per_cluster = row[ENTROPY]
+        detection_per_cluster = row[CHANGE_DETECTION]
 
         for i, entropy in enumerate(entropy_per_cluster):
-            class_entropies.append([timestep, rep, clu_timewindow, n_cluster, classifier, i, entropy])
+            class_entropies.append([timestep, rep, clu_timewindow, n_cluster,
+                                    classifier, i, entropy, detection_per_cluster[i]])
 
         entropy_per_timestep.extend(class_entropies)
-        column_names = [TIMESTEP, REP, CLU_TIMEWINDOW, N_CLUSTER, CLASSIFIER, CLUSTER, ENTROPY]
+        column_names = [TIMESTEP, REP, CLU_TIMEWINDOW, N_CLUSTER, CLASSIFIER, CLUSTER, ENTROPY, CHANGE_DETECTION]
 
     return pd.DataFrame(entropy_per_timestep, columns=column_names)
 
-def add_change_dection_to_entropy_df(df, change_detector=ADWIN):
+def add_change_dection_to_entropy_df(df, detector_logged=True, change_detector=ADWIN):
     reps = np.unique(df[REP])
     cluster_sizes = np.unique(df[N_CLUSTER])
     classifiers = np.unique(df[CLASSIFIER])
 
     # Init Change detectors
-    change_detectors = np.array([[[change_detector() for cluster in range(n_cluster)] for n_cluster in cluster_sizes] for c in enumerate(classifiers)], dtype=object)
+    if detector_logged:
+        df[CHANGE_DETECTION] = df[CHANGE_DETECTION].apply(ast.literal_eval)
+    else:
+        change_detectors = np.array([[[change_detector() for cluster in range(n_cluster)] for n_cluster in cluster_sizes] for c in enumerate(classifiers)], dtype=object)
     change_detection = []
     for _, row in df.iterrows():
         rep = row[REP]
@@ -83,6 +89,9 @@ def add_change_dection_to_entropy_df(df, change_detector=ADWIN):
         # Get corresponding detector
 
         # Update Detector with entropy value
+        if detector_logged:
+            change_detection.append(row[CHANGE_DETECTION])
+
         change_detectors[classifier_index, n_cluster_rep][cluster].update(entropy)
 
         # Log if change detected

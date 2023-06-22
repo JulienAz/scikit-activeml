@@ -27,8 +27,8 @@ if __name__ == '__main__':
     #df_clustering = df_clustering.loc[df_clustering[REP] == rep]
     #df_acc = df_acc.loc[df_acc[REP] == rep]
 
-    #df_clustering = df_clustering.loc[df_clustering[CLASSIFIER] == 'ClusteringClfRefit']
-    #df_acc = df_acc.loc[df_acc[CLASSIFIER] == 'ClusteringClfRefit']
+    df_clustering = df_clustering.loc[df_clustering[CLASSIFIER] == 'ClusteringClfRefit']
+    df_acc = df_acc.loc[df_acc[CLASSIFIER] == 'ClusteringClfRefit']
 
     budget_to_plot = np.random.choice(np.unique(df_acc[BUDGET]))
     df_clustering = df_clustering.loc[df_clustering[BUDGET] == budget_to_plot]

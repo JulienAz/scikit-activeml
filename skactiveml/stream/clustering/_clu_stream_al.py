@@ -21,7 +21,7 @@ class MicroCluster:
             y=None,
             time_stamp=1,
             n_classes=None,
-            change_detector=DDM()
+            change_detector=DDM
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
@@ -36,7 +36,7 @@ class MicroCluster:
         self.n_classes = n_classes
         self.labeled_samples = np.empty((0,), dtype=object)
 
-        self.change_detector = change_detector
+        self.change_detector = change_detector()
 
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1

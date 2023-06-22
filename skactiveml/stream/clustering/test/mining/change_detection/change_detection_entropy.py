@@ -15,6 +15,8 @@ if __name__ == '__main__':
     subset = -1
     change_detector = DDM
 
+    change_detection_in_log = True
+
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
     csv_filepath = os.path.join(this_dir, "..", "..", target_directory, 'cluster_statistics_time_window.csv')
@@ -27,7 +29,7 @@ if __name__ == '__main__':
     df = df.loc[df[BUDGET] == budget_to_plot]
 
     df_entropy = get_entropy_per_timestep(df)
-    df_entropy = add_change_dection_to_entropy_df(df_entropy, change_detector)
+    #df_entropy = add_change_dection_to_entropy_df(df_entropy, change_detector)
 
     sb.set_theme()
 
