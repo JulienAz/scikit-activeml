@@ -134,3 +134,11 @@
   - Entropy bei binären Classification
     - Oszilliert stark zwischen 0-1 mit Merges
     - Relative Entropy abhängig von Anzahl an Samples?
+
+# Meeting 21.06
+## Punkte
+- Wie Cluster updaten?
+  - Erst mal löschen und warten bis punkt nicht in anderes passt dann mit neuem aufmachen
+  - 2 Clusterstatistiken pro cluster halten
+  - "Exponential bucketing"/"Pyramidical Timeframe"
+    - Pro Cluster statistiken die unterschiedliche Zeithorizonte betrachten

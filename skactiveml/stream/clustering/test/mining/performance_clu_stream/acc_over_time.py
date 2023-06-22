@@ -13,7 +13,7 @@ if __name__ == '__main__':
     smoothing_window = 300
 
     hue = CLASSIFIER
-    row = REP
+    row = BUDGET
     col = N_CLUSTER
 
     file_name = 'output_acc_over_time_per_' + hue + '_' + col + '_' + row + '.pdf'

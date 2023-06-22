@@ -112,7 +112,7 @@ class CluStreamClassifier(SkactivemlClassifier):
                 pred_proba = self.estimator_clf.predict_proba(X)
                 k_vec = n * pred_proba
 
-                kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(mc.x)
+                #kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(mc.x)
                 # X_cluster_density = np.array([kde.score(X)]) TODO: Density seems to be broken, high negative values
                 X_cluster_density = 1
                 return k_vec * X_cluster_density

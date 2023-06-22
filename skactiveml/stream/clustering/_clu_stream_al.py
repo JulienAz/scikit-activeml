@@ -3,6 +3,7 @@ import typing
 
 import numpy as np
 from numpy import float64
+from scipy.stats import entropy
 from sklearn.cluster import KMeans
 
 import scipy.stats as sps
@@ -25,15 +26,16 @@ class MicroCluster:
             "ls_t": time_stamp,
             "ss_t": float64(np.square(time_stamp)),
             "n": len(x),
-            "n_classes": np.zeros(n_classes),
+            "class_dist": np.zeros(n_classes),
             "M": np.square(x[0] - np.divide(x[0], len(x))),
         }
-        self.x = x
+        #self.x = x
 
+        self.n_classes = n_classes
         self.labeled_samples = np.empty((0,), dtype=object)
 
         if (y is not None) and (not np.isnan(y)):
-            self.features["n_classes"][y] += 1
+            self.features["class_dist"][y] += 1
             self.labeled_samples = np.array((x[0], y), dtype=object).reshape(1, 2)
 
     @property
@@ -43,6 +45,14 @@ class MicroCluster:
     @property
     def mean(self):
         return self.features["ls_x"] / self.features["n"]
+
+    @property
+    def class_entropy(self):
+        if np.sum(self.features['class_dist']) == 0:
+            return 0
+
+        class_probabilities = self.features['class_dist'] / self.n_classes
+        return entropy(class_probabilities, base=self.n_classes)
 
     def radius(self):
         std = np.sqrt(self.features["M"] / (self.features["n"]))
@@ -77,13 +87,13 @@ class MicroCluster:
         self.features["M"] += (x - past_mean) * (x - (self.features["ls_x"] / self.features["n"]))
 
         if y is not None:   ####TODO: Missing Label hinzufügen
-            self.features["n_classes"][y] += 1
+            self.features["class_dist"][y] += 1
             if len(self.labeled_samples) == 0:
                 self.labeled_samples = np.array([x, y], dtype=object).reshape(1, 2)
             else:
                 self.labeled_samples = np.vstack([self.labeled_samples, np.array((x, y), dtype=object)])
 
-        self.x = np.vstack([self.x, x[np.newaxis, ...]])
+        #self.x = np.vstack([self.x, x[np.newaxis, ...]])
 
     def __iadd__(self, other: "MicroCluster"):
         addterm_m = self.features["n"] * other.features["n"] / (self.features["n"] + other.features["n"])
@@ -247,7 +257,7 @@ class CluStream:
         self.cluster_test[closest_b] = np.array((X, y), dtype=object)
 
         self.micro_clusters[closest_a] += self.micro_clusters[closest_b]
-        self.micro_clusters[closest_a].x = np.vstack([self.micro_clusters[closest_a].x, self.micro_clusters[closest_b].x])
+        #self.micro_clusters[closest_a].x = np.vstack([self.micro_clusters[closest_a].x, self.micro_clusters[closest_b].x])
 
         self.micro_clusters[closest_b] = MicroCluster(X[np.newaxis, ...], y, self._timestamp, self.n_classes)
 
@@ -279,7 +289,7 @@ class CluStream:
         stds_m = np.ones((self.n_micro_clusters, 2))
 
         for i, mc in self.micro_clusters.items():
-            stds[i] = np.std(mc.x, axis=0)
+            #stds[i] = np.std(mc.x, axis=0)
             stds_m[i] = np.sqrt(mc.features["M"] / (mc.features["n"]))
 
         return stds, stds_m

@@ -50,7 +50,7 @@ if __name__ == '__main__':
     clu_time_windows = [np.inf]
 
     # Number of clusters to be executed
-    cluster_numbers = [3, 5, 10, 25]
+    cluster_numbers = [3, 5, 10]
 
     shuffle_data = False
     log_clustering = True
@@ -63,12 +63,11 @@ if __name__ == '__main__':
     n_bandwidths = 1
     bandwidth_step_size = 0.5
     init_bandwidth = 1
-    n_approaches = 3
 
     base_classifier = HoeffdingTreeClassifier
 
-    res = [0] * n_bandwidths * n_budget * n_approaches * n_reps * len(clu_time_windows)
     args = []
+    res = []
     # It might be easier (and better readable) to create a parameter grid
     # (https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.ParameterGrid.html#sklearn.model_selection.ParameterGrid)
     # convert it to a list and then simply loop over the grid
@@ -118,28 +117,28 @@ if __name__ == '__main__':
                                                           clustering=clustering,
                                                           metric_dict=metric_dict,
                                                           missing_label=None)),
-                            'ClusteringClfReset': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                                                # VariableUncertainty(random_state=random_state),
-                                                CluStreamClassifier(estimator_clf=SklearnClassifier(
-                                                    base_classifier(),
-                                                    missing_label=None,
-                                                    classes=classes,
-                                                    random_state=random_state),
-                                                    clustering=clustering,
-                                                    metric_dict=metric_dict,
-                                                    missing_label=None,
-                                                    refit=True)),
-                            'ClusteringClfRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                                                   # VariableUncertainty(random_state=random_state),
-                                                   CluStreamClassifier(estimator_clf=SklearnClassifier(
-                                                       base_classifier(),
-                                                       missing_label=None,
-                                                       classes=classes,
-                                                       random_state=random_state),
-                                                       clustering=clustering,
-                                                       metric_dict=metric_dict,
-                                                       missing_label=None,
-                                                       refit=True)),
+                            #'ClusteringClfReset': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                            #                    # VariableUncertainty(random_state=random_state),
+                            #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
+                            #                        base_classifier(),
+                            #                        missing_label=None,
+                            #                        classes=classes,
+                            #                        random_state=random_state),
+                            #                        clustering=clustering,
+                            #                        metric_dict=metric_dict,
+                            #                        missing_label=None,
+                            #                        refit=True)),
+                            #'ClusteringClfRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                            #                       # VariableUncertainty(random_state=random_state),
+                            #                       CluStreamClassifier(estimator_clf=SklearnClassifier(
+                            #                           base_classifier(),
+                            #                           missing_label=None,
+                            #                           classes=classes,
+                            #                          random_state=random_state),
+                            #                           clustering=clustering,
+                            #                           metric_dict=metric_dict,
+                            #                           missing_label=None,
+                            #                           refit=True)),
                             #'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                             #                    # VariableUncertainty(random_state=random_state),
                             #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
@@ -151,7 +150,6 @@ if __name__ == '__main__':
                             #                        metric_dict=metric_dict,
                            #                         missing_label=None)),
                         }
-                        assert len(query_strategies) == n_approaches, "Number of approaches does not match n_approaches"
 
                         for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
                             index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
@@ -163,7 +161,7 @@ if __name__ == '__main__':
                                          rep, bandwidth, log_clustering, log_clu_statistics])
 
                         # Sequential execution for debuggin
-                        #res[index] = run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, log_clustering, log_clu_statistics)
+                        #res.append(run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, log_clustering, log_clu_statistics))
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget = min(budget + budget_step_size, 1.0)

@@ -30,6 +30,8 @@ N_CLASSES = "N_Classes"
 CLASS_DIST = "Class_Distribution"
 N_SAMPLES = "N_Samples"
 LS_X = "LS_x"
+ENTROPY = "Class_Entropy"
+CHANGE_DETECTION = "Change_Detection"
 
 # Add column names to list
 ids_acc = [
@@ -248,7 +250,8 @@ ids_cluster_statistics = [
     CENTERS,
     RADI,
     N_SAMPLES,
-    LS_X
+    LS_X,
+    ENTROPY
 ]
 
 
@@ -301,6 +304,9 @@ class CluStreamStatisticLogger:
 
     def track_ls_x(self, value):
         self._track_value(value, LS_X)
+
+    def track_class_entropy(self, value):
+        self._track_value(value, ENTROPY)
 
     def finalize_round(self):
         self._data.append(self._current_row)

@@ -124,11 +124,14 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
                 ls_x = [mc.features["ls_x"] for i, mc in clf.clustering.micro_clusters.items()]
                 clu_statistic_logger.track_ls_x(ls_x)
 
-                cluster_classes_sum = [np.sum(mc.features["n_classes"]) for i, mc in clf.clustering.micro_clusters.items()]
+                cluster_classes_sum = [np.sum(mc.features["class_dist"]) for i, mc in clf.clustering.micro_clusters.items()]
                 clu_statistic_logger.track_n_classes(cluster_classes_sum)
 
-                cluster_classes = np.array([mc.features["n_classes"] for i, mc in clf.clustering.micro_clusters.items()])
+                cluster_classes = np.array([mc.features["class_dist"] for i, mc in clf.clustering.micro_clusters.items()])
                 clu_statistic_logger.track_classes_dist(repr(cluster_classes))
+
+                cluster_entropies = [mc.class_entropy for i, mc in clf.clustering.micro_clusters.items()]
+                clu_statistic_logger.track_class_entropy(cluster_entropies)
 
                 clu_statistic_logger.finalize_round()
 
