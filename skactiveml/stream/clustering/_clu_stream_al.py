@@ -3,6 +3,7 @@ import typing
 
 import numpy as np
 from numpy import float64
+from river.drift.binary import DDM
 from scipy.stats import entropy
 from sklearn.cluster import KMeans
 
@@ -19,7 +20,8 @@ class MicroCluster:
             x=np.random.rand(100, 5),
             y=None,
             time_stamp=1,
-            n_classes=None
+            n_classes=None,
+            change_detector=DDM()
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
@@ -34,9 +36,12 @@ class MicroCluster:
         self.n_classes = n_classes
         self.labeled_samples = np.empty((0,), dtype=object)
 
+        self.change_detector = change_detector
+
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
             self.labeled_samples = np.array((x[0], y), dtype=object).reshape(1, 2)
+            self.change_detector.update(self.class_entropy)
 
     @property
     def center(self):
@@ -51,7 +56,7 @@ class MicroCluster:
         if np.sum(self.features['class_dist']) == 0:
             return 0
 
-        class_probabilities = self.features['class_dist'] / self.n_classes
+        class_probabilities = self.features['class_dist'] / len(self.labeled_samples)
         return entropy(class_probabilities, base=self.n_classes)
 
     def radius(self):
@@ -92,6 +97,7 @@ class MicroCluster:
                 self.labeled_samples = np.array([x, y], dtype=object).reshape(1, 2)
             else:
                 self.labeled_samples = np.vstack([self.labeled_samples, np.array((x, y), dtype=object)])
+            self.change_detector.update(self.class_entropy)
 
         #self.x = np.vstack([self.x, x[np.newaxis, ...]])
 
@@ -104,6 +110,7 @@ class MicroCluster:
 
         if len(other.labeled_samples) > 0:
             self.labeled_samples = np.vstack([self.labeled_samples.reshape(-1, 2), other.labeled_samples.reshape(-1, 2)])
+            self.change_detector.update(self.class_entropy)
 
         return self
 
@@ -195,11 +202,11 @@ class CluStream:
         if distance < self.r_factor * radius:
             self.micro_clusters[nearest_mc_id].add(((X, y), self._timestamp))
             self.cluster_test[nearest_mc_id] = np.vstack([self.cluster_test[nearest_mc_id], np.array((X, y), dtype=object)])
-            return nearest_mc_id, False
+            return nearest_mc_id, self.micro_clusters[nearest_mc_id].change_detector.drift_detected
 
         # Else Merge or delete Cluster
-        nearest_mc_id, deletion = self._update_clusters((X,y))
-        return nearest_mc_id, deletion
+        nearest_mc_id = self._update_clusters((X,y))
+        return nearest_mc_id, self.micro_clusters[nearest_mc_id].change_detector.drift_detected
 
     def n_sum(self):
         ns = [mc.features["n"] for i, mc in self.micro_clusters.items()]
@@ -237,7 +244,7 @@ class CluStream:
         if del_id is not None:
             self.micro_clusters[del_id] = MicroCluster(X[np.newaxis, ...], y, self._timestamp, self.n_classes)
             self.cluster_test[del_id] = np.array((X, y), dtype=object)
-            return del_id, True
+            return del_id
 
         # Else merge the two closest clusters
         closest_a = 0
@@ -261,7 +268,7 @@ class CluStream:
 
         self.micro_clusters[closest_b] = MicroCluster(X[np.newaxis, ...], y, self._timestamp, self.n_classes)
 
-        return closest_b, False
+        return closest_b
 
     # New Cluster initialized with old Centroid as sample
     def clear_cluster(self, cluster_id):

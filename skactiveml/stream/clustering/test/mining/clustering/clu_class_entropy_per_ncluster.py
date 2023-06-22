@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     for r in reps:
         df_plot = df_entropy.loc[df_entropy[REP] == r]
-        f = sb.relplot(data=df_plot, x=TIMESTEP, y='ClassEntropy',
+        f = sb.relplot(data=df_plot, x=TIMESTEP, y=ENTROPY,
                        errorbar=None, kind="line", hue='Cluster',
                        col=N_CLUSTER, row=CLASSIFIER,
                        palette='tab10', facet_kws={'sharey': False})

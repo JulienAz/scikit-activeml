@@ -45,29 +45,39 @@ class CluStreamClassifier(SkactivemlClassifier):
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def partial_fit(self, X, y, sample_weight=None, **fit_kwargs):
-        mc_id, deletion = self.clustering.fit_one(X[0], y[0])
-        if self.refit & deletion:
-            return self.fit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
+        mc_id, change_detected = self.clustering.fit_one(X[0], y[0])
+        # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
+        if self.refit & change_detected:
+            # If change_detector of cluster is positiv, corresponding cluster is cleared
+            self.clustering.clear_cluster(mc_id)
+
+            # Refitting Classifier on Labeled Samples in all Cluster
+            return self.refit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
+
         if y[0] is not self.estimator_clf.missing_label:
             return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
 
-    def fit_on_cluster(self, X, y, sample_weight=None, **fit_kwargs):
-        self.clustering.fit_one(X[-1], y[-1])
+    def refit_on_cluster(self, X, y, sample_weight=None, **fit_kwargs):
         #labeled_data = np.array([np.array(mc.labeled_samples) for mc_id, mc in self.clustering.micro_clusters.items()])
         X = []
         y = []
+        # Collecting the Labeled Samples from the clusters
         for mc_id, mc in self.clustering.micro_clusters.items():
+            # Hard coded for rbf_generator change adaption !!!
+            #if not len(mc.labeled_samples) == 0:
+            #    count_2 = np.count_nonzero(mc.labeled_samples[:, 1] == 2)
+            #    is_majority_two = count_2 > mc.labeled_samples[:,1].size / 2#
+
+            #    if is_majority_two:
+            #        features, targets = zip(*mc.labeled_samples)
+            #        X.extend(features)
+            #        y.extend(targets)
+            #    else:
+            #        self.clustering.clear_cluster(mc_id)
             if not len(mc.labeled_samples) == 0:
-                count_2 = np.count_nonzero(mc.labeled_samples[:, 1] == 2)
-                is_majority_two = count_2 > mc.labeled_samples[:,1].size / 2
-
-                if is_majority_two:
-                    features, targets = zip(*mc.labeled_samples)
-                    X.extend(features)
-                    y.extend(targets)
-                else:
-                    self.clustering.clear_cluster(mc_id)
-
+                features, targets = zip(*mc.labeled_samples)
+                X.extend(features)
+                y.extend(targets)
 
         # Convert the lists to NumPy arrays
         if not len(X) == 0:
