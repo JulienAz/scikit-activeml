@@ -107,16 +107,16 @@ if __name__ == '__main__':
 
                         # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                         query_strategies = {
-                            #'ClusteringIncremental': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                            #                         # VariableUncertainty(random_state=random_state),
-                            #                          CluStreamClassifier(estimator_clf=SklearnClassifier(
-                            #                              base_classifier(),
-                            #                              missing_label=None,
-                            #                             classes=classes,
-                            #                              random_state=random_state),
-                            #                              clustering=clustering,
-                            #                              metric_dict=metric_dict,
-                            #                              missing_label=None)),
+                            'ClusteringIncremental': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                                     # VariableUncertainty(random_state=random_state),
+                                                      CluStreamClassifier(estimator_clf=SklearnClassifier(
+                                                          base_classifier(),
+                                                          missing_label=None,
+                                                         classes=classes,
+                                                          random_state=random_state),
+                                                          clustering=clustering,
+                                                          metric_dict=metric_dict,
+                                                          missing_label=None)),
                             #'ClusteringClfReset': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                             #                    # VariableUncertainty(random_state=random_state),
                             #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
