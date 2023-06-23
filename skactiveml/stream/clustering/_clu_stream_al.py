@@ -3,6 +3,7 @@ import typing
 
 import numpy as np
 from numpy import float64
+from river.drift import ADWIN
 from river.drift.binary import DDM
 from scipy.stats import entropy
 from sklearn.cluster import KMeans
@@ -21,7 +22,7 @@ class MicroCluster:
             y=None,
             time_stamp=1,
             n_classes=None,
-            change_detector=DDM
+            change_detector=ADWIN
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
@@ -36,7 +37,7 @@ class MicroCluster:
         self.n_classes = n_classes
         self.labeled_samples = np.empty((0,), dtype=object)
 
-        self.change_detector = change_detector()
+        self.change_detector = change_detector(clock=1, delta=0.05)
 
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
