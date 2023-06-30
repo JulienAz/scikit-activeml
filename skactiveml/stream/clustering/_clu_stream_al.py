@@ -22,7 +22,7 @@ class MicroCluster:
             y=None,
             time_stamp=1,
             n_classes=None,
-            change_detector=ADWIN
+            change_detector=DDM
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
@@ -37,7 +37,11 @@ class MicroCluster:
         self.n_classes = n_classes
         self.labeled_samples = np.empty((0,), dtype=object)
 
-        self.change_detector = change_detector(clock=1, delta=0.05)
+        # Adwin params
+        #self.change_detector = change_detector(clock=1, delta=0.1)
+
+        # DDM params
+        self.change_detector = change_detector(warm_start=10)
 
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
@@ -151,6 +155,8 @@ class CluStream:
 
         self.n_init_train = n_init_train
 
+        self.free_cluster = []
+
         if init_train is not None:
             self.init_train = init_train
             self._init_clusters()
@@ -204,6 +210,12 @@ class CluStream:
             self.micro_clusters[nearest_mc_id].add(((X, y), self._timestamp))
             self.cluster_test[nearest_mc_id] = np.vstack([self.cluster_test[nearest_mc_id], np.array((X, y), dtype=object)])
             return nearest_mc_id, self.micro_clusters[nearest_mc_id].change_detector.drift_detected
+
+        # Else check if free clusters are available
+        if self.free_cluster:
+            free_cluster_id = self.free_cluster.pop(0)
+            self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.n_classes)
+            self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object) #!!! For cluster analysis
 
         # Else Merge or delete Cluster
         nearest_mc_id = self._update_clusters((X,y))
@@ -271,11 +283,21 @@ class CluStream:
 
         return closest_b
 
-    # New Cluster initialized with old Centroid as sample
+    # Invoked when change in cluster is detected
     def clear_cluster(self, cluster_id):
-        centroid = self.micro_clusters[cluster_id].center
-        self.micro_clusters[cluster_id] = self.mc(centroid[np.newaxis, ...], None, self._timestamp, self.n_classes)
-        self.cluster_test[cluster_id] = np.array((centroid, np.nan), dtype=object)
+        # !!! Old implementation, cluster is simply reinitialized with its old centroid
+        #centroid = self.micro_clusters[cluster_id].center
+        #self.micro_clusters[cluster_id] = self.mc(centroid[np.newaxis, ...], None, self._timestamp, self.n_classes)
+        #self.cluster_test[cluster_id] = np.array((centroid, np.nan), dtype=object)
+
+        # !!! New implementation to test: Cluster is added to free cluster list
+        # Delete corresponding microcluster from dictionary
+        del self.micro_clusters[cluster_id]
+
+        # Add clusterindice to free cluster list
+        self.free_cluster.append(cluster_id)
+
+        test = self.micro_clusters
 
     def nearest_cluster(self, X):
         closest_distance = math.inf

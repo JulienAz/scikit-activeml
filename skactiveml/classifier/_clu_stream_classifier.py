@@ -45,23 +45,24 @@ class CluStreamClassifier(SkactivemlClassifier):
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def partial_fit(self, X, y, logger= None, sample_weight=None, **fit_kwargs):
-        mc_id, change_detected = self.clustering.fit_one(X[0], y[0])
+        mc_id_fitted, change_detected = self.clustering.fit_one(X[0], y[0])
         # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
         if self.refit:
-            change = False
+            changed_clusters = []
             change_detections = []
             for mc_id, mc in self.clustering.micro_clusters.items():
                 change_detections.append(mc.change_detector.drift_detected)
                 if mc.change_detector.drift_detected:
-                    change = True
-                    self.clustering.clear_cluster(mc_id)
+                    changed_clusters.append(mc_id)
             if not logger == None:
                 logger.track_change_detection(change_detections)
             # If change_detector of cluster is positiv, corresponding cluster is cleared
            # self.clustering.clear_cluster(mc_id)
 
             # Refitting Classifier on Labeled Samples in all Cluster
-            if change:
+            if changed_clusters:
+                for mc_id in changed_clusters:
+                    self.clustering.clear_cluster(mc_id)
                 self.refit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
 
         if y[0] is not self.estimator_clf.missing_label:
