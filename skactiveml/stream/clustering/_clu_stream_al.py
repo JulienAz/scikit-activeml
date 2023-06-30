@@ -41,7 +41,7 @@ class MicroCluster:
         #self.change_detector = change_detector(clock=1, delta=0.1)
 
         # DDM params
-        self.change_detector = change_detector(warm_start=10)
+        self.change_detector = change_detector(warm_start=5, drift_threshold=1.5)
 
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
