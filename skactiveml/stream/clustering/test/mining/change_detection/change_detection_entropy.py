@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     budget_to_plot = np.random.choice(np.unique(df[BUDGET]))
     df = df.loc[df[BUDGET] == budget_to_plot]
+    df = df.loc[df[CLASSIFIER] == 'ClusteringClfRefit']
 
     df_entropy = get_entropy_per_timestep(df)
     #df_entropy = add_change_dection_to_entropy_df(df_entropy, change_detector)

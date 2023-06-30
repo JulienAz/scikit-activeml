@@ -82,7 +82,7 @@
   - Schauen wie sich verändert über zeit
   - Changes erkennbar?
 
-# 12.06
+## 12.06
 - [X] 3 Cluster based vergleich
 - [X] Clusterstatistiken analysieren
 - [X] Entropy einbauen
@@ -142,3 +142,7 @@
   - 2 Clusterstatistiken pro cluster halten
   - "Exponential bucketing"/"Pyramidical Timeframe"
     - Pro Cluster statistiken die unterschiedliche Zeithorizonte betrachten
+
+## 30.06
+- [ ] InterRBF 30000 mit 20er Cluster
+- [ ] Dynamische Clusteranzahl implementieren
