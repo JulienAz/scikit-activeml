@@ -1,14 +1,22 @@
+# Ideen
+- Clusterensemble
+  - proba prediction ensemble base classifier + cluster classifier
+    - Nur cluster classifier?
+  - Changedetection auf accuracy der cluster classifier
+- Dynamische Clusteranzahl
+  - trennen bei bestimmten punkten, vergleichen um changes zu erkennen
+
 # Daily To-do
 ## General Todos:
 - Testscript anpassen
   - ~~Args mit append~~
+  - ~~Anzahl Cluster experimente~~
   - Approaches struktur verbessern (Erweiterbarer)
 - Refactor to Dataset class
   - ~~Logging von Datensatz~~
   - mehrere Datensätze parallel
   - Farben in plots einheitlich
   - Datensätze übersicht in Overleaf schreiben
-  - Anzahl Cluster experimente
   - Logger Überklasse
 ## Bugs
 - ~~Overflow von timestamps~~ 
@@ -122,10 +130,6 @@
 
 -Bei SEA subsamplen (Alle 5 Datenpunkte nehmen)
 
-# Idee
-- Clusterensemble
-  - Bei change in Cluster muss nur der eine Classifier refittet werden
-
 # Mögliche Probleme:
   - Merges verändern statistiken
     - Radi steigt an und sinkt dann wieder
@@ -143,6 +147,7 @@
   - "Exponential bucketing"/"Pyramidical Timeframe"
     - Pro Cluster statistiken die unterschiedliche Zeithorizonte betrachten
 
-## 30.06
-- [ ] InterRBF 30000 mit 20er Cluster
-- [ ] Dynamische Clusteranzahl implementieren
+## 03.07
+- [X] Ensemble Clf implementieren
+- [ ] Change detection auf cluster prediction
+- [ ] Thesis struktur machen

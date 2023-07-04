@@ -11,6 +11,9 @@ from sklearn.cluster import KMeans
 import scipy.stats as sps
 
 from river import utils
+from skmultiflow.trees import HoeffdingTreeClassifier
+
+from skactiveml.classifier import SklearnClassifier
 
 
 class MicroCluster:
@@ -21,7 +24,7 @@ class MicroCluster:
             x=np.random.rand(100, 5),
             y=None,
             time_stamp=1,
-            n_classes=None,
+            classes=None,
             change_detector=DDM
     ):
         self.features: typing.Dict = {
@@ -29,12 +32,13 @@ class MicroCluster:
             "ls_t": time_stamp,
             "ss_t": float64(np.square(time_stamp)),
             "n": len(x),
-            "class_dist": np.zeros(n_classes),
+            "class_dist": np.zeros(len(classes)),
             "M": np.square(x[0] - np.divide(x[0], len(x))),
         }
-        #self.x = x
 
-        self.n_classes = n_classes
+        #self.x = x
+        self.classes = classes
+        self.n_classes = len(classes)
         self.labeled_samples = np.empty((0,), dtype=object)
 
         # Adwin params
@@ -63,6 +67,9 @@ class MicroCluster:
 
         class_probabilities = self.features['class_dist'] / len(self.labeled_samples)
         return entropy(class_probabilities, base=self.n_classes)
+
+    def update_changedetector(self):
+        return self.change_detector.drift_detected
 
     def radius(self):
         std = np.sqrt(self.features["M"] / (self.features["n"]))
@@ -106,7 +113,7 @@ class MicroCluster:
 
         #self.x = np.vstack([self.x, x[np.newaxis, ...]])
 
-    def __iadd__(self, other: "MicroCluster"):
+    def __iadd__(self, other):
         addterm_m = self.features["n"] * other.features["n"] / (self.features["n"] + other.features["n"])
         addterm_m *= np.square(self.mean - other.mean)
         
@@ -118,6 +125,41 @@ class MicroCluster:
             self.change_detector.update(self.class_entropy)
 
         return self
+
+# Microcluster class where each cluster has its own classifier
+class MicroClfCluster(MicroCluster):
+    def __init__(
+            self,
+            x=np.random.rand(100, 5),
+            y=None,
+            time_stamp=1,
+            classes=None,
+            random_state=0,
+            classifier=HoeffdingTreeClassifier,
+            change_detector=DDM,
+    ):
+        self.clf = SklearnClassifier(classifier(), missing_label=None, random_state=random_state, classes=classes)
+
+        if (y is not None) and (not np.isnan(y)):
+            self.clf.partial_fit(x.reshape([1, -1]), np.array([y]))
+
+        super().__init__(x=x,
+            y=y,
+            time_stamp=time_stamp,
+            classes=classes,
+            change_detector=change_detector)
+
+    def add(self, data):
+        (x, y), t = data
+        if y is not self.clf.missing_label:
+            self.clf.partial_fit(x.reshape([1, -1]), np.array([y]))
+        super().add(data)
+
+    def __iadd__(self, other):
+        if len(other.labeled_samples) > 0:
+            X, y = zip(*other.labeled_samples)
+            self.clf.partial_fit(X, y)
+        return super().__iadd__(other)
 
 
 class CluStream:
@@ -135,14 +177,16 @@ class CluStream:
             micro_cluster=MicroCluster,
             time_window=1000,
             random_state=None,
-            n_classes=None
+            classes=None
     ):
         self.mc = micro_cluster
 
         self.n_micro_clusters = n_micro_clusters
         self.r_factor = r_factor
         self.seed = seed
-        self.n_classes = n_classes
+
+        self.classes = classes
+        self.n_classes = len(classes)
 
         self.centers: dict[int, []] = {}
         self.micro_clusters: dict[int, micro_cluster] = {}
@@ -214,7 +258,7 @@ class CluStream:
         # Else check if free clusters are available
         if self.free_cluster:
             free_cluster_id = self.free_cluster.pop(0)
-            self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.n_classes)
+            self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.classes)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object) #!!! For cluster analysis
 
         # Else Merge or delete Cluster
@@ -232,7 +276,7 @@ class CluStream:
         self.centers = {i: X for i, X in enumerate(self._kmeans_mc.cluster_centers_)}
         self.micro_clusters = {i: self.mc(x=X[np.newaxis, ...],
                                           time_stamp=self.n_micro_clusters - 1,
-                                          n_classes=self.n_classes)
+                                          classes=self.classes)
                                for i, X in
                                self.centers.items()}
         self.cluster_test = [np.array((X, np.nan), dtype=object) for X in self._kmeans_mc.cluster_centers_]
@@ -255,7 +299,7 @@ class CluStream:
                 break
 
         if del_id is not None:
-            self.micro_clusters[del_id] = MicroCluster(X[np.newaxis, ...], y, self._timestamp, self.n_classes)
+            self.micro_clusters[del_id] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.classes)
             self.cluster_test[del_id] = np.array((X, y), dtype=object)
             return del_id
 
@@ -279,7 +323,7 @@ class CluStream:
         self.micro_clusters[closest_a] += self.micro_clusters[closest_b]
         #self.micro_clusters[closest_a].x = np.vstack([self.micro_clusters[closest_a].x, self.micro_clusters[closest_b].x])
 
-        self.micro_clusters[closest_b] = MicroCluster(X[np.newaxis, ...], y, self._timestamp, self.n_classes)
+        self.micro_clusters[closest_b] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.classes)
 
         return closest_b
 
@@ -293,11 +337,11 @@ class CluStream:
         # !!! New implementation to test: Cluster is added to free cluster list
         # Delete corresponding microcluster from dictionary
         del self.micro_clusters[cluster_id]
+        self.cluster_test[cluster_id] = []
+
 
         # Add clusterindice to free cluster list
         self.free_cluster.append(cluster_id)
-
-        test = self.micro_clusters
 
     def nearest_cluster(self, X):
         closest_distance = math.inf

@@ -4,6 +4,7 @@ from sklearn.neighbors import KernelDensity
 from skactiveml.base import SkactivemlClassifier
 from skactiveml.classifier import ParzenWindowClassifier
 from skactiveml.stream.clustering import CluStream
+from skactiveml.stream.clustering._clu_stream_al import MicroClfCluster
 from skactiveml.utils import MISSING_LABEL
 
 
@@ -12,14 +13,14 @@ class CluStreamClassifier(SkactivemlClassifier):
     def __init__(
         self,
         estimator_clf,
-        clustering=CluStream(),
         freq_pred_clf=None,
         classes=None,
         missing_label=MISSING_LABEL,
         cost_matrix=None,
         random_state=None,
         metric_dict=None,
-        refit=False
+        refit=False,
+        clustering_param_dict=None
     ):
         super().__init__(
             classes=classes,
@@ -30,7 +31,8 @@ class CluStreamClassifier(SkactivemlClassifier):
         self.metric_dict = metric_dict
         self.estimator_clf = estimator_clf
         self.freq_pred_clf = freq_pred_clf
-        self.clustering = clustering
+
+        self.clustering = CluStream(**clustering_param_dict)
 
         self.random_state = random_state
 
@@ -49,11 +51,12 @@ class CluStreamClassifier(SkactivemlClassifier):
         # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
         if self.refit:
             changed_clusters = []
-            change_detections = []
+            change_detections = [False] * self.clustering.n_micro_clusters
             for mc_id, mc in self.clustering.micro_clusters.items():
-                change_detections.append(mc.change_detector.drift_detected)
+                change_detections[mc_id]= mc.change_detector.drift_detected
                 if mc.change_detector.drift_detected:
                     changed_clusters.append(mc_id)
+                change_detections[mc_id] = mc.change_detector.drift_detected
             if not logger == None:
                 logger.track_change_detection(change_detections)
             # If change_detector of cluster is positiv, corresponding cluster is cleared
@@ -130,7 +133,7 @@ class CluStreamClassifier(SkactivemlClassifier):
                 if logger is not None:
                     logger.track_lbl_frequency(n.sum(axis=1, keepdims=True)[0][0])
                     logger.track_cluster(cluster_id)
-                pred_proba = self.estimator_clf.predict_proba(X)
+                pred_proba = self.predict_proba(X)
                 k_vec = n * pred_proba
 
                 #kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(mc.x)
@@ -141,6 +144,43 @@ class CluStreamClassifier(SkactivemlClassifier):
         if logger is not None:
             logger.track_lbl_frequency(1)
         return self.estimator_clf.predict_proba(X)
+
+class CluStreamEnsembleClassifier(CluStreamClassifier):
+
+    def predict_proba(self, X):
+        # Get Clf of cluster the point is assigned to
+        cluster_id, _ = self.clustering.nearest_cluster(X)
+        mc_clf = self.clustering.micro_clusters[cluster_id].clf
+
+        # Get weighted probabilities of base estimator and cluster estimator
+        proba = self.estimator_clf.predict_proba(X) * 0.5 + mc_clf.predict_proba(X) * 0.5
+        return proba
+
+    def partial_fit(self, X, y, logger= None, sample_weight=None, **fit_kwargs):
+        mc_id_fitted, change_detected = self.clustering.fit_one(X[0], y[0])
+        # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
+        if self.refit:
+            changed_clusters = []
+            change_detections = [False] * self.clustering.n_micro_clusters
+            for mc_id, mc in self.clustering.micro_clusters.items():
+                change_detections[mc_id]= mc.change_detector.drift_detected
+                if mc.change_detector.drift_detected:
+                    changed_clusters.append(mc_id)
+                change_detections[mc_id] = mc.change_detector.drift_detected
+            if not logger == None:
+                logger.track_change_detection(change_detections)
+            # If change_detector of cluster is positiv, corresponding cluster is cleared
+           # self.clustering.clear_cluster(mc_id)
+
+            # Refitting Classifier on Labeled Samples in all Cluster
+            if changed_clusters:
+                for mc_id in changed_clusters:
+                    self.clustering.clear_cluster(mc_id)
+                self.refit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
+
+        if y[0] is not self.estimator_clf.missing_label:
+            return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
+
 
 
 
