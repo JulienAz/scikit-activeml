@@ -151,3 +151,14 @@
 - [X] Ensemble Clf implementieren
 - [ ] Change detection auf cluster prediction
 - [ ] Thesis struktur machen
+
+# Meeting 21.06
+## Punkte
+- Bei Merge, wie umgehen?
+  - Bei merge ist ja gar kein Change
+  - Ggf einfach changedetector neu initialisieren, ausprobieren!
+- Performance von Refit auf Chessboard über viele Reps
+  - Unterschiedliche Parameters
+- Change Detector auf Accuracy
+  - Muss nicht unbedingt auf Ensemble
+- Zliobate implementieren

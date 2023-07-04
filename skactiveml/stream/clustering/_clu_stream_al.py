@@ -122,8 +122,9 @@ class MicroCluster:
 
         if len(other.labeled_samples) > 0:
             self.labeled_samples = np.vstack([self.labeled_samples.reshape(-1, 2), other.labeled_samples.reshape(-1, 2)])
+            #self.change_detector.update(self.class_entropy)
+            self.change_detector = DDM(warm_start=5, drift_threshold=1.5) #!!!TODO: Hardcoded Change Detector, should work with configured Detector
             self.change_detector.update(self.class_entropy)
-
         return self
 
 # Microcluster class where each cluster has its own classifier
@@ -357,7 +358,6 @@ class CluStream:
 
     def _distance(self, point_a, point_b):
         return np.linalg.norm(point_a - point_b)
-
     def stds(self):
         stds = np.ones((self.n_micro_clusters, 2))
         stds_m = np.ones((self.n_micro_clusters, 2))
