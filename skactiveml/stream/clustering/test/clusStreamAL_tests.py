@@ -56,7 +56,7 @@ if __name__ == '__main__':
     cluster_numbers = [3, 15, 20]
 
     shuffle_data = False
-    log_clustering = True
+    log_clustering = False
     log_clu_statistics = True
 
     n_budget = 1
@@ -125,7 +125,7 @@ if __name__ == '__main__':
 
                         # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                         query_strategies = {
-                            'Zliobaite_refit': (StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
+                            'ZliobaiteRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
                                                      # VariableUncertainty(random_state=random_state),
                                                       ZliobateClassifier(
                                                        clf_type=base_classifier,
@@ -195,10 +195,10 @@ if __name__ == '__main__':
                                          query_strategy_name, query_strategy,
                                          clf, dataset['name'],
                                          training_size, init_train_length,
-                                         rep, bandwidth, log_clustering, log_clu_statistics])
+                                         rep, bandwidth, n_cluster, log_clustering, log_clu_statistics])
 
                             # Sequential execution for debuggin
-                            #res.append(run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, log_clustering, log_clu_statistics))
+                            #res.append(run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, n_cluster, log_clustering, log_clu_statistics))
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget = min(budget + budget_step_size, 1.0)

@@ -15,6 +15,7 @@ from skactiveml.utils import call_func
 
 def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         n_training_size=100, n_init_traing=10, rep=0, band_width=0.1,
+        n_cluster=0,
         log_clustering=False, log_clu_statistics=False, fit_clf=False):
     acc_logger = CluStreamPerformanceLogger()
     clu_logger = CluStreamClusteringLogger()
@@ -101,7 +102,6 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
 
         if approach_name.startswith('Clustering'):
             acc_logger.track_clu_time_window(clf.clustering.time_window)
-            acc_logger.track_n_cluster(clf.clustering.n_micro_clusters)
             if log_clu_statistics:
                 clu_statistic_logger.track_n_cluster(clf.clustering.n_micro_clusters)
                 clu_statistic_logger.track_dataset(dataset_name)
@@ -145,6 +145,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         acc_logger.track_gt(y_cand)
         acc_logger.track_budget(budget)
         acc_logger.track_bandwidth(band_width)
+        acc_logger.track_n_cluster(n_cluster)
         acc_logger.track_x1(X_cand[0][0])
         acc_logger.track_x2(X_cand[0][1])
         acc_logger.track_rep(rep)
