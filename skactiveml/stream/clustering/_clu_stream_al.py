@@ -4,13 +4,13 @@ import typing
 import numpy as np
 from numpy import float64
 from river.drift import ADWIN
-from river.drift.binary import DDM
 from scipy.stats import entropy
 from sklearn.cluster import KMeans
 
 import scipy.stats as sps
 
 from river import utils
+from skmultiflow.drift_detection import DDM
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 from skactiveml.classifier import SklearnClassifier
@@ -44,13 +44,17 @@ class MicroCluster:
         # Adwin params
         #self.change_detector = change_detector(clock=1, delta=0.1)
 
+
+        # River DDM params
+        #self.change_detector = change_detector(warm_start=5, drift_threshold=1.5)
+
         # DDM params
-        self.change_detector = change_detector(warm_start=5, drift_threshold=1.5)
+        self.change_detector = change_detector(min_num_instances=1, out_control_level=1)
 
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
             self.labeled_samples = np.array((x[0], y), dtype=object).reshape(1, 2)
-            self.change_detector.update(self.class_entropy)
+            self.change_detector.add_element(self.class_entropy)
 
     @property
     def center(self):
@@ -69,7 +73,7 @@ class MicroCluster:
         return entropy(class_probabilities, base=self.n_classes)
 
     def update_changedetector(self):
-        return self.change_detector.drift_detected
+        return self.change_detector.detected_change()
 
     def radius(self):
         std = np.sqrt(self.features["M"] / (self.features["n"]))
@@ -109,7 +113,7 @@ class MicroCluster:
                 self.labeled_samples = np.array([x, y], dtype=object).reshape(1, 2)
             else:
                 self.labeled_samples = np.vstack([self.labeled_samples, np.array((x, y), dtype=object)])
-            self.change_detector.update(self.class_entropy)
+            self.change_detector.add_element(self.class_entropy)
 
         #self.x = np.vstack([self.x, x[np.newaxis, ...]])
 
@@ -122,9 +126,10 @@ class MicroCluster:
 
         if len(other.labeled_samples) > 0:
             self.labeled_samples = np.vstack([self.labeled_samples.reshape(-1, 2), other.labeled_samples.reshape(-1, 2)])
-            #self.change_detector.update(self.class_entropy)
-            self.change_detector = DDM(warm_start=5, drift_threshold=1.5) #!!!TODO: Hardcoded Change Detector, should work with configured Detector
-            self.change_detector.update(self.class_entropy)
+            #self.change_detector = DDM(min_num_instances=5, out_control_level=0.1) #!!!TODO: Hardcoded Change Detector, should work with configured Detector
+            #self.change_detector = ADWIN(clock=1, delta=0.05)
+            self.change_detector.reset()
+            self.change_detector.add_element(self.class_entropy)
         return self
 
 # Microcluster class where each cluster has its own classifier
@@ -233,6 +238,10 @@ class CluStream:
                 self._init_clusters()
 
             return X
+        if len(self.micro_clusters) == 0 and self.free_cluster:
+            free_cluster_id = self.free_cluster.pop(0)
+            self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.classes)
+            self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object)  # !!! For cluster analysi
 
         self._timestamp += 1
         nearest_mc_id, distance = self.nearest_cluster(X)
@@ -254,7 +263,7 @@ class CluStream:
         if distance < self.r_factor * radius:
             self.micro_clusters[nearest_mc_id].add(((X, y), self._timestamp))
             self.cluster_test[nearest_mc_id] = np.vstack([self.cluster_test[nearest_mc_id], np.array((X, y), dtype=object)])
-            return nearest_mc_id, self.micro_clusters[nearest_mc_id].change_detector.drift_detected
+            return nearest_mc_id, self.micro_clusters[nearest_mc_id].change_detector.detected_change()
 
         # Else check if free clusters are available
         if self.free_cluster:
@@ -264,7 +273,7 @@ class CluStream:
 
         # Else Merge or delete Cluster
         nearest_mc_id = self._update_clusters((X,y))
-        return nearest_mc_id, self.micro_clusters[nearest_mc_id].change_detector.drift_detected
+        return nearest_mc_id, self.micro_clusters[nearest_mc_id].change_detector.detected_change()
 
     def n_sum(self):
         ns = [mc.features["n"] for i, mc in self.micro_clusters.items()]

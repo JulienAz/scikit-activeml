@@ -174,8 +174,12 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
     # Create Dataframe of Clustering
     if approach_name.startswith('Clustering') & log_clustering:
         for i, cluster_samples in enumerate(clf.clustering.cluster_test):
-            center = clf.clustering.micro_clusters[i].center
-            radius = clf.clustering.micro_clusters[i].radius()
+            if i in clf.clustering.micro_clusters:
+                center = clf.clustering.micro_clusters[i].center
+                radius = clf.clustering.micro_clusters[i].radius()
+            else:
+                radius = 0
+                center = [0, 0]
             if np.shape(cluster_samples) == (2,):
                 cluster_samples = cluster_samples.reshape((1, 2))
             for (X_tmp, y_tmp) in cluster_samples:

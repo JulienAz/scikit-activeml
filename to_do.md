@@ -162,3 +162,10 @@
 - Change Detector auf Accuracy
   - Muss nicht unbedingt auf Ensemble
 - Zliobate implementieren
+
+## 06.07
+[ ] Change Detector refactoring
+[ ] Performance ergebnisse auswerten
+[ ] Zliobate ansatz implementieren
+  - Implementierung
+  - Vergleiche mit Clustering- Refit/Ensemble

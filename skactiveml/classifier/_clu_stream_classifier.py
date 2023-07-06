@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.neighbors import KernelDensity
 
 from skactiveml.base import SkactivemlClassifier
-from skactiveml.classifier import ParzenWindowClassifier
+from skactiveml.classifier import ParzenWindowClassifier, SklearnClassifier
 from skactiveml.stream.clustering import CluStream
 from skactiveml.stream.clustering._clu_stream_al import MicroClfCluster
 from skactiveml.utils import MISSING_LABEL
@@ -12,7 +12,7 @@ class CluStreamClassifier(SkactivemlClassifier):
 
     def __init__(
         self,
-        estimator_clf,
+        clf_type,
         freq_pred_clf=None,
         classes=None,
         missing_label=MISSING_LABEL,
@@ -20,7 +20,8 @@ class CluStreamClassifier(SkactivemlClassifier):
         random_state=None,
         metric_dict=None,
         refit=False,
-        clustering_param_dict=None
+        clustering_param_dict=None,
+        classifier_param_dict=None
     ):
         super().__init__(
             classes=classes,
@@ -29,7 +30,9 @@ class CluStreamClassifier(SkactivemlClassifier):
             random_state=random_state,
         )
         self.metric_dict = metric_dict
-        self.estimator_clf = estimator_clf
+
+        #Init Classifier        classifier_param_dict['']
+        self.estimator_clf = SklearnClassifier(clf_type(), **classifier_param_dict)
         self.freq_pred_clf = freq_pred_clf
 
         self.clustering = CluStream(**clustering_param_dict)
@@ -53,10 +56,10 @@ class CluStreamClassifier(SkactivemlClassifier):
             changed_clusters = []
             change_detections = [False] * self.clustering.n_micro_clusters
             for mc_id, mc in self.clustering.micro_clusters.items():
-                change_detections[mc_id]= mc.change_detector.drift_detected
-                if mc.change_detector.drift_detected:
+                change_detections[mc_id]= mc.change_detector.detected_change()
+                if mc.change_detector.detected_change():
                     changed_clusters.append(mc_id)
-                change_detections[mc_id] = mc.change_detector.drift_detected
+                change_detections[mc_id] = mc.change_detector.detected_change()
             if not logger == None:
                 logger.track_change_detection(change_detections)
             # If change_detector of cluster is positiv, corresponding cluster is cleared
@@ -110,7 +113,7 @@ class CluStreamClassifier(SkactivemlClassifier):
         return self.estimator_clf.predict(X)
 
     def predict_freq(self, X, logger=None):
-        if self.clustering.initialized:
+        if self.clustering.initialized & len(self.clustering.micro_clusters) != 0:
             cluster_id, _ = self.clustering.nearest_cluster(X)
             mc = self.clustering.micro_clusters[cluster_id]
 
@@ -163,10 +166,10 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
             changed_clusters = []
             change_detections = [False] * self.clustering.n_micro_clusters
             for mc_id, mc in self.clustering.micro_clusters.items():
-                change_detections[mc_id]= mc.change_detector.drift_detected
-                if mc.change_detector.drift_detected:
+                change_detections[mc_id]= mc.change_detector.detected_change()
+                if mc.change_detector.detected_change():
                     changed_clusters.append(mc_id)
-                change_detections[mc_id] = mc.change_detector.drift_detected
+                change_detections[mc_id] = mc.change_detector.detected_change()
             if not logger == None:
                 logger.track_change_detection(change_detections)
             # If change_detector of cluster is positiv, corresponding cluster is cleared

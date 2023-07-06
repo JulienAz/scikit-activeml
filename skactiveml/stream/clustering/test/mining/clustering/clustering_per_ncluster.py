@@ -59,11 +59,14 @@ if __name__ == '__main__':
     for r in range(n_reps):
         for t, n_cluster in enumerate(n_cluster_values):
             for c in range(n_cluster):
-                c1 = center_radi[index][0]
-                c2 = center_radi[index][1]
-                radi = center_radi[index][2]
-                axes[r][t].add_patch(patches.Circle([c1, c2], radius=radi * 3, fill=False, color="turquoise"))
-                index += 1
+                if n_cluster == center_radi[index][6]:
+                    c1 = center_radi[index][0]
+                    c2 = center_radi[index][1]
+                    radi = center_radi[index][2]
+                    axes[r][t].add_patch(patches.Circle([c1, c2], radius=radi * 3, fill=False, color="turquoise"))
+                    index += 1
+                else:
+                    break
 
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, 'output_clustering_per_ncluster.pdf')
     save_image(image_filepath)
