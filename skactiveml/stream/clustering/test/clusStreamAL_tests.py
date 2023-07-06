@@ -125,13 +125,13 @@ if __name__ == '__main__':
 
                         # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                         query_strategies = {
-                            #'Zliobaite_refit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                            #                         # VariableUncertainty(random_state=random_state),
-                            #                          ZliobateClassifier(
-                            #                           clf_type=base_classifier,
-                            #                           metric_dict=metric_dict,
-                            #                           missing_label=None,
-                            #                           classifier_param_dict=classifier_params)),
+                            'Zliobaite_refit': (StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
+                                                     # VariableUncertainty(random_state=random_state),
+                                                      ZliobateClassifier(
+                                                       clf_type=base_classifier,
+                                                       metric_dict=metric_dict,
+                                                       missing_label=None,
+                                                       classifier_param_dict=classifier_params)),
                             #'ClusteringIncremental': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                             #                         # VariableUncertainty(random_state=random_state),
                             #                          CluStreamClassifier(estimator_clf=SklearnClassifier(
@@ -197,8 +197,8 @@ if __name__ == '__main__':
                                          training_size, init_train_length,
                                          rep, bandwidth, log_clustering, log_clu_statistics])
 
-                        # Sequential execution for debuggin
-                        #res.append(run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, log_clustering, log_clu_statistics))
+                            # Sequential execution for debuggin
+                            #res.append(run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, log_clustering, log_clu_statistics))
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget = min(budget + budget_step_size, 1.0)
