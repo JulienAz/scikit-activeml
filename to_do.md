@@ -5,6 +5,11 @@
   - Changedetection auf accuracy der cluster classifier
 - Dynamische Clusteranzahl
   - trennen bei bestimmten punkten, vergleichen um changes zu erkennen
+- Clusterclassifier
+  - 1. z.B. Prediction ist meist vorkommende Klasse des Clusters wo reinfällt
+  - Oder meist vorkommende der C nähsten CLuster
+  - 2. Statistiken von Cluster in gelernten Featurevektor integrieren
+    - Distanz zu Cluster
 
 # Daily To-do
 ## General Todos:
@@ -164,8 +169,12 @@
 - Zliobate implementieren
 
 ## 06.07
-[ ] Change Detector refactoring
-[ ] Performance ergebnisse auswerten
-[ ] Zliobate ansatz implementieren
-  - Implementierung
-  - Vergleiche mit Clustering- Refit/Ensemble
+-[X] Change Detector refactoring
+-[X] Performance ergebnisse auswerten
+-[X] Zliobate ansatz implementieren
+  -[X] Implementierung
+  -[X] Vergleiche mit Clustering- Refit/Ensemble
+
+## 07.07
+-[ ] Paper recherche
+- 

@@ -163,19 +163,16 @@ if __name__ == '__main__':
                                                        clustering_param_dict=clusteringParams,
                                                        classifier_param_dict=classifier_params
                                                    )),
-                            #'ClusteringClfEnsemble': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                            #                       # VariableUncertainty(random_state=random_state),
-                            #                       CluStreamEnsembleClassifier(estimator_clf=SklearnClassifier(
-                            #                           base_classifier(),
-                            #                           missing_label=None,
-                            #                           classes=classes,
-                            #                           random_state=random_state),
-                            #                           #clustering=clusteringEnsembleClf,
-                            #                           metric_dict=metric_dict,
-                            #                           missing_label=None,
-                            #                           refit=True,
-                            #                           clustering_param_dict=clusteringEnsembleClfParams
-                            #                      )),
+                            'ClusteringClfEnsemble': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                                   # VariableUncertainty(random_state=random_state),
+                                                   CluStreamEnsembleClassifier(
+                                                       clf_type=base_classifier,
+                                                       metric_dict=metric_dict,
+                                                       missing_label=None,
+                                                       refit=True,
+                                                       classifier_param_dict=classifier_params,
+                                                       clustering_param_dict=clusteringEnsembleClfParams
+                                                  )),
                             #'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                             #                    # VariableUncertainty(random_state=random_state),
                             #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
