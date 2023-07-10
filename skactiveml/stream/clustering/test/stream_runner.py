@@ -15,7 +15,7 @@ from skactiveml.utils import call_func
 
 def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         n_training_size=100, n_init_traing=10, rep=0, band_width=0.1,
-        n_cluster=0,
+        n_cluster=0, detector_threshold=1.5,
         log_clustering=False, log_clu_statistics=False, fit_clf=False):
     acc_logger = CluStreamPerformanceLogger()
     clu_logger = CluStreamClusteringLogger()
@@ -146,6 +146,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         acc_logger.track_budget(budget)
         acc_logger.track_bandwidth(band_width)
         acc_logger.track_n_cluster(n_cluster)
+        acc_logger.track_detector_threshold(detector_threshold)
         acc_logger.track_x1(X_cand[0][0])
         acc_logger.track_x2(X_cand[0][1])
         acc_logger.track_rep(rep)
@@ -165,7 +166,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
     # calculate and show the average accuracy
     if approach_name.startswith('Clustering'):
         print("Repition", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: ", band_width,
-              ", Avg Accuracy: ", np.mean(correct_classifications),
+               ", DetectorThreshold: ", detector_threshold, ", Avg Accuracy: ", np.mean(correct_classifications),
               ", Acquisition count:", count, 'number_cluster: ', clf.clustering.n_micro_clusters)
     else:
         print("Repition", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: " , band_width,

@@ -32,6 +32,7 @@ N_SAMPLES = "N_Samples"
 LS_X = "LS_x"
 ENTROPY = "Class_Entropy"
 CHANGE_DETECTION = "Change_Detection"
+DETECTOR_THRESHOLD = 'DetectionThreshold'
 
 # Add column names to list
 ids_acc = [
@@ -50,7 +51,8 @@ ids_acc = [
     LABEL,
     GT,
     CLU_TIMEWINDOW,
-    LABEL_FREQUENCY
+    LABEL_FREQUENCY,
+    DETECTOR_THRESHOLD
 ]
 
 
@@ -111,6 +113,9 @@ class CluStreamPerformanceLogger:
 
     def track_clu_time_window(self, value):
         self._track_value(value, CLU_TIMEWINDOW)
+
+    def track_detector_threshold(self, value):
+        self._track_value(value, DETECTOR_THRESHOLD)
 
     def finalize_round(self):
         self._data.append(self._current_row)

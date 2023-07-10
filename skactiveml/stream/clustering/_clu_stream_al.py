@@ -25,7 +25,8 @@ class MicroCluster:
             y=None,
             time_stamp=1,
             classes=None,
-            change_detector=DDM
+            change_detector=DDM,
+            detector_threshold=0.5
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
@@ -49,12 +50,12 @@ class MicroCluster:
         #self.change_detector = change_detector(warm_start=5, drift_threshold=1.5)
 
         # DDM params
-        self.change_detector = change_detector(min_num_instances=1, out_control_level=1)
+        self.change_detector = change_detector(min_num_instances=3, out_control_level=detector_threshold)
 
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
             self.labeled_samples = np.array((x[0], y), dtype=object).reshape(1, 2)
-            self.change_detector.add_element(self.class_entropy)
+            #self.change_detector.add_element(self.class_entropy)
 
     @property
     def center(self):
@@ -113,7 +114,7 @@ class MicroCluster:
                 self.labeled_samples = np.array([x, y], dtype=object).reshape(1, 2)
             else:
                 self.labeled_samples = np.vstack([self.labeled_samples, np.array((x, y), dtype=object)])
-            self.change_detector.add_element(self.class_entropy)
+            #self.change_detector.add_element(self.class_entropy)
 
         #self.x = np.vstack([self.x, x[np.newaxis, ...]])
 
@@ -128,8 +129,8 @@ class MicroCluster:
             self.labeled_samples = np.vstack([self.labeled_samples.reshape(-1, 2), other.labeled_samples.reshape(-1, 2)])
             #self.change_detector = DDM(min_num_instances=5, out_control_level=0.1) #!!!TODO: Hardcoded Change Detector, should work with configured Detector
             #self.change_detector = ADWIN(clock=1, delta=0.05)
-            self.change_detector.reset()
-            self.change_detector.add_element(self.class_entropy)
+            #self.change_detector.reset()
+            #self.change_detector.add_element(self.class_entropy)
         return self
 
 # Microcluster class where each cluster has its own classifier
@@ -143,6 +144,7 @@ class MicroClfCluster(MicroCluster):
             random_state=0,
             classifier=HoeffdingTreeClassifier,
             change_detector=DDM,
+            detector_threshold=0.5,
     ):
         self.clf = SklearnClassifier(classifier(), missing_label=None, random_state=random_state, classes=classes)
 
@@ -153,7 +155,9 @@ class MicroClfCluster(MicroCluster):
             y=y,
             time_stamp=time_stamp,
             classes=classes,
-            change_detector=change_detector)
+            change_detector=change_detector,
+            detector_threshold=detector_threshold
+            )
 
     def add(self, data):
         (x, y), t = data
@@ -183,7 +187,8 @@ class CluStream:
             micro_cluster=MicroCluster,
             time_window=1000,
             random_state=None,
-            classes=None
+            classes=None,
+            change_threshold=1.5
     ):
         self.mc = micro_cluster
 
@@ -196,6 +201,8 @@ class CluStream:
 
         self.centers: dict[int, []] = {}
         self.micro_clusters: dict[int, micro_cluster] = {}
+
+        self.change_threshold=change_threshold
 
         self._timestamp = -1
         self.time_window = time_window
@@ -240,8 +247,12 @@ class CluStream:
             return X
         if len(self.micro_clusters) == 0 and self.free_cluster:
             free_cluster_id = self.free_cluster.pop(0)
-            self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.classes)
+            self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y,
+                                                           self._timestamp,
+                                                           self.classes,
+                                                           detector_threshold=self.change_threshold)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object)  # !!! For cluster analysi
+            return free_cluster_id, self.micro_clusters[free_cluster_id].change_detector.detected_change()
 
         self._timestamp += 1
         nearest_mc_id, distance = self.nearest_cluster(X)
@@ -268,7 +279,10 @@ class CluStream:
         # Else check if free clusters are available
         if self.free_cluster:
             free_cluster_id = self.free_cluster.pop(0)
-            self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.classes)
+            self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y,
+                                                           self._timestamp,
+                                                           self.classes,
+                                                           detector_threshold=self.change_threshold)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object) #!!! For cluster analysis
 
         # Else Merge or delete Cluster
@@ -286,6 +300,7 @@ class CluStream:
         self.centers = {i: X for i, X in enumerate(self._kmeans_mc.cluster_centers_)}
         self.micro_clusters = {i: self.mc(x=X[np.newaxis, ...],
                                           time_stamp=self.n_micro_clusters - 1,
+                                          detector_threshold=self.change_threshold,
                                           classes=self.classes)
                                for i, X in
                                self.centers.items()}
@@ -309,7 +324,10 @@ class CluStream:
                 break
 
         if del_id is not None:
-            self.micro_clusters[del_id] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.classes)
+            self.micro_clusters[del_id] = self.mc(X[np.newaxis, ...], y,
+                                                  self._timestamp,
+                                                  self.classes,
+                                                  detector_threshold=self.change_threshold)
             self.cluster_test[del_id] = np.array((X, y), dtype=object)
             return del_id
 
@@ -333,7 +351,10 @@ class CluStream:
         self.micro_clusters[closest_a] += self.micro_clusters[closest_b]
         #self.micro_clusters[closest_a].x = np.vstack([self.micro_clusters[closest_a].x, self.micro_clusters[closest_b].x])
 
-        self.micro_clusters[closest_b] = self.mc(X[np.newaxis, ...], y, self._timestamp, self.classes)
+        self.micro_clusters[closest_b] = self.mc(X[np.newaxis, ...], y,
+                                                 self._timestamp,
+                                                 self.classes,
+                                                 detector_threshold=self.change_threshold)
 
         return closest_b
 

@@ -10,6 +10,9 @@
   - Oder meist vorkommende der C nähsten CLuster
   - 2. Statistiken von Cluster in gelernten Featurevektor integrieren
     - Distanz zu Cluster
+- Change Detector
+  - Auf prediction error
+  - Auf clusterstatistiken
 
 # Daily To-do
 ## General Todos:
@@ -176,5 +179,5 @@
   -[X] Vergleiche mit Clustering- Refit/Ensemble
 
 ## 07.07
--[ ] Paper recherche
-- 
+-[X] Paper recherche
+

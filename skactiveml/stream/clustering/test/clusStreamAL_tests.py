@@ -53,7 +53,7 @@ if __name__ == '__main__':
     clu_time_windows = [np.inf]
 
     # Number of clusters to be executed
-    cluster_numbers = [3, 15, 20]
+    cluster_numbers = [3, 5, 10]
 
     shuffle_data = False
     log_clustering = False
@@ -62,7 +62,13 @@ if __name__ == '__main__':
     n_budget = 1
     init_budget = 0.1
     budget_step_size = 0.1
-    n_reps = 3
+
+    n_reps = 1
+
+    n_change_thresholds = 2
+    init_threshold = 0.1
+    threshold_step_size = 0.5
+
     n_bandwidths = 1
     bandwidth_step_size = 0.5
     init_bandwidth = 1
@@ -96,106 +102,113 @@ if __name__ == '__main__':
                 metric_dict = {
                     'gamma': bandwidth
                 }
-                for c, clu_time_window in enumerate(clu_time_windows):
-                    # Looping over Number of clusters configured
-                    for n_cluster in cluster_numbers:
-                        if n_cluster > init_train_length:
-                            init_train_length = n_cluster
 
-                        # Init Clustering params
-                        clusteringParams = {
-                            'n_micro_clusters': n_cluster,
-                            'n_init_train': init_train_length,
-                            'time_window': clu_time_window,
-                            'classes': classes
-                        }
-                        clusteringEnsembleClfParams = {
-                            'micro_cluster': MicroClfCluster,
-                            'n_micro_clusters': n_cluster,
-                            'n_init_train': init_train_length,
-                            'time_window': clu_time_window,
-                            'classes': classes
-                        }
-                        classifier_params = {
-                            'missing_label': None,
-                            'classes': classes,
-                            'random_state': random_state
-                        }
+                change_threshold = init_threshold
+                for t in range(n_change_thresholds):
+
+                    for c, clu_time_window in enumerate(clu_time_windows):
+                        # Looping over Number of clusters configured
+                        for n_cluster in cluster_numbers:
+                            if n_cluster > init_train_length:
+                                init_train_length = n_cluster
+
+                            # Init Clustering params
+                            clusteringParams = {
+                                'n_micro_clusters': n_cluster,
+                                'n_init_train': init_train_length,
+                                'time_window': clu_time_window,
+                                'classes': classes,
+                                'change_threshold': change_threshold
+                            }
+                            clusteringEnsembleClfParams = {
+                                'micro_cluster': MicroClfCluster,
+                                'n_micro_clusters': n_cluster,
+                                'n_init_train': init_train_length,
+                                'time_window': clu_time_window,
+                                'classes': classes,
+                                'change_threshold': change_threshold
+                            }
+                            classifier_params = {
+                                'missing_label': None,
+                                'classes': classes,
+                                'random_state': random_state
+                            }
 
 
-                        # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
-                        query_strategies = {
-                            'ZliobaiteRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
-                                                     # VariableUncertainty(random_state=random_state),
-                                                      ZliobateClassifier(
-                                                       clf_type=base_classifier,
-                                                       metric_dict=metric_dict,
-                                                       missing_label=None,
-                                                       classifier_param_dict=classifier_params)),
-                            #'ClusteringIncremental': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                            #                         # VariableUncertainty(random_state=random_state),
-                            #                          CluStreamClassifier(estimator_clf=SklearnClassifier(
-                            #                              base_classifier(),
-                            #                              missing_label=None,
-                            #                             classes=classes,
-                            #                              random_state=random_state),
-                            #                              clustering=clustering,
-                            #                              metric_dict=metric_dict,
-                            #                              missing_label=None)),
-                            #'ClusteringClfReset': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                            #                    # VariableUncertainty(random_state=random_state),
-                            #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
-                            #                        base_classifier(),
-                            #                        missing_label=None,
-                            #                        classes=classes,
-                            #                        random_state=random_state),
-                            #                        clustering=clustering,
-                            #                        metric_dict=metric_dict,
-                            #                        missing_label=None,
-                            #                        refit=True)),
-                            'ClusteringClfRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                                                   # VariableUncertainty(random_state=random_state),
-                                                   CluStreamClassifier(
-                                                       clf_type=base_classifier,
-                                                       metric_dict=metric_dict,
-                                                       missing_label=None,
-                                                       refit=True,
-                                                       clustering_param_dict=clusteringParams,
-                                                       classifier_param_dict=classifier_params
-                                                   )),
-                            'ClusteringClfEnsemble': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                                                   # VariableUncertainty(random_state=random_state),
-                                                   CluStreamEnsembleClassifier(
-                                                       clf_type=base_classifier,
-                                                       metric_dict=metric_dict,
-                                                       missing_label=None,
-                                                       refit=True,
-                                                       classifier_param_dict=classifier_params,
-                                                       clustering_param_dict=clusteringEnsembleClfParams
-                                                  )),
-                            #'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
-                            #                    # VariableUncertainty(random_state=random_state),
-                            #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
-                            #                        base_classifier(),
-                            #                        missing_label=None,
-                            #                        classes=classes,
-                            #                        random_state=random_state),
-                            #                        clustering=clustering,
-                            #                        metric_dict=metric_dict,
-                           #                         missing_label=None)),
-                        }
+                            # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
+                            query_strategies = {
+                                #'ZliobaiteRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
+                                #                         # VariableUncertainty(random_state=random_state),
+                                #                          ZliobateClassifier(
+                                #                          clf_type=base_classifier,
+                                #                           metric_dict=metric_dict,
+                                #                           missing_label=None,
+                                #                           classifier_param_dict=classifier_params)),
+    #                            'ClusteringIncremental': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+    #                                                     # VariableUncertainty(random_state=random_state),
+    #                                                      CluStreamClassifier(
+    #                                                          clf_type=base_classifier,
+    #                                                          metric_dict=metric_dict,
+    #                                                          missing_label=None,
+    #                                                          refit=False,
+    #                                                          clustering_param_dict=clusteringParams,
+    #                                                          classifier_param_dict=classifier_params
+    #                                                      )),
+                                #'ClusteringClfReset': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                #                    # VariableUncertainty(random_state=random_state),
+                                #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
+                                #                        base_classifier(),
+                                #                        missing_label=None,
+                                #                        classes=classes,
+                                #                        random_state=random_state),
+                                #                        clustering=clustering,
+                                #                        metric_dict=metric_dict,
+                                #                        missing_label=None,
+                                #                        refit=True)),
+                                'ClusteringClfRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                                       # VariableUncertainty(random_state=random_state),
+                                                       CluStreamClassifier(
+                                                           clf_type=base_classifier,
+                                                           metric_dict=metric_dict,
+                                                           missing_label=None,
+                                                           refit=True,
+                                                           clustering_param_dict=clusteringParams,
+                                                           classifier_param_dict=classifier_params
+                                                       )),
+                                'ClusteringClfEnsemble': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                                       # VariableUncertainty(random_state=random_state),
+                                                       CluStreamEnsembleClassifier(
+                                                           clf_type=base_classifier,
+                                                           metric_dict=metric_dict,
+                                                           missing_label=None,
+                                                           refit=True,
+                                                           classifier_param_dict=classifier_params,
+                                                           clustering_param_dict=clusteringEnsembleClfParams
+                                                      )),
+                                #'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                #                    # VariableUncertainty(random_state=random_state),
+                                #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
+                                #                        base_classifier(),
+                                #                        missing_label=None,
+                                #                        classes=classes,
+                                #                        random_state=random_state),
+                                #                        clustering=clustering,
+                                #                        metric_dict=metric_dict,
+                               #                         missing_label=None)),
+                            }
 
-                        for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
-                            index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
-                                    k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
-                            args.append([X, y,
-                                         query_strategy_name, query_strategy,
-                                         clf, dataset['name'],
-                                         training_size, init_train_length,
-                                         rep, bandwidth, n_cluster, log_clustering, log_clu_statistics])
+                            for l, (query_strategy_name, (query_strategy, clf)) in enumerate(query_strategies.items()):
+                                index = rep * (n_budget * n_bandwidths * len(query_strategies)) + (
+                                        k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
+                                args.append([X, y,
+                                             query_strategy_name, query_strategy,
+                                             clf, dataset['name'],
+                                             training_size, init_train_length,
+                                             rep, bandwidth, n_cluster, change_threshold, log_clustering, log_clu_statistics])
 
-                            # Sequential execution for debuggin
-                            #res.append(run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, n_cluster, log_clustering, log_clu_statistics))
+                                # Sequential execution for debuggin
+                                #res.append(run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, n_cluster, log_clustering, log_clu_statistics))
+                    change_threshold += threshold_step_size
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)
             budget = min(budget + budget_step_size, 1.0)

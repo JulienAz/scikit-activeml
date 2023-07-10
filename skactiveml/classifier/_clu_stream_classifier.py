@@ -51,6 +51,9 @@ class CluStreamClassifier(SkactivemlClassifier):
 
     def partial_fit(self, X, y, logger= None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, change_detected = self.clustering.fit_one(X[0], y[0])
+        if not y == self.missing_label:
+            prediction = self.predict(X) == y
+            self.clustering.micro_clusters[mc_id_fitted].change_detector.add_element(not prediction)
         # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
         if self.refit:
             changed_clusters = []
@@ -161,6 +164,9 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
 
     def partial_fit(self, X, y, logger= None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, change_detected = self.clustering.fit_one(X[0], y[0])
+        if not y == self.missing_label:
+            prediction = self.clustering.micro_clusters[mc_id_fitted].clf.predict(X) == y
+            self.clustering.micro_clusters[mc_id_fitted].change_detector.add_element(not prediction)
         # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
         if self.refit:
             changed_clusters = []
