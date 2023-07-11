@@ -181,3 +181,9 @@
 ## 07.07
 -[X] Paper recherche
 
+Meeting: punkte
+
+- Sensitivity Study mit Parametern
+- Chessboard über Budget plotten
+- Electricity:
+  - Vor Clustering Kernel PCA
