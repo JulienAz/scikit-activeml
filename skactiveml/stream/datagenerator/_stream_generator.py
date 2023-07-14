@@ -52,10 +52,10 @@ class OpenMlStreamGenerator(StreamGenerator):
         preprocessor = ColumnTransformer(
             transformers=[
                 ('num', numeric_transformer, numerical_features),
-                ('cat', OneHotEncoder(), categorical_features)
+                ('cat', OneHotEncoder(drop='if_binary'), categorical_features)
             ])
 
-        X = preprocessor.fit_transform(X)
+        X = preprocessor.fit_transform(X).toarray()
 
         # Transform y values to integers if categorical
         if y.dtype.name == 'category':
