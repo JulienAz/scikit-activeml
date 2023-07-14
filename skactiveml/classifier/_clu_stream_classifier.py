@@ -21,7 +21,8 @@ class CluStreamClassifier(SkactivemlClassifier):
         metric_dict=None,
         refit=False,
         clustering_param_dict=None,
-        classifier_param_dict=None
+        classifier_param_dict=None,
+        change_detector_type='prediction_error'
     ):
         super().__init__(
             classes=classes,
@@ -37,6 +38,8 @@ class CluStreamClassifier(SkactivemlClassifier):
 
         self.clustering = CluStream(**clustering_param_dict)
 
+        self.change_detector_type = change_detector_type
+
         self.random_state = random_state
 
         self.refit = refit
@@ -50,10 +53,11 @@ class CluStreamClassifier(SkactivemlClassifier):
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def partial_fit(self, X, y, logger= None, sample_weight=None, **fit_kwargs):
-        mc_id_fitted, change_detected = self.clustering.fit_one(X[0], y[0])
+        mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
+
         if not y == self.missing_label:
-            prediction = self.predict(X) == y
-            self.clustering.micro_clusters[mc_id_fitted].change_detector.add_element(not prediction)
+            self.update_change_detector(X, y, mc_id_fitted, mc_id_merged)
+
         # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
         if self.refit:
             changed_clusters = []
@@ -151,6 +155,22 @@ class CluStreamClassifier(SkactivemlClassifier):
             logger.track_lbl_frequency(1)
         return self.estimator_clf.predict_proba(X)
 
+    def update_change_detector(self, X, y, mc_id_fitted, mc_id_merged):
+        if self.change_detector_type == 'prediction_error':
+            prediction = self.predict(X)
+            self.clustering.micro_clusters[mc_id_fitted].change_detector.add_element(not prediction == y)
+            return
+
+        if self.change_detector_type == 'entropy':
+            cluster_entropy = self.clustering.micro_clusters[mc_id_fitted].class_entropy
+            self.clustering.micro_clusters[mc_id_fitted].change_detector.add_element(cluster_entropy)
+
+            if mc_id_merged is not None:
+                self.clustering.micro_clusters[mc_id_merged].change_detector.reset()
+                cluster_entropy = self.clustering.micro_clusters[mc_id_merged].class_entropy
+                self.clustering.micro_clusters[mc_id_merged].change_detector.add_element(cluster_entropy)
+            return
+
 class CluStreamEnsembleClassifier(CluStreamClassifier):
 
     def predict_proba(self, X):
@@ -163,10 +183,11 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
         return proba
 
     def partial_fit(self, X, y, logger= None, sample_weight=None, **fit_kwargs):
-        mc_id_fitted, change_detected = self.clustering.fit_one(X[0], y[0])
+        mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
+
         if not y == self.missing_label:
-            prediction = self.clustering.micro_clusters[mc_id_fitted].clf.predict(X) == y
-            self.clustering.micro_clusters[mc_id_fitted].change_detector.add_element(not prediction)
+            self.update_change_detector(X, y, mc_id_fitted, mc_id_merged)
+
         # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
         if self.refit:
             changed_clusters = []
@@ -190,6 +211,18 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
         if y[0] is not self.estimator_clf.missing_label:
             return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
 
+    def predict(self, X): # !!! only prediction of cluster clf for change detection or weighted
+        cluster_id, _ = self.clustering.nearest_cluster(X)
+
+        if len(self.clustering.micro_clusters[cluster_id].labeled_samples) > 0:
+            mc_clf = self.clustering.micro_clusters[cluster_id].clf
+
+            # Get weighted probabilities of base estimator and cluster estimator
+            proba = self.estimator_clf.predict_proba(X) * 0.5 + mc_clf.predict_proba(X) * 0.5
+        else:
+            proba = self.estimator_clf.predict_proba(X)
+
+        return [np.argmax(proba)]
 
 
 

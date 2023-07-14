@@ -137,13 +137,13 @@ if __name__ == '__main__':
 
                             # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                             query_strategies = {
-                                #'ZliobaiteRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
-                                #                         # VariableUncertainty(random_state=random_state),
-                                #                          ZliobateClassifier(
-                                #                          clf_type=base_classifier,
-                                #                           metric_dict=metric_dict,
-                                #                           missing_label=None,
-                                #                           classifier_param_dict=classifier_params)),
+                                'ZliobaiteRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
+                                                         # VariableUncertainty(random_state=random_state),
+                                                          ZliobateClassifier(
+                                                          clf_type=base_classifier,
+                                                           metric_dict=metric_dict,
+                                                           missing_label=None,
+                                                           classifier_param_dict=classifier_params)),
     #                            'ClusteringIncremental': (StreamProbabilisticAL(random_state=random_state, budget=budget),
     #                                                     # VariableUncertainty(random_state=random_state),
     #                                                      CluStreamClassifier(
@@ -175,6 +175,17 @@ if __name__ == '__main__':
                                                            clustering_param_dict=clusteringParams,
                                                            classifier_param_dict=classifier_params
                                                        )),
+                                'ClusteringClfEntropyRefit': (StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                                       # VariableUncertainty(random_state=random_state),
+                                                       CluStreamClassifier(
+                                                           clf_type=base_classifier,
+                                                           metric_dict=metric_dict,
+                                                           missing_label=None,
+                                                           refit=True,
+                                                           clustering_param_dict=clusteringParams,
+                                                           classifier_param_dict=classifier_params,
+                                                           change_detector_type='entropy'
+                                                       )),
                                 'ClusteringClfEnsemble': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                                                        # VariableUncertainty(random_state=random_state),
                                                        CluStreamEnsembleClassifier(
@@ -185,6 +196,18 @@ if __name__ == '__main__':
                                                            classifier_param_dict=classifier_params,
                                                            clustering_param_dict=clusteringEnsembleClfParams
                                                       )),
+                                #'ClusteringClfEnsembleEntropy': (
+                                #StreamProbabilisticAL(random_state=random_state, budget=budget),
+                                ## VariableUncertainty(random_state=random_state),
+                                #CluStreamEnsembleClassifier(
+                                #    clf_type=base_classifier,
+                                #    metric_dict=metric_dict,
+                                #    missing_label=None,
+                                #    refit=True,
+                                #    classifier_param_dict=classifier_params,
+                                #    clustering_param_dict=clusteringEnsembleClfParams,
+                                #    change_detector_type='entropy'
+                                #)),
                                 #'ClusteringBatch': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                                 #                    # VariableUncertainty(random_state=random_state),
                                 #                    CluStreamClassifier(estimator_clf=SklearnClassifier(

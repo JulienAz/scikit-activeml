@@ -187,3 +187,12 @@ Meeting: punkte
 - Chessboard über Budget plotten
 - Electricity:
   - Vor Clustering Kernel PCA
+
+## 13.07
+- [X] Auswahl prediction error/entropy implementieren
+- [ ] KDA implementieren und testen
+- [ ] Abstract schreiben
+
+## 14.07
+- [ ] KDA implementieren und testen
+- [ ] Abstract schreiben

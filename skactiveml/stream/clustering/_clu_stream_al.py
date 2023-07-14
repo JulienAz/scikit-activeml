@@ -238,7 +238,7 @@ class CluStream:
             sample = np.array((X, y), dtype=object)
             if len(self.init_train) == 0:
                 self.init_train = sample
-                return X, False
+                return X, None
 
             self.init_train = np.vstack((self.init_train, sample))
             if len(self.init_train) == self.n_init_train:
@@ -252,7 +252,7 @@ class CluStream:
                                                            self.classes,
                                                            detector_threshold=self.change_threshold)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object)  # !!! For cluster analysi
-            return free_cluster_id, self.micro_clusters[free_cluster_id].change_detector.detected_change()
+            return free_cluster_id, None
 
         self._timestamp += 1
         nearest_mc_id, distance = self.nearest_cluster(X)
@@ -274,7 +274,7 @@ class CluStream:
         if distance < self.r_factor * radius:
             self.micro_clusters[nearest_mc_id].add(((X, y), self._timestamp))
             self.cluster_test[nearest_mc_id] = np.vstack([self.cluster_test[nearest_mc_id], np.array((X, y), dtype=object)])
-            return nearest_mc_id, self.micro_clusters[nearest_mc_id].change_detector.detected_change()
+            return nearest_mc_id, None
 
         # Else check if free clusters are available
         if self.free_cluster:
@@ -286,8 +286,8 @@ class CluStream:
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object) #!!! For cluster analysis
 
         # Else Merge or delete Cluster
-        nearest_mc_id = self._update_clusters((X,y))
-        return nearest_mc_id, self.micro_clusters[nearest_mc_id].change_detector.detected_change()
+        nearest_mc_id, merged_mc_id = self._update_clusters((X,y))
+        return nearest_mc_id, merged_mc_id
 
     def n_sum(self):
         ns = [mc.features["n"] for i, mc in self.micro_clusters.items()]
@@ -329,7 +329,7 @@ class CluStream:
                                                   self.classes,
                                                   detector_threshold=self.change_threshold)
             self.cluster_test[del_id] = np.array((X, y), dtype=object)
-            return del_id
+            return del_id, None
 
         # Else merge the two closest clusters
         closest_a = 0
@@ -356,7 +356,7 @@ class CluStream:
                                                  self.classes,
                                                  detector_threshold=self.change_threshold)
 
-        return closest_b
+        return closest_b, closest_a
 
     # Invoked when change in cluster is detected
     def clear_cluster(self, cluster_id):
