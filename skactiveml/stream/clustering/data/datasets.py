@@ -61,4 +61,5 @@ def generate_data(dataset, init_train_length, shuffle, random_state, n_features=
         stream_length = len(dataGenerator.y) - init_train_length - 1
 
     X, y = dataGenerator.next_sample(stream_length + init_train_length)
+    X = dataGenerator.kernel_pca_transformation(X)
     return X, y

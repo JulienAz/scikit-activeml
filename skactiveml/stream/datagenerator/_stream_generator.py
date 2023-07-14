@@ -2,6 +2,7 @@ import numpy as np
 import openml
 import pandas as pd
 from sklearn.compose import ColumnTransformer
+from sklearn.decomposition import KernelPCA
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
 from skmultiflow.data import RandomRBFGenerator
 
@@ -22,6 +23,15 @@ class StreamGenerator:
         self.index += length
 
         return X_sample, y_sample
+
+    def kernel_pca_transformation(self, X):
+        kernel_pca = KernelPCA(
+            n_components=10, kernel="rbf", gamma=10, fit_inverse_transform=True, alpha=0.1
+        )
+
+        X = kernel_pca.fit_transform(X)
+
+        return X
 
 
 class OpenMlStreamGenerator(StreamGenerator):
