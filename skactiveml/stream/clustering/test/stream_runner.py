@@ -132,6 +132,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
 
                 cluster_entropies = [mc.class_entropy for i, mc in clf.clustering.micro_clusters.items()]
                 clu_statistic_logger.track_class_entropy(cluster_entropies)
+                clu_statistic_logger.track_detector_threshold(detector_threshold)
 
                 #change_detections = [mc.change_detector.drift_detected for i, mc in clf.clustering.micro_clusters.items()]
                 #clu_statistic_logger.track_change_detection(change_detections)

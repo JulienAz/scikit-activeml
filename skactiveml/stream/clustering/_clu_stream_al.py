@@ -284,6 +284,7 @@ class CluStream:
                                                            self.classes,
                                                            detector_threshold=self.change_threshold)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object) #!!! For cluster analysis
+            return free_cluster_id, None
 
         # Else Merge or delete Cluster
         nearest_mc_id, merged_mc_id = self._update_clusters((X,y))
