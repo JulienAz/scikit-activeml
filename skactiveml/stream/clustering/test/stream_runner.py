@@ -91,7 +91,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         elif approach_name.startswith('Clustering'):
             # Missing Labels are handled in the Classifier itself
             # Partially Fit
-            clf.partial_fit(X_cand, np.array([al_label]), logger=clu_statistic_logger, classes=unique_classes)
+            clf.partial_fit(X_cand, np.array([al_label]), acc_logger=acc_logger,statistic_logger=clu_statistic_logger, classes=unique_classes)
             if (approach_name.endswith('Reset')) & (t == (int(len(y_stream) / 2) + 1)):
                 clf.fit(X_cand, np.array([al_label]), classes=unique_classes)
             #if (approach_name.endswith('Refit')) & (t == (int(len(y_stream) / 2) + 1)):

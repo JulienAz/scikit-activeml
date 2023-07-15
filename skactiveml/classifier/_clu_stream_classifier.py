@@ -52,11 +52,14 @@ class CluStreamClassifier(SkactivemlClassifier):
                 self.clustering.fit_one(x_t, y_t)
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
-    def partial_fit(self, X, y, logger= None, sample_weight=None, **fit_kwargs):
+    def partial_fit(self, X, y, acc_logger=None, statistic_logger= None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
 
         if not y == self.missing_label:
             self.update_change_detector(X, y, mc_id_fitted, mc_id_merged)
+
+        if acc_logger is not None:
+            acc_logger.track_cluster(mc_id_fitted)
 
         # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
         if self.refit:
@@ -67,8 +70,8 @@ class CluStreamClassifier(SkactivemlClassifier):
                 if mc.change_detector.detected_change():
                     changed_clusters.append(mc_id)
                 change_detections[mc_id] = mc.change_detector.detected_change()
-            if not logger == None:
-                logger.track_change_detection(change_detections)
+            if not statistic_logger == None:
+                statistic_logger.track_change_detection(change_detections)
             # If change_detector of cluster is positiv, corresponding cluster is cleared
            # self.clustering.clear_cluster(mc_id)
 
@@ -176,17 +179,24 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
     def predict_proba(self, X):
         # Get Clf of cluster the point is assigned to
         cluster_id, _ = self.clustering.nearest_cluster(X)
-        mc_clf = self.clustering.micro_clusters[cluster_id].clf
 
         # Get weighted probabilities of base estimator and cluster estimator
-        proba = self.estimator_clf.predict_proba(X) * 0.5 + mc_clf.predict_proba(X) * 0.5
+        if len(self.clustering.micro_clusters[cluster_id].labeled_samples) > 0:
+            mc_clf = self.clustering.micro_clusters[cluster_id].clf
+            # Get weighted probabilities of base estimator and cluster estimator
+            proba = self.estimator_clf.predict_proba(X) * 0.5 + mc_clf.predict_proba(X) * 0.5
+        else:
+            proba = self.estimator_clf.predict_proba(X)
         return proba
 
-    def partial_fit(self, X, y, logger= None, sample_weight=None, **fit_kwargs):
+    def partial_fit(self, X, y, acc_logger= None, statistic_logger=None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
 
         if not y == self.missing_label:
             self.update_change_detector(X, y, mc_id_fitted, mc_id_merged)
+
+        if acc_logger is not None:
+            acc_logger.track_cluster(mc_id_fitted)
 
         # If is refit approach #Todo: Cluster adaption should be in Clustering itself. Once decided for approach implementation must be refactored
         if self.refit:
@@ -197,8 +207,8 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
                 if mc.change_detector.detected_change():
                     changed_clusters.append(mc_id)
                 change_detections[mc_id] = mc.change_detector.detected_change()
-            if not logger == None:
-                logger.track_change_detection(change_detections)
+            if not statistic_logger == None:
+                statistic_logger.track_change_detection(change_detections)
             # If change_detector of cluster is positiv, corresponding cluster is cleared
            # self.clustering.clear_cluster(mc_id)
 
@@ -211,17 +221,8 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
         if y[0] is not self.estimator_clf.missing_label:
             return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
 
-    def predict(self, X): # !!! only prediction of cluster clf for change detection or weighted
-        cluster_id, _ = self.clustering.nearest_cluster(X)
-
-        if len(self.clustering.micro_clusters[cluster_id].labeled_samples) > 0:
-            mc_clf = self.clustering.micro_clusters[cluster_id].clf
-
-            # Get weighted probabilities of base estimator and cluster estimator
-            proba = self.estimator_clf.predict_proba(X) * 0.5 + mc_clf.predict_proba(X) * 0.5
-        else:
-            proba = self.estimator_clf.predict_proba(X)
-
+    def predict(self, X): # !!! TODO: figure out wheather only prediction of cluster clf for change detection or weighted
+        proba = self.predict_proba(X)
         return [np.argmax(proba)]
 
 
