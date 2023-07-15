@@ -193,6 +193,6 @@ Meeting: punkte
 - [ ] KDA implementieren und testen
 - [ ] Abstract schreiben
 
-## 14.07
-- [ ] KDA implementieren und testen
+## 15.07
+- [X] KDA implementieren und testen
 - [ ] Abstract schreiben
