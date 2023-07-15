@@ -30,7 +30,7 @@ SEA_STREAM = {'name': 'SeaStream', 'type': 'local', 'path': os.path.join('artifi
 
 
 def generate_data(dataset, init_train_length, shuffle, random_state, n_features=0, stream_length=4000, mag_change=0,
-                  noise=0.1, start_point=0):
+                  noise=0.1, start_point=0, kpca=False):
     set_type = dataset['type']
     if set_type == 'hyperplane':
         assert n_features > 0, "Please specify the number of features for the hyperplane generator"
@@ -61,5 +61,8 @@ def generate_data(dataset, init_train_length, shuffle, random_state, n_features=
         stream_length = len(dataGenerator.y) - init_train_length - 1
 
     X, y = dataGenerator.next_sample(stream_length + init_train_length)
-    X = dataGenerator.kernel_pca_transformation(X)
+
+    if kpca:
+        X = dataGenerator.kernel_pca_transformation(X)
+
     return X, y
