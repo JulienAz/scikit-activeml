@@ -257,7 +257,8 @@ ids_cluster_statistics = [
     N_SAMPLES,
     LS_X,
     ENTROPY,
-    CHANGE_DETECTION
+    CHANGE_DETECTION,
+    DETECTOR_THRESHOLD
 ]
 
 
@@ -316,6 +317,9 @@ class CluStreamStatisticLogger:
 
     def track_change_detection(self, value):
         self._track_value(value, CHANGE_DETECTION)
+
+    def track_detector_threshold(self, value):
+        self._track_value(value, DETECTOR_THRESHOLD)
 
     def finalize_round(self):
         self._data.append(self._current_row)

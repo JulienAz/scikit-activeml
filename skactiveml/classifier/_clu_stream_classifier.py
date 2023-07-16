@@ -216,7 +216,7 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
             if changed_clusters:
                 for mc_id in changed_clusters:
                     self.clustering.clear_cluster(mc_id)
-                #self.refit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
+                self.refit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
 
         if y[0] is not self.estimator_clf.missing_label:
             return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))

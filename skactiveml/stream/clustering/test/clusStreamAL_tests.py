@@ -87,6 +87,9 @@ if __name__ == '__main__':
         budget = init_budget
         random_state += rep
 
+        rng = np.random.default_rng(random_state)
+        stream_start_point = rng.integers(0, 15000, 1)[0]
+
         # Generating Datastream
         X, y = generate_data(dataset, init_train_length,
                              shuffle=shuffle_data, random_state=random_state, stream_length=stream_length,
