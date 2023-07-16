@@ -181,7 +181,7 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
         cluster_id, _ = self.clustering.nearest_cluster(X)
 
         # Get weighted probabilities of base estimator and cluster estimator
-        if len(self.clustering.micro_clusters[cluster_id].labeled_samples) > 0:
+        if (cluster_id in self.clustering.micro_clusters) & (len(self.clustering.micro_clusters[cluster_id].labeled_samples) > 0):
             mc_clf = self.clustering.micro_clusters[cluster_id].clf
             # Get weighted probabilities of base estimator and cluster estimator
             proba = self.estimator_clf.predict_proba(X) * 0.5 + mc_clf.predict_proba(X) * 0.5
