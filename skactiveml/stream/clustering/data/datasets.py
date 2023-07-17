@@ -11,7 +11,7 @@ from skactiveml.stream.datagenerator._stream_generator import RbfStreamGenerator
 # Open ML datasets
 ABALONE_BIN = {'name': 'Abalone_binary', 'type': 'openml', 'id': 720, 'toy': False}
 ABALONE = {'name': 'Abalone', 'type': 'openml', 'id': 44956, 'toy': False}
-COVERTYPE = {'name': 'Covertype', 'type': 'openml', 'id': 1596, 'toy': False}
+COVERTYPE = {'name': 'Covertype', 'length': 581012, 'type': 'openml', 'id': 1596, 'toy': False}
 IRIS = {'name': 'Abalone_binary', 'type': 'openml', 'id': 61, 'toy': True}
 
 # ScikitMultiflow
@@ -20,11 +20,11 @@ RBF_GENERATOR = {'name': 'RbfGenerator', 'type': 'rbf'}
 
 # Local csv sets
 # Real World
-ELECTRICITY = {'name': 'Electricity', 'type': 'local', 'path': os.path.join('real-world', 'elec.csv')}
+ELECTRICITY = {'name': 'Electricity', 'length': 45312, 'type': 'local', 'path': os.path.join('real-world', 'elec.csv')}
 
 # Artificial
-CHESSBOARD = {'name': 'ChessBoard', 'type': 'local', 'path': os.path.join('artificial', 'transientChessboard.csv')}
-INTERCHANGING_RBF = {'name': 'InterchangingRBF', 'type': 'local', 'path': os.path.join('artificial', 'interchangingRBF.csv')}
+CHESSBOARD = {'name': 'ChessBoard', 'length': 200000, 'type': 'local', 'path': os.path.join('artificial', 'transientChessboard.csv')}
+INTERCHANGING_RBF = {'name': 'InterchangingRBF', 'length': 200000, 'type': 'local', 'path': os.path.join('artificial', 'interchangingRBF.csv')}
 ROTATING_HYPERPLANE = {'name': 'RotatingHyperplane', 'type': 'local', 'path': os.path.join('artificial', 'rotatingHyperplane.csv')}
 SEA_STREAM = {'name': 'SeaStream', 'type': 'local', 'path': os.path.join('artificial', 'sea_stream.csv')}
 
@@ -51,7 +51,7 @@ def generate_data(dataset, init_train_length, shuffle, random_state, n_features=
         else:
             rng = np.random.default_rng(random_state)
             dataGenerator = OpenMlStreamGenerator(dataset['id'], shuffle=shuffle, rng=rng,
-                                                  stream_length=stream_length + init_train_length)
+                                                  stream_length=stream_length + init_train_length, start_point=start_point)
     elif set_type == 'local':
         rng = np.random.default_rng(random_state)
         path = os.path.join(os.path.dirname(__file__), dataset['path'])

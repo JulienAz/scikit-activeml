@@ -1,6 +1,7 @@
 import numpy as np
 import openml
 import pandas as pd
+from scipy.sparse import csr_matrix
 from sklearn.compose import ColumnTransformer
 from sklearn.decomposition import KernelPCA
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, LabelEncoder
@@ -35,12 +36,17 @@ class StreamGenerator:
 
 
 class OpenMlStreamGenerator(StreamGenerator):
-    def __init__(self, datasetId, rng, shuffle: bool, stream_length):
+    def __init__(self, datasetId, rng, shuffle: bool, stream_length, start_point=0):
         dataset = openml.datasets.get_dataset(datasetId)
         self.rng = rng
 
         # Extract feature matrix and target array
         X, y, categorical_features, _ = dataset.get_data(target=dataset.default_target_attribute)
+
+        if stream_length is not None:
+            assert stream_length <= len(y), "Configured stream length exceeds provided OpenML-Dataset length"
+            X = X[start_point:start_point + stream_length]
+            y = y[start_point:start_point + stream_length]
 
         # random shuffle of data
         if shuffle:
@@ -48,11 +54,6 @@ class OpenMlStreamGenerator(StreamGenerator):
             rng.shuffle(indices)
             X = X.iloc[indices]
             y = y.iloc[indices]
-
-        if stream_length is not None:
-            assert stream_length <= len(y), "Configured stream length exceeds provided OpenML-Dataset length"
-            X = X[:stream_length]
-            y = y[:stream_length]
 
         # Identify numerical features
         numerical_features = ~np.array(categorical_features)
@@ -65,8 +66,10 @@ class OpenMlStreamGenerator(StreamGenerator):
                 ('cat', OneHotEncoder(drop='if_binary'), categorical_features)
             ])
 
-        X = preprocessor.fit_transform(X).toarray()
+        X = preprocessor.fit_transform(X)
 
+        if isinstance(X, csr_matrix):
+            X = X.toarray()
         # Transform y values to integers if categorical
         if y.dtype.name == 'category':
             label_encoder = LabelEncoder()
