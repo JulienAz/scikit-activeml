@@ -20,6 +20,7 @@ RBF_GENERATOR = {'name': 'RbfGenerator', 'type': 'rbf'}
 
 # Local csv sets
 # Real World
+AIRLINES = {'name': 'Airlines', 'length': 539383, 'type': 'local', 'path': os.path.join('real-world', 'airlines2.csv')}
 ELECTRICITY = {'name': 'Electricity', 'length': 45312, 'type': 'local', 'path': os.path.join('real-world', 'elec.csv')}
 
 # Artificial
