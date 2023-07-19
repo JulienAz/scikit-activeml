@@ -42,14 +42,14 @@ class MicroCluster:
         self.labeled_samples = np.empty((0,), dtype=object)
 
         # Adwin params
-        #self.change_detector = change_detector(clock=1, delta=0.1)
+        self.change_detector = change_detector(delta=detector_threshold)
 
 
         # River DDM params
         #self.change_detector = change_detector(warm_start=5, drift_threshold=1.5)
 
         # DDM params
-        self.change_detector = change_detector(min_num_instances=3, out_control_level=detector_threshold)
+        #self.change_detector = change_detector(min_num_instances=3, out_control_level=detector_threshold)
 
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
