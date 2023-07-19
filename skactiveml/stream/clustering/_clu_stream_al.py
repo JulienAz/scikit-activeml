@@ -142,7 +142,7 @@ class MicroClfCluster(MicroCluster):
             classes=None,
             random_state=0,
             classifier=HoeffdingTreeClassifier,
-            change_detector=DDM,
+            change_detector=ADWIN,
             detector_threshold=0.5,
     ):
         self.clf = SklearnClassifier(classifier(), missing_label=None, random_state=random_state, classes=classes)
