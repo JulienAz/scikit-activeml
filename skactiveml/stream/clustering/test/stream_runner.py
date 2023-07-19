@@ -14,6 +14,7 @@ from skactiveml.utils import call_func
 
 
 def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
+        labeling_strategy=None, change_detector=None,
         n_training_size=100, n_init_traing=10, rep=0, band_width=0.1,
         n_cluster=0, detector_threshold=1.5,
         log_clustering=False, log_clu_statistics=False, fit_clf=False):
@@ -140,6 +141,8 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
                 clu_statistic_logger.finalize_round()
 
         acc_logger.track_dataset(dataset_name)
+        acc_logger.track_strategy(labeling_strategy)
+        acc_logger.track_change_detector(change_detector)
         acc_logger.track_timestep(t)
         acc_logger.track_y(prediction)
         acc_logger.track_label(al_label)

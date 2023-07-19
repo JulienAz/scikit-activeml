@@ -11,6 +11,8 @@ N_CLUSTER = "n_Cluster"
 CLUSTER = "Cluster"
 DATASET = "Dataset"
 CLASSIFIER = "Classifier"
+STRATEGY = "LabelingStrategy"
+CHANGE_DETECTOR = "ChangeDetector"
 TIME = "time"
 BUDGET = "Budget"
 BANDWIDTH = "Kernel_Bandwidth"
@@ -43,6 +45,8 @@ ids_acc = [
     CLUSTER,
     DATASET,
     CLASSIFIER,
+    STRATEGY,
+    CHANGE_DETECTOR,
     BUDGET,
     BANDWIDTH,
     X1,
@@ -74,6 +78,12 @@ class CluStreamPerformanceLogger:
 
     def track_classifier(self, value: str):
         self._track_value(value, CLASSIFIER)
+
+    def track_change_detector(self, value:str):
+        self._track_value(value, CHANGE_DETECTOR)
+
+    def track_strategy(self, value:str):
+        self._track_value(value, STRATEGY)
 
     def track_accuracy(self, value: float):
         self._track_value(value, ACCURACY)
@@ -151,6 +161,8 @@ ids_clustering = [
     CLUSTER,
     DATASET,
     CLASSIFIER,
+    STRATEGY,
+    CHANGE_DETECTOR,
     BUDGET,
     BANDWIDTH,
     N_CLUSTER,
@@ -180,6 +192,12 @@ class CluStreamClusteringLogger:
 
     def track_classifier(self, value: str):
         self._track_value(value, CLASSIFIER)
+
+    def track_change_detector(self, value: str):
+        self._track_value(value, CHANGE_DETECTOR)
+
+    def track_strategy(self, value: str):
+        self._track_value(value, STRATEGY)
 
     def track_budget(self, value: int):
         self._track_value(value, BUDGET)

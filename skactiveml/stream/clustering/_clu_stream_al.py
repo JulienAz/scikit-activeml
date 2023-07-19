@@ -3,14 +3,13 @@ import typing
 
 import numpy as np
 from numpy import float64
-from river.drift import ADWIN
 from scipy.stats import entropy
 from sklearn.cluster import KMeans
 
 import scipy.stats as sps
 
 from river import utils
-from skmultiflow.drift_detection import DDM
+from skmultiflow.drift_detection import DDM, ADWIN
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 from skactiveml.classifier import SklearnClassifier
@@ -25,7 +24,7 @@ class MicroCluster:
             y=None,
             time_stamp=1,
             classes=None,
-            change_detector=DDM,
+            change_detector=ADWIN,
             detector_threshold=0.5
     ):
         self.features: typing.Dict = {

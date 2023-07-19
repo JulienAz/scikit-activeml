@@ -54,7 +54,7 @@ if __name__ == '__main__':
     clu_time_windows = [np.inf]
 
     # Number of clusters to be executed
-    cluster_numbers = [3, 10, 25]
+    cluster_numbers = [3]
 
     shuffle_data = False
     log_clustering = False
@@ -64,11 +64,11 @@ if __name__ == '__main__':
     init_budget = 0.01
     budget_step_size = 0.1
 
-    n_reps = 10
+    n_reps = 1
 
-    n_change_thresholds = 4
-    init_threshold = 0.1
-    threshold_step_size = 0.5
+    n_change_thresholds = 5
+    init_threshold = 0.02
+    threshold_step_size = 0.02
 
     n_bandwidths = 1
     bandwidth_step_size = 0.5
@@ -138,6 +138,9 @@ if __name__ == '__main__':
                                 'random_state': random_state
                             }
 
+                            # !!! TODO: Hardcorded logging
+                            labeling_strategy = "VariableUncertainty"
+                            change_detector = "DDM"
 
                             # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                             query_strategies = {
@@ -233,7 +236,7 @@ if __name__ == '__main__':
                                         k * n_bandwidths * len(query_strategies)) + (i * len(query_strategies)) + l
                                 args.append([X, y,
                                              query_strategy_name, query_strategy,
-                                             clf, dataset['name'],
+                                             clf, dataset['name'], labeling_strategy, change_detector,
                                              training_size, init_train_length,
                                              rep, bandwidth, n_cluster, change_threshold, log_clustering, log_clu_statistics])
 
