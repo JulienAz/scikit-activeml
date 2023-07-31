@@ -1,15 +1,17 @@
+import copy
 import math
 import typing
 
 import numpy as np
 from numpy import float64
+from river.drift import ADWIN
+from river.drift.binary import DDM
 from scipy.stats import entropy
 from sklearn.cluster import KMeans
 
 import scipy.stats as sps
 
 from river import utils
-from skmultiflow.drift_detection import DDM, ADWIN
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 from skactiveml.classifier import SklearnClassifier
@@ -24,8 +26,7 @@ class MicroCluster:
             y=None,
             time_stamp=1,
             classes=None,
-            change_detector=ADWIN,
-            detector_threshold=0.5
+            change_detector_param_dict= {'warm_start': 5, 'drift_threshold': 0.5},
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
@@ -41,8 +42,13 @@ class MicroCluster:
         self.n_classes = len(classes)
         self.labeled_samples = np.empty((0,), dtype=object)
 
-        # Adwin params
-        self.change_detector = change_detector(delta=detector_threshold)
+        self.change_detector_param_dict = copy.deepcopy(change_detector_param_dict)
+        if 'change_detector_type' in change_detector_param_dict:
+            self.change_detector_type = self.change_detector_param_dict.pop('change_detector_type')
+        else:
+            self.change_detector_type = DDM
+
+        self.change_detector = self.change_detector_type(**self.change_detector_param_dict)
 
 
         # River DDM params
@@ -74,6 +80,10 @@ class MicroCluster:
 
     def update_changedetector(self):
         return self.change_detector.detected_change()
+
+    def reset_change_detector(self):
+        self.change_detector = self.change_detector_type(**self.change_detector_param_dict)
+        return
 
     def radius(self):
         std = np.sqrt(self.features["M"] / (self.features["n"]))
@@ -142,8 +152,7 @@ class MicroClfCluster(MicroCluster):
             classes=None,
             random_state=0,
             classifier=HoeffdingTreeClassifier,
-            change_detector=ADWIN,
-            detector_threshold=0.5,
+            change_detector_param_dict= {'warm_start': 5, 'drift_threshold': 0.5},
     ):
         self.clf = SklearnClassifier(classifier(), missing_label=None, random_state=random_state, classes=classes)
 
@@ -154,8 +163,7 @@ class MicroClfCluster(MicroCluster):
             y=y,
             time_stamp=time_stamp,
             classes=classes,
-            change_detector=change_detector,
-            detector_threshold=detector_threshold
+            change_detector_param_dict=change_detector_param_dict
             )
 
     def add(self, data):
@@ -187,7 +195,7 @@ class CluStream:
             time_window=1000,
             random_state=None,
             classes=None,
-            change_threshold=1.5
+            change_detector_param_dict=None
     ):
         self.mc = micro_cluster
 
@@ -201,7 +209,7 @@ class CluStream:
         self.centers: dict[int, []] = {}
         self.micro_clusters: dict[int, micro_cluster] = {}
 
-        self.change_threshold=change_threshold
+        self.change_detector_param_dict = change_detector_param_dict
 
         self._timestamp = -1
         self.time_window = time_window
@@ -249,7 +257,7 @@ class CluStream:
             self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y,
                                                            self._timestamp,
                                                            self.classes,
-                                                           detector_threshold=self.change_threshold)
+                                                           detector_threshold=self.change_detector_param_dict)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object)  # !!! For cluster analysi
             return free_cluster_id, None
 
@@ -281,7 +289,7 @@ class CluStream:
             self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y,
                                                            self._timestamp,
                                                            self.classes,
-                                                           detector_threshold=self.change_threshold)
+                                                           change_detector_param_dict=self.change_detector_param_dict)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object) #!!! For cluster analysis
             return free_cluster_id, None
 
@@ -300,7 +308,7 @@ class CluStream:
         self.centers = {i: X for i, X in enumerate(self._kmeans_mc.cluster_centers_)}
         self.micro_clusters = {i: self.mc(x=X[np.newaxis, ...],
                                           time_stamp=self.n_micro_clusters - 1,
-                                          detector_threshold=self.change_threshold,
+                                          change_detector_param_dict=self.change_detector_param_dict,
                                           classes=self.classes)
                                for i, X in
                                self.centers.items()}
@@ -327,7 +335,7 @@ class CluStream:
             self.micro_clusters[del_id] = self.mc(X[np.newaxis, ...], y,
                                                   self._timestamp,
                                                   self.classes,
-                                                  detector_threshold=self.change_threshold)
+                                                  change_detector_param_dict=self.change_detector_param_dict)
             self.cluster_test[del_id] = np.array((X, y), dtype=object)
             return del_id, None
 
@@ -354,7 +362,7 @@ class CluStream:
         self.micro_clusters[closest_b] = self.mc(X[np.newaxis, ...], y,
                                                  self._timestamp,
                                                  self.classes,
-                                                 detector_threshold=self.change_threshold)
+                                                 change_detector_param_dict=self.change_detector_param_dict)
 
         return closest_b, closest_a
 

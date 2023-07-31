@@ -11,18 +11,18 @@ from skactiveml.utils import MISSING_LABEL
 class CluStreamClassifier(SkactivemlClassifier):
 
     def __init__(
-        self,
-        clf_type,
-        freq_pred_clf=None,
-        classes=None,
-        missing_label=MISSING_LABEL,
-        cost_matrix=None,
-        random_state=None,
-        metric_dict=None,
-        refit=False,
-        clustering_param_dict=None,
-        classifier_param_dict=None,
-        change_detector_type='prediction_error'
+            self,
+            clf_type,
+            freq_pred_clf=None,
+            classes=None,
+            missing_label=MISSING_LABEL,
+            cost_matrix=None,
+            random_state=None,
+            metric_dict=None,
+            refit=False,
+            clustering_param_dict=None,
+            classifier_param_dict=None,
+            change_detector_type='prediction_error'
     ):
         super().__init__(
             classes=classes,
@@ -32,7 +32,7 @@ class CluStreamClassifier(SkactivemlClassifier):
         )
         self.metric_dict = metric_dict
 
-        #Init Classifier        classifier_param_dict['']
+        # Init Classifier        classifier_param_dict['']
         self.estimator_clf = SklearnClassifier(clf_type(), **classifier_param_dict)
         self.freq_pred_clf = freq_pred_clf
 
@@ -52,7 +52,7 @@ class CluStreamClassifier(SkactivemlClassifier):
                 self.clustering.fit_one(x_t, y_t)
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
-    def partial_fit(self, X, y, acc_logger=None, statistic_logger= None, sample_weight=None, **fit_kwargs):
+    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
 
         if not y == self.missing_label:
@@ -66,14 +66,14 @@ class CluStreamClassifier(SkactivemlClassifier):
             changed_clusters = []
             change_detections = [False] * self.clustering.n_micro_clusters
             for mc_id, mc in self.clustering.micro_clusters.items():
-                change_detections[mc_id]= mc.change_detector.detected_change()
-                if mc.change_detector.detected_change():
+                change_detections[mc_id] = mc.change_detector.drift_detected
+                if mc.change_detector.drift_detected:
                     changed_clusters.append(mc_id)
-                change_detections[mc_id] = mc.change_detector.detected_change()
+                change_detections[mc_id] = mc.change_detector.drift_detected
             if not statistic_logger == None:
                 statistic_logger.track_change_detection(change_detections)
             # If change_detector of cluster is positiv, corresponding cluster is cleared
-           # self.clustering.clear_cluster(mc_id)
+            # self.clustering.clear_cluster(mc_id)
 
             # Refitting Classifier on Labeled Samples in all Cluster
             if changed_clusters:
@@ -85,13 +85,13 @@ class CluStreamClassifier(SkactivemlClassifier):
             return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
 
     def refit_on_cluster(self, X, y, sample_weight=None, **fit_kwargs):
-        #labeled_data = np.array([np.array(mc.labeled_samples) for mc_id, mc in self.clustering.micro_clusters.items()])
+        # labeled_data = np.array([np.array(mc.labeled_samples) for mc_id, mc in self.clustering.micro_clusters.items()])
         X = []
         y = []
         # Collecting the Labeled Samples from the clusters
         for mc_id, mc in self.clustering.micro_clusters.items():
             # Hard coded for rbf_generator change adaption !!!
-            #if not len(mc.labeled_samples) == 0:
+            # if not len(mc.labeled_samples) == 0:
             #    count_2 = np.count_nonzero(mc.labeled_samples[:, 1] == 2)
             #    is_majority_two = count_2 > mc.labeled_samples[:,1].size / 2#
 
@@ -149,7 +149,7 @@ class CluStreamClassifier(SkactivemlClassifier):
                 pred_proba = self.predict_proba(X)
                 k_vec = n * pred_proba
 
-                #kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(mc.x)
+                # kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(mc.x)
                 # X_cluster_density = np.array([kde.score(X)]) TODO: Density seems to be broken, high negative values
                 X_cluster_density = 1
                 return k_vec * X_cluster_density
@@ -161,18 +161,19 @@ class CluStreamClassifier(SkactivemlClassifier):
     def update_change_detector(self, X, y, mc_id_fitted, mc_id_merged):
         if self.change_detector_type == 'prediction_error':
             prediction = self.predict(X)
-            self.clustering.micro_clusters[mc_id_fitted].change_detector.add_element(not prediction == y)
+            self.clustering.micro_clusters[mc_id_fitted].change_detector.update(not prediction == y)
             return
 
         if self.change_detector_type == 'entropy':
             cluster_entropy = self.clustering.micro_clusters[mc_id_fitted].class_entropy
-            self.clustering.micro_clusters[mc_id_fitted].change_detector.add_element(cluster_entropy)
+            self.clustering.micro_clusters[mc_id_fitted].change_detector.update(cluster_entropy)
 
             if mc_id_merged is not None:
-                self.clustering.micro_clusters[mc_id_merged].change_detector.reset()
+                self.clustering.micro_clusters[mc_id_merged].reset_change_detector()
                 cluster_entropy = self.clustering.micro_clusters[mc_id_merged].class_entropy
-                self.clustering.micro_clusters[mc_id_merged].change_detector.add_element(cluster_entropy)
+                self.clustering.micro_clusters[mc_id_merged].change_detector.update(cluster_entropy)
             return
+
 
 class CluStreamEnsembleClassifier(CluStreamClassifier):
 
@@ -192,7 +193,7 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
             proba = self.estimator_clf.predict_proba(X)
         return proba
 
-    def partial_fit(self, X, y, acc_logger= None, statistic_logger=None, sample_weight=None, **fit_kwargs):
+    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
 
         if not y == self.missing_label:
@@ -206,14 +207,14 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
             changed_clusters = []
             change_detections = [False] * self.clustering.n_micro_clusters
             for mc_id, mc in self.clustering.micro_clusters.items():
-                change_detections[mc_id]= mc.change_detector.detected_change()
-                if mc.change_detector.detected_change():
+                change_detections[mc_id] = mc.change_detector.drift_detected
+                if mc.change_detector.drift_detected:
                     changed_clusters.append(mc_id)
-                change_detections[mc_id] = mc.change_detector.detected_change()
+                change_detections[mc_id] = mc.change_detector.drift_detected
             if not statistic_logger == None:
                 statistic_logger.track_change_detection(change_detections)
             # If change_detector of cluster is positiv, corresponding cluster is cleared
-           # self.clustering.clear_cluster(mc_id)
+            # self.clustering.clear_cluster(mc_id)
 
             # Refitting Classifier on Labeled Samples in all Cluster
             if changed_clusters:
@@ -224,9 +225,7 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
         if y[0] is not self.estimator_clf.missing_label:
             return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
 
-    def predict(self, X): # !!! TODO: figure out wheather only prediction of cluster clf for change detection or weighted
+    def predict(self,
+                X):  # !!! TODO: figure out wheather only prediction of cluster clf for change detection or weighted
         proba = self.predict_proba(X)
         return [np.argmax(proba)]
-
-
-

@@ -1,5 +1,7 @@
 import multiprocessing
 
+from river.drift import ADWIN
+from river.drift.binary import DDM
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 from skactiveml.classifier._zliobate_adaptive_classifier import ZliobateClassifier
@@ -35,7 +37,7 @@ if __name__ == '__main__':
     # number of instances that are provided to the classifier
     init_train_length = 20
     # the length of the data stream
-    stream_length = 1000
+    stream_length = 5000
     stream_start_point = 0
     stream_max_length = dataset['length']
 
@@ -54,21 +56,21 @@ if __name__ == '__main__':
     clu_time_windows = [np.inf]
 
     # Number of clusters to be executed
-    cluster_numbers = [3]
+    cluster_numbers = [3, 20]
 
     shuffle_data = False
     log_clustering = False
     log_clu_statistics = False
 
-    n_budget = 11
+    n_budget = 2
     init_budget = 0.01
     budget_step_size = 0.1
 
-    n_reps = 1
+    n_reps = 10
 
     n_change_thresholds = 5
     init_threshold = 0.02
-    threshold_step_size = 0.02
+    threshold_step_size = 0.05
 
     n_bandwidths = 1
     bandwidth_step_size = 0.5
@@ -110,6 +112,21 @@ if __name__ == '__main__':
                 change_threshold = init_threshold
                 for t in range(n_change_thresholds):
 
+                    #DDM Params
+                    #change_detector_param_dict = {
+                    #    'change_detector_type': DDM,
+                    #    'drift_threshold': change_threshold,
+                    #    'warm_start': 5
+                    #}
+
+                    #ADWIN
+                    change_detector_param_dict = {
+                        'change_detector_type': ADWIN,
+                        'delta': change_threshold,
+                        'clock': 5
+                    }
+
+
                     for c, clu_time_window in enumerate(clu_time_windows):
                         # Looping over Number of clusters configured
                         for n_cluster in cluster_numbers:
@@ -122,15 +139,16 @@ if __name__ == '__main__':
                                 'n_init_train': init_train_length,
                                 'time_window': clu_time_window,
                                 'classes': classes,
-                                'change_threshold': change_threshold
+                                'change_detector_param_dict': change_detector_param_dict
                             }
+
                             clusteringEnsembleClfParams = {
                                 'micro_cluster': MicroClfCluster,
                                 'n_micro_clusters': n_cluster,
                                 'n_init_train': init_train_length,
                                 'time_window': clu_time_window,
                                 'classes': classes,
-                                'change_threshold': change_threshold
+                                'change_detector_param_dict': change_detector_param_dict
                             }
                             classifier_params = {
                                 'missing_label': None,
@@ -140,7 +158,7 @@ if __name__ == '__main__':
 
                             # !!! TODO: Hardcorded logging
                             labeling_strategy = "VariableUncertainty"
-                            change_detector = "DDM"
+                            change_detector = change_detector_param_dict['change_detector_type'].__name__
 
                             # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                             query_strategies = {
@@ -173,17 +191,17 @@ if __name__ == '__main__':
                                 #                        metric_dict=metric_dict,
                                 #                        missing_label=None,
                                 #                        refit=True)),
-                                'ClusteringClfRefit': (
+                                #'ClusteringClfRefit': (
                                 #                       # StreamProbabilisticAL(random_state=random_state, budget=budget),
-                                                        VariableUncertainty(random_state=random_state, budget=budget),
-                                                      CluStreamClassifier(
-                                                           clf_type=base_classifier,
-                                                           metric_dict=metric_dict,
-                                                           missing_label=None,
-                                                           refit=True,
-                                                           clustering_param_dict=clusteringParams,
-                                                           classifier_param_dict=classifier_params
-                                                       )),
+                                #                        VariableUncertainty(random_state=random_state, budget=budget),
+                                #                      CluStreamClassifier(
+                                #                           clf_type=base_classifier,
+                                #                           metric_dict=metric_dict,
+                                #                           missing_label=None,
+                                #                           refit=True,
+                                #                           clustering_param_dict=clusteringParams,
+                                #                           classifier_param_dict=classifier_params
+                                #                       )),
                                 'ClusteringClfEntropyRefit': (
                                                         #StreamProbabilisticAL(random_state=random_state, budget=budget),
                                                        VariableUncertainty(random_state=random_state, budget=budget),
@@ -241,7 +259,7 @@ if __name__ == '__main__':
                                              rep, bandwidth, n_cluster, change_threshold, log_clustering, log_clu_statistics])
 
                                 # Sequential execution for debuggin
-                                #res.append(run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], training_size, init_train_length, rep, bandwidth, n_cluster, log_clustering, log_clu_statistics))
+                                #res.append(run(X, y, query_strategy_name, query_strategy, clf, dataset['name'], labeling_strategy, change_detector, training_size, init_train_length, rep, bandwidth, n_cluster, log_clustering, log_clu_statistics))
                     change_threshold += threshold_step_size
                 bandwidth += bandwidth_step_size
                 bandwidth = np.round(bandwidth, 2)

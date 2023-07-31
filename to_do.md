@@ -196,3 +196,21 @@ Meeting: punkte
 ## 15.07
 - [X] KDA implementieren und testen
 - [ ] Abstract schreiben
+
+# Meeting 18.07
+## Punkte
+- Finden die bei Covertype überhaupt noch einen change?
+- Airline datensatz
+  - Zu viele changes erkannt?
+- ADWIN ausprobieren
+- Andere Change detectoren testen?
+- Mehr Reps testen
+- Sensitivity Study
+  - z.B. Accuracy über threshold, col = budget
+  - z.B. Accuracy über n_cluster, col = budget
+  - Erst Study für anzahl Cluster, dann zu schlechte rauswerfen
+
+# Meeting 25.07
+## Punkte
+- Adaptive Classifier mit random sampling
+- Liste mit Baselines
