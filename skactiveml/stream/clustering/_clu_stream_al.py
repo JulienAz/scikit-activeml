@@ -257,7 +257,7 @@ class CluStream:
             self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y,
                                                            self._timestamp,
                                                            self.classes,
-                                                           detector_threshold=self.change_detector_param_dict)
+                                                           change_detector_param_dict=self.change_detector_param_dict)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object)  # !!! For cluster analysi
             return free_cluster_id, None
 
