@@ -1,7 +1,7 @@
 import multiprocessing
 
 from river.drift import ADWIN
-from river.drift.binary import DDM
+from river.drift.binary import DDM, EDDM
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 from skactiveml.classifier._zliobate_adaptive_classifier import ZliobateClassifier
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     # number of instances that are provided to the classifier
     init_train_length = 20
     # the length of the data stream
-    stream_length = 5000
+    stream_length = 1000
     stream_start_point = 0
     stream_max_length = dataset['length']
 
@@ -68,9 +68,9 @@ if __name__ == '__main__':
 
     n_reps = 10
 
-    n_change_thresholds = 5
-    init_threshold = 0.02
-    threshold_step_size = 0.05
+    n_change_thresholds = 4
+    init_threshold = 0.95
+    threshold_step_size = 0.01
 
     n_bandwidths = 1
     bandwidth_step_size = 0.5
@@ -119,12 +119,19 @@ if __name__ == '__main__':
                     #    'warm_start': 5
                     #}
 
-                    #ADWIN
+                    #EDDM
                     change_detector_param_dict = {
-                        'change_detector_type': ADWIN,
-                        'delta': change_threshold,
-                        'clock': 5
+                        'change_detector_type': EDDM,
+                        'alpha': change_threshold,
+                        'warm_start': 3
                     }
+
+                    #ADWIN
+                    #change_detector_param_dict = {
+                    #    'change_detector_type': ADWIN,
+                    #    'delta': change_threshold,
+                    #    'clock': 5
+                    #}
 
 
                     for c, clu_time_window in enumerate(clu_time_windows):
