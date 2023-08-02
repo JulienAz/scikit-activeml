@@ -214,3 +214,21 @@ Meeting: punkte
 ## Punkte
 - Adaptive Classifier mit random sampling
 - Liste mit Baselines
+
+
+# Meeting 01.08
+## Zeigen:
+- Auf river implementierung von detectorn gewechselt
+- Überlegt wie ich die Sensitivity Plots gerne machen würde
+  - Plot über thresholds und N_cluster und Budget zu viel
+  - Was ist mit Datasets?
+  - Welches Budget?
+  
+- Aufgefallen dass VarUncertainty das budget nicht ausnutzt
+
+- ADWIN vielleicht mit anderen statistiken?
+
+## Punkte
+- Plot über alle budgets mitteln
+  - Anonsten über 3 werte z.b. klein-mittel-groß
+  - Quantile filter + Stratgien 
