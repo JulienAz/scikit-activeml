@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     sb.set_theme()
 
-    f = sb.relplot(data=df, x=DETECTOR_THRESHOLD, y=ACCURACY, kind="line", hue=hue, palette='tab10')
+    f = sb.relplot(data=df, x=DETECTOR_THRESHOLD, y=ACCURACY, kind="line", hue=hue, col=col, row=row, palette='tab10')
 
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, file_name)
 
