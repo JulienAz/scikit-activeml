@@ -6,7 +6,7 @@ from river.drift import ADWIN
 from scipy.stats import entropy
 
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import ENTROPY, TIMESTEP, \
-    CLU_TIMEWINDOW, N_CLUSTER, CLASSIFIER, REP, CLASS_DIST, CLUSTER, CHANGE_DETECTION
+    CLU_TIMEWINDOW, N_CLUSTER, CLASSIFIER, REP, CLASS_DIST, CLUSTER, CHANGE_DETECTION, DETECTOR_THRESHOLD
 
 
 def convert_to_array(entry):
@@ -50,6 +50,8 @@ def get_entropy_per_timestep(df, change_detection=True):
         clu_timewindow = row[CLU_TIMEWINDOW]
         n_cluster = row[N_CLUSTER]
         classifier = row[CLASSIFIER]
+        change_threshold = row[DETECTOR_THRESHOLD]
+
         rep = row[REP]
         class_entropies = []
         entropy_per_cluster = row[ENTROPY]
@@ -57,10 +59,10 @@ def get_entropy_per_timestep(df, change_detection=True):
 
         for i, entropy in enumerate(entropy_per_cluster):
             class_entropies.append([timestep, rep, clu_timewindow, n_cluster,
-                                    classifier, i, entropy, detection_per_cluster[i]])
+                                    classifier, i, entropy, detection_per_cluster[i], change_threshold])
 
         entropy_per_timestep.extend(class_entropies)
-        column_names = [TIMESTEP, REP, CLU_TIMEWINDOW, N_CLUSTER, CLASSIFIER, CLUSTER, ENTROPY, CHANGE_DETECTION]
+        column_names = [TIMESTEP, REP, CLU_TIMEWINDOW, N_CLUSTER, CLASSIFIER, CLUSTER, ENTROPY, CHANGE_DETECTION, DETECTOR_THRESHOLD]
 
     return pd.DataFrame(entropy_per_timestep, columns=column_names)
 

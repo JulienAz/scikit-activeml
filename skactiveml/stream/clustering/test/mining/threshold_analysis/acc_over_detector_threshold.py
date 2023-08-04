@@ -16,7 +16,8 @@ if __name__ == '__main__':
     col = N_CLUSTER
     row = BUDGET
 
-    file_name = 'output_acc_over_budget_per_' + hue + '_' + col + '_' + row + '.pdf'
+
+    file_name = 'output_acc_over_threshold_per_' + hue + '_' + col + '_' + row + '.pdf'
 
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
@@ -28,8 +29,7 @@ if __name__ == '__main__':
 
     sb.set_theme()
 
-    f = sb.relplot(data=df, x=DETECTOR_THRESHOLD, y=ACCURACY, kind="line", hue=hue, col=col, row=row,
-                   errorbar=None, palette='tab10')
+    f = sb.relplot(data=df, x=DETECTOR_THRESHOLD, y=ACCURACY, kind="line", hue=hue, col=col, row=row, palette='tab10')
 
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, file_name)
 
