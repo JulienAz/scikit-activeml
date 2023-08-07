@@ -16,7 +16,7 @@ IRIS = {'name': 'Abalone_binary', 'type': 'openml', 'id': 61, 'toy': True}
 
 # ScikitMultiflow
 HYPERPLANE = {'name': 'Hyperplane', 'type': 'hyperplane'}
-RBF_GENERATOR = {'name': 'RbfGenerator', 'type': 'rbf'}
+RBF_GENERATOR = {'name': 'RbfGenerator', 'type': 'rbf', 'length': 100000}
 
 # Local csv sets
 # Real World
