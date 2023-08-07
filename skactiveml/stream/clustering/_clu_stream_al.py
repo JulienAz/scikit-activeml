@@ -168,8 +168,8 @@ class MicroClfCluster(MicroCluster):
 
     def add(self, data):
         (x, y), t = data
-        if y is not self.clf.missing_label:
-            self.clf.partial_fit(x.reshape([1, -1]), np.array([y]))
+        #if y is not self.clf.missing_label:
+        #    self.clf.partial_fit(x.reshape([1, -1]), np.array([y]))
         super().add(data)
 
     def predict_proba(self):
