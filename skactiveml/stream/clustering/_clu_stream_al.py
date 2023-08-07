@@ -172,6 +172,10 @@ class MicroClfCluster(MicroCluster):
             self.clf.partial_fit(x.reshape([1, -1]), np.array([y]))
         super().add(data)
 
+    def predict_proba(self):
+        probas = self.features['class_dist'] / sum(self.features['class_dist'])
+        return probas
+
     def __iadd__(self, other):
         if len(other.labeled_samples) > 0:
             X, y = zip(*other.labeled_samples)
