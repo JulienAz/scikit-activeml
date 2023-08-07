@@ -151,7 +151,7 @@ class CsvStreamGenerator(StreamGenerator):
 
 
 class RbfStreamGenerator(StreamGenerator):
-    def __init__(self, random_state, stream_length, n_features=2, n_classes=10, n_centroids=10, stdv_max=0.03):
+    def __init__(self, random_state, stream_length, n_features=2, n_classes=15, n_centroids=15, stdv_max=0.03):
         assert n_classes == n_centroids
 
         # Extract feature matrix and target array
