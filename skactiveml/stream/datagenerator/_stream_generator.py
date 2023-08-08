@@ -164,6 +164,9 @@ class RbfStreamGenerator(StreamGenerator):
             stream_gen.centroids[i].class_label = i
             stream_gen.centroids[i].std_dev = rng.uniform(0, stdv_max)
 
+        rest_length = stream_length % 2000
+        X, y = stream_gen.next_sample(rest_length)
+
         for i in range(int(stream_length / 2000)):
             # Randomly choose number of rbfs pairs to swap
             n_pairs_to_swap = rng.integers(1, len(stream_gen.centroids) // 2)
@@ -181,7 +184,7 @@ class RbfStreamGenerator(StreamGenerator):
             X = np.concatenate((X, X_tmp))
             y = np.concatenate((y, y_tmp))
 
-        X, y = stream_gen.next_sample(stream_length)
+        #X, y = stream_gen.next_sample(stream_length)
 
         # !!! Hardcoding concept drift by swapping class labels and stdv of RBFs
         '''stream_gen.centroids[0].class_label = 1
