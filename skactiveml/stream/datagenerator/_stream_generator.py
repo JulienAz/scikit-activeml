@@ -177,6 +177,11 @@ class RbfStreamGenerator(StreamGenerator):
                     dist = self._distance(stream_gen.centroids[i].centre, stream_gen.centroids[j].centre)
 
         for i in range(int(stream_length / 2000)):
+            # Generate next 2000 samples
+            X_tmp, y_tmp = stream_gen.next_sample(2000)
+            X = np.concatenate((X, X_tmp))
+            y = np.concatenate((y, y_tmp))
+
             # Randomly choose number of rbfs pairs to swap
             n_pairs_to_swap = rng.integers(1, len(stream_gen.centroids) // 2)
 
@@ -188,10 +193,6 @@ class RbfStreamGenerator(StreamGenerator):
                 rbfs_to_swap[i].class_label, rbfs_to_swap[i + 1].class_label = rbfs_to_swap[i + 1].class_label, rbfs_to_swap[i].class_label
                 rbfs_to_swap[i].std_dev, rbfs_to_swap[i + 1].std_dev = rbfs_to_swap[i + 1].std_dev, rbfs_to_swap[i].std_dev
 
-            # Generate next 2000 samples
-            X_tmp, y_tmp = stream_gen.next_sample(2000)
-            X = np.concatenate((X, X_tmp))
-            y = np.concatenate((y, y_tmp))
 
         rest_length = stream_length % 2000
         X_tmp, y_tmp = stream_gen.next_sample(rest_length)
