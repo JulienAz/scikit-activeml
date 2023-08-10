@@ -151,7 +151,10 @@ class CsvStreamGenerator(StreamGenerator):
 
 
 class RbfStreamGenerator(StreamGenerator):
-    def __init__(self, random_state, stream_length, n_features=2, n_classes=15, n_centroids=15, stdv_max=0.03):
+    def euclidean_distance(c1, c2):
+        return np.sqrt(np.sum((c1 - c2) ** 2))
+
+    def __init__(self, random_state, stream_length, n_features=2, n_classes=5, n_centroids=5, stdv_max=0.03, min_dist=0.1):
         assert n_classes == n_centroids
 
         # Extract feature matrix and target array
@@ -163,6 +166,15 @@ class RbfStreamGenerator(StreamGenerator):
         for i in range(n_classes):
             stream_gen.centroids[i].class_label = i
             stream_gen.centroids[i].std_dev = rng.uniform(0, stdv_max)
+
+        for i in range(n_centroids):
+            for j in range(i + 1, n_centroids):
+                dist = self.euclidean_distance(stream_gen.centroids[i].center, stream_gen.centroids[j].center)
+                while dist < min_dist:
+                    # Move one of the centroids
+                    stream_gen.centroids[j].center = rng.uniform(0, 1, size=n_features)
+                    dist = self.euclidean_distance(stream_gen.centroids[i].center, stream_gen.centroids[j].center)
+
 
         rest_length = stream_length % 2000
         X, y = stream_gen.next_sample(rest_length)
