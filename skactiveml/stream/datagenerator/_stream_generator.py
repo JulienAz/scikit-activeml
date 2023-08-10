@@ -162,7 +162,7 @@ class RbfStreamGenerator(StreamGenerator):
         stream_gen = RandomRBFGenerator(model_random_state=random_state, n_classes=n_classes, n_features=n_features, n_centroids=n_centroids)
         rng = np.random.default_rng(random_state)
 
-        X, y = np.empty((0, n_features)), np.empty((0))
+        X, y = np.empty((0, n_features)), np.empty((0), dtype=int)
 
         for i in range(n_classes):
             stream_gen.centroids[i].class_label = i
