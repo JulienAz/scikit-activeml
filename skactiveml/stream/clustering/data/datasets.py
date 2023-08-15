@@ -15,7 +15,7 @@ COVERTYPE = {'name': 'Covertype', 'length': 581012, 'type': 'openml', 'id': 1596
 IRIS = {'name': 'Abalone_binary', 'type': 'openml', 'id': 61, 'toy': True}
 
 # ScikitMultiflow
-HYPERPLANE = {'name': 'Hyperplane', 'type': 'hyperplane'}
+HYPERPLANE = {'name': 'Hyperplane', 'type': 'hyperplane', 'length': 100000}
 RBF_GENERATOR = {'name': 'RbfGenerator', 'type': 'rbf', 'length': 100000}
 
 # Local csv sets
