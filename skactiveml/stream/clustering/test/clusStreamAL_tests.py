@@ -37,6 +37,9 @@ if __name__ == '__main__':
     dataset = ELECTRICITY
     datasets = [ELECTRICITY, COVERTYPE, HYPERPLANE]
 
+    args = []
+    res = []
+
     for dataset in datasets:
         # number of instances that are provided to the classifier
         init_train_length = 20
@@ -82,8 +85,6 @@ if __name__ == '__main__':
 
         base_classifier = HoeffdingTreeClassifier
 
-        args = []
-        res = []
         # It might be easier (and better readable) to create a parameter grid
         # (https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.ParameterGrid.html#sklearn.model_selection.ParameterGrid)
         # convert it to a list and then simply loop over the grid
