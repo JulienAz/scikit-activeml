@@ -44,6 +44,8 @@ class CluStreamClassifier(SkactivemlClassifier):
 
         self.refit = refit
 
+        self.classes = classes
+
     def fit(self, X, y, sample_weight=None, **fit_kwargs):
         if self.clustering.initialized:
             self.clustering.fit_one(X[-1], y[-1])

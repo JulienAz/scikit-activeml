@@ -28,6 +28,8 @@ class ZliobateClassifier(SkactivemlClassifier):
         self.stable_clf = SklearnClassifier(clf_type(), **classifier_param_dict)
         self.classifier_param_dict = classifier_param_dict
 
+        self.classes=classes
+
         self.change_clf = None
         self.change_state = None
         self.change_detector = DDM()

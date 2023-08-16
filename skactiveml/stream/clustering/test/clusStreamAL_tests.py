@@ -177,6 +177,7 @@ if __name__ == '__main__':
                                                            StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
                                                            #VariableUncertainty(random_state=random_state, budget=budget),
                                                            ZliobateClassifier(
+                                                               classes=classes,
                                                            clf_type=base_classifier,
                                                            metric_dict=metric_dict,
                                                            missing_label=None,
@@ -184,6 +185,7 @@ if __name__ == '__main__':
                                 'PairedEnsembleXu': (
                                     paired_ensemble_strategy,
                                     XuPairedEnsembleClassifier(
+                                        classes=classes,
                                         clf_type=base_classifier,
                                         labeling_strategy=paired_ensemble_strategy,
                                         missing_label=None,
@@ -199,6 +201,7 @@ if __name__ == '__main__':
                                     StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
                                                          # VariableUncertainty(random_state=random_state),
                                                           CluStreamClassifier(
+                                                              classes=classes,
                                                               clf_type=base_classifier,
                                                               metric_dict=metric_dict,
                                                               missing_label=None,
@@ -221,6 +224,7 @@ if __name__ == '__main__':
                                                         StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
                                                     #VariableUncertainty(random_state=random_state, budget=budget),
                                                       CluStreamClassifier(
+                                                          classes=classes,
                                                            clf_type=base_classifier,
                                                            metric_dict=metric_dict,
                                                            missing_label=None,
@@ -232,6 +236,7 @@ if __name__ == '__main__':
                                                         StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
                                                        #VariableUncertainty(random_state=random_state, budget=budget),
                                                        CluStreamClassifier(
+                                                           classes=classes,
                                                            clf_type=base_classifier,
                                                            metric_dict=metric_dict,
                                                            missing_label=None,
@@ -244,6 +249,7 @@ if __name__ == '__main__':
                                                         StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
                                 #                       VariableUncertainty(random_state=random_state, budget=budget),
                                                        CluStreamEnsembleClassifier(
+                                                           classes=classes,
                                                            clf_type=base_classifier,
                                                            metric_dict=metric_dict,
                                                            missing_label=None,
@@ -255,6 +261,7 @@ if __name__ == '__main__':
                                                 StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
                                 #VariableUncertainty(random_state=random_state, budget=budget),
                                 CluStreamEnsembleClassifier(
+                                    classes=classes,
                                     clf_type=base_classifier,
                                    metric_dict=metric_dict,
                                    missing_label=None,

@@ -37,6 +37,8 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
         self.w = w
         self.detection_threshold = detection_threshold * w
 
+        self.classes = classes
+
         self.change_state = deque(maxlen=w)
         self.training_window_X = deque(maxlen=w)
         self.training_window_y = deque(maxlen=w)
