@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import ACCURACY, BUDGET, \
-    CLASSIFIER, BANDWIDTH, REP, LABEL, CLU_TIMEWINDOW, TIMESTEP, N_CLUSTER, DETECTOR_THRESHOLD
+    CLASSIFIER, BANDWIDTH, REP, LABEL, CLU_TIMEWINDOW, TIMESTEP, N_CLUSTER, DETECTOR_THRESHOLD, DATASET
 from skactiveml.stream.clustering.util import save_image, run_async
 
 import pandas as pd
@@ -13,7 +13,7 @@ if __name__ == '__main__':
     smoothing_window = 300
 
     hue = CLASSIFIER
-    col = N_CLUSTER
+    col = DATASET
     row = DETECTOR_THRESHOLD
 
     file_name = 'output_acc_over_budget_per_' + hue + '_' + col + '_' + row + '.pdf'
@@ -28,8 +28,7 @@ if __name__ == '__main__':
 
     sb.set_theme()
 
-    f = sb.relplot(data=df, x=BUDGET, y=ACCURACY, kind="line", hue=hue, col=col, row=row,
-                   errorbar=None, palette='tab10')
+    f = sb.relplot(data=df, x=BUDGET, y=ACCURACY, kind="line", hue=hue, col=col, palette='tab10')
 
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, file_name)
 
