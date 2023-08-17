@@ -18,7 +18,7 @@ class EstimatedBudgetXu(BudgetManager):
 
         #Check if budget left
         if sum(self.label_spending)/self.w < self.budget:
-            if random_variable <= self.theta:
+            if random_variable <= self.budget:
                 queried_indices.append(0)
                 self.label_spending.append(1)
             else:
