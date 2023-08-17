@@ -14,6 +14,14 @@
   - Auf prediction error
   - Auf clusterstatistiken
 
+- Ausprobieren Ensemble aber classifier in cluster nur majority vote
+
+- ADWIN2 probieren mit labeled samples (mit features)
+
+- Gewichtung der Ensemble nach Accuracy
+
+- Naive Bayes in den Clustern
+
 # Daily To-do
 ## General Todos:
 - Testscript anpassen

@@ -169,11 +169,11 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
 
     # calculate and show the average accuracy
     if approach_name.startswith('Clustering'):
-        print("Repition", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: ", band_width,
+        print("Dataset ", dataset_name, "Repition ", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: ", band_width,
                ", DetectorThreshold: ", detector_threshold, ", Avg Accuracy: ", np.mean(correct_classifications),
               ", Acquisition count:", count, 'number_cluster: ', clf.clustering.n_micro_clusters)
     else:
-        print("Repition", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: " , band_width,
+        print("Dataset ", dataset_name, "Repition ", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: " , band_width,
               ", Avg Accuracy: ", np.mean(correct_classifications),
               ", Acquisition count:", count)
 
