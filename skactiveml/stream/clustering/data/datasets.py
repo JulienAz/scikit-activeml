@@ -28,6 +28,7 @@ CHESSBOARD = {'name': 'ChessBoard', 'length': 200000, 'type': 'local', 'path': o
 INTERCHANGING_RBF = {'name': 'InterchangingRBF', 'length': 200000, 'type': 'local', 'path': os.path.join('artificial', 'interchangingRBF.csv')}
 ROTATING_HYPERPLANE = {'name': 'RotatingHyperplane', 'type': 'local', 'path': os.path.join('artificial', 'rotatingHyperplane.csv')}
 SEA_STREAM = {'name': 'SeaStream', 'type': 'local', 'path': os.path.join('artificial', 'sea_stream.csv')}
+SEA_BIG = {'name': 'SeaBig', 'length': 100000, 'type': 'local', 'path': os.path.join('artificial', 'sea_big.csv')}
 
 
 def generate_data(dataset, init_train_length, shuffle, random_state, n_features=0, stream_length=4000, mag_change=0,
