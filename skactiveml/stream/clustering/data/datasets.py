@@ -11,7 +11,7 @@ from skactiveml.stream.datagenerator._stream_generator import RbfStreamGenerator
 # Open ML datasets
 ABALONE_BIN = {'name': 'Abalone_binary', 'type': 'openml', 'id': 720, 'toy': False}
 ABALONE = {'name': 'Abalone', 'type': 'openml', 'id': 44956, 'toy': False}
-COVERTYPE = {'name': 'Covertype', 'length': 581012, 'type': 'openml', 'id': 1596, 'toy': False}
+#COVERTYPE = {'name': 'Covertype', 'length': 581012, 'type': 'openml', 'id': 1596, 'toy': False}
 IRIS = {'name': 'Abalone_binary', 'type': 'openml', 'id': 61, 'toy': True}
 
 # ScikitMultiflow
@@ -22,6 +22,7 @@ RBF_GENERATOR = {'name': 'RbfGenerator', 'type': 'rbf', 'length': 100000}
 # Real World
 AIRLINES = {'name': 'Airlines', 'length': 539383, 'type': 'local', 'path': os.path.join('real-world', 'airlines2.csv')}
 ELECTRICITY = {'name': 'Electricity', 'length': 45312, 'type': 'local', 'path': os.path.join('real-world', 'elec.csv')}
+COVERTYPE = {'name': 'Covertype', 'length': 581012, 'type': 'local', 'path': os.path.join('real-world', 'covertype.csv')}
 
 # Artificial
 CHESSBOARD = {'name': 'ChessBoard', 'length': 200000, 'type': 'local', 'path': os.path.join('artificial', 'transientChessboard.csv')}
