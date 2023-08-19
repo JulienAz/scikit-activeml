@@ -106,22 +106,21 @@ class CluStreamClassifier(SkactivemlClassifier):
             #        y.extend(targets)
             #    else:
             #        self.clustering.clear_cluster(mc_id)
-            if not len(mc.labeled_samples) == 0:
-                features, targets = zip(*mc.labeled_samples)
-                X.extend(features)
-                y.extend(targets)
+            if not len(mc.labeled_samples[0]) == 0:
+                X.extend(mc.labeled_samples[0])
+                y.extend(mc.labeled_samples[1])
 
-                X_test.extend(mc.test[0])
-                y_test.extend(mc.test[1])
-                assert np.array_equal(X_test, X)
-                assert np.array_equal(y_test, y)
+            if not len(mc.test) == 0:
+                features, targets = zip(*mc.test)
+                X_test.extend(features)
+                y_test.extend(targets)
 
-
-
+            assert np.array_equal(X_test, X)
+            assert np.array_equal(y_test, y)
         # Convert the lists to NumPy arrays
         if not len(X) == 0:
-            X = np.vstack(X_test)
-            y = np.array(y_test)
+            X = np.vstack(X)
+            y = np.array(y)
             return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def fit_window(self, X, y, sample_weight=None, **fit_kwargs):
@@ -134,6 +133,7 @@ class CluStreamClassifier(SkactivemlClassifier):
     def predict(self, X):
         return self.estimator_clf.predict(X)
 
+    #!!!Depricated
     def predict_freq(self, X, logger=None):
         if self.clustering.initialized & len(self.clustering.micro_clusters) != 0:
             cluster_id, _ = self.clustering.nearest_cluster(X)
@@ -194,7 +194,7 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
 
         # Get weighted probabilities of base estimator and cluster estimator
         if (cluster_id in self.clustering.micro_clusters):
-            if (len(self.clustering.micro_clusters[cluster_id].labeled_samples) > 0):
+            if (len(self.clustering.micro_clusters[cluster_id].labeled_samples[0]) > 0):
                 mc_clf = self.clustering.micro_clusters[cluster_id].clf
                 # Get weighted probabilities of base estimator and cluster estimator
                 cluster_proba = self.clustering.micro_clusters[cluster_id].predict_proba()

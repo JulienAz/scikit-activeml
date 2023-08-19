@@ -28,7 +28,7 @@ class MicroCluster:
             time_stamp=1,
             classes=None,
             change_detector_param_dict= {'warm_start': 5, 'drift_threshold': 0.5},
-            window_size=100
+            window_size=1000000
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
@@ -44,12 +44,8 @@ class MicroCluster:
         self.n_classes = len(classes)
         self.window_size = window_size
 
-        self.labeled_samples = np.empty((0,), dtype=object)
-
-        self.test = [deque(maxlen=window_size), deque(maxlen=window_size)]
-
-        #self.labeled_samples = deque(maxlen=window_size)
-
+        self.labeled_samples = [deque(maxlen=window_size), deque(maxlen=window_size)]
+        self.test = np.empty((0,), dtype=object)
         self.change_detector_param_dict = copy.deepcopy(change_detector_param_dict)
         if 'change_detector_type' in change_detector_param_dict:
             self.change_detector_type = self.change_detector_param_dict.pop('change_detector_type')
@@ -68,10 +64,10 @@ class MicroCluster:
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
 
-            self.labeled_samples = np.array((x[0], y), dtype=object).reshape(1, 2)
-            self.test[0].append(x[0])
-            self.test[1].append(y)
+            self.labeled_samples[0].append(x[0])
+            self.labeled_samples[1].append(y)
 
+            self.test = np.array((x[0], y), dtype=object).reshape(1, 2)
             #self.labeled_samples.append((x[0], y))
             #self.change_detector.add_element(self.class_entropy)
 
@@ -88,7 +84,7 @@ class MicroCluster:
         if np.sum(self.features['class_dist']) == 0:
             return 0
 
-        class_probabilities = self.features['class_dist'] / len(self.labeled_samples)
+        class_probabilities = self.features['class_dist'] / len(self.labeled_samples[0])
         return entropy(class_probabilities, base=self.n_classes)
 
     def update_changedetector(self):
@@ -132,14 +128,13 @@ class MicroCluster:
 
         if y is not None:   ####TODO: Missing Label hinzufügen
             self.features["class_dist"][y] += 1
-            if len(self.labeled_samples) == 0:
-                self.labeled_samples = np.array([x, y], dtype=object).reshape(1, 2)
-                self.test[0].append(x)
-                self.test[1].append(y)
+            if len(self.test) == 0:
+                self.test = np.array([x, y], dtype=object).reshape(1, 2)
+
             else:
-                self.labeled_samples = np.vstack([self.labeled_samples, np.array((x, y), dtype=object)])
-                self.test[0].append(x)
-                self.test[1].append(y)
+                self.test = np.vstack([self.test, np.array((x, y), dtype=object)])
+            self.labeled_samples[0].append(x)
+            self.labeled_samples[1].append(y)
             #self.change_detector.add_element(self.class_entropy)
 
         #self.x = np.vstack([self.x, x[np.newaxis, ...]])
@@ -150,14 +145,13 @@ class MicroCluster:
         
         self.features = {k: self.features[k] + other.features[k] for k, value in other.features.items()}
         self.features["M"] += addterm_m
+        if len(other.test) > 0:
+            self.test = np.vstack([self.test.reshape(-1, 2), other.test.reshape(-1, 2)])
 
-        if len(other.labeled_samples) > 0:
-            self.labeled_samples = np.vstack([self.labeled_samples.reshape(-1, 2), other.labeled_samples.reshape(-1, 2)])
-            for i in range(len(other.test[0])):
-                self.test[0].append(other.test[0][i])
-                self.test[1].append(other.test[1][i])
-            #self.test[0].append(np.array(other.test[0]))
-            #self.test[1].append(other.test[1])
+        if len(other.labeled_samples[0]) > 0:
+            for i in range(len(other.labeled_samples[0])):
+                self.labeled_samples[0].append(other.labeled_samples[0][i])
+                self.labeled_samples[1].append(other.labeled_samples[1][i])
         return self
 
 # Microcluster class where each cluster has its own classifier
@@ -195,8 +189,8 @@ class MicroClfCluster(MicroCluster):
         return probas
 
     def __iadd__(self, other):
-        if len(other.labeled_samples) > 0:
-            X, y = zip(*other.labeled_samples)
+        if len(other.test) > 0:
+            X, y = zip(*other.test)
             self.clf.partial_fit(X, y)
         return super().__iadd__(other)
 
