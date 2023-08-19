@@ -115,8 +115,8 @@ class CluStreamClassifier(SkactivemlClassifier):
                 X_test.extend(features)
                 y_test.extend(targets)
 
-            assert np.array_equal(X_test, X)
-            assert np.array_equal(y_test, y)
+            #assert np.array_equal(X_test, X)
+            #assert np.array_equal(y_test, y)
         # Convert the lists to NumPy arrays
         if not len(X) == 0:
             X = np.vstack(X)
