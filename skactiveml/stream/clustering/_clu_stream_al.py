@@ -1,6 +1,7 @@
 import copy
 import math
 import typing
+from collections import deque
 
 import numpy as np
 from numpy import float64
@@ -27,6 +28,7 @@ class MicroCluster:
             time_stamp=1,
             classes=None,
             change_detector_param_dict= {'warm_start': 5, 'drift_threshold': 0.5},
+            window_size=100
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
@@ -40,7 +42,13 @@ class MicroCluster:
         #self.x = x
         self.classes = classes
         self.n_classes = len(classes)
+        self.window_size = window_size
+
         self.labeled_samples = np.empty((0,), dtype=object)
+
+        self.test = [deque(maxlen=window_size), deque(maxlen=window_size)]
+
+        #self.labeled_samples = deque(maxlen=window_size)
 
         self.change_detector_param_dict = copy.deepcopy(change_detector_param_dict)
         if 'change_detector_type' in change_detector_param_dict:
@@ -59,7 +67,12 @@ class MicroCluster:
 
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
+
             self.labeled_samples = np.array((x[0], y), dtype=object).reshape(1, 2)
+            self.test[0].append(x[0])
+            self.test[1].append(y)
+
+            #self.labeled_samples.append((x[0], y))
             #self.change_detector.add_element(self.class_entropy)
 
     @property
@@ -121,8 +134,12 @@ class MicroCluster:
             self.features["class_dist"][y] += 1
             if len(self.labeled_samples) == 0:
                 self.labeled_samples = np.array([x, y], dtype=object).reshape(1, 2)
+                self.test[0].append(x)
+                self.test[1].append(y)
             else:
                 self.labeled_samples = np.vstack([self.labeled_samples, np.array((x, y), dtype=object)])
+                self.test[0].append(x)
+                self.test[1].append(y)
             #self.change_detector.add_element(self.class_entropy)
 
         #self.x = np.vstack([self.x, x[np.newaxis, ...]])
@@ -136,10 +153,11 @@ class MicroCluster:
 
         if len(other.labeled_samples) > 0:
             self.labeled_samples = np.vstack([self.labeled_samples.reshape(-1, 2), other.labeled_samples.reshape(-1, 2)])
-            #self.change_detector = DDM(min_num_instances=5, out_control_level=0.1) #!!!TODO: Hardcoded Change Detector, should work with configured Detector
-            #self.change_detector = ADWIN(clock=1, delta=0.05)
-            #self.change_detector.reset()
-            #self.change_detector.add_element(self.class_entropy)
+            for i in range(len(other.test[0])):
+                self.test[0].append(other.test[0][i])
+                self.test[1].append(other.test[1][i])
+            #self.test[0].append(np.array(other.test[0]))
+            #self.test[1].append(other.test[1])
         return self
 
 # Microcluster class where each cluster has its own classifier
@@ -196,7 +214,7 @@ class CluStream:
             init_train=None,
             r_factor=3,
             micro_cluster=MicroCluster,
-            time_window=1000,
+            time_window=10000,
             random_state=None,
             classes=None,
             change_detector_param_dict=None

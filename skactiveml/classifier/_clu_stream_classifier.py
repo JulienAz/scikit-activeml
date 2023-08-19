@@ -90,6 +90,9 @@ class CluStreamClassifier(SkactivemlClassifier):
         # labeled_data = np.array([np.array(mc.labeled_samples) for mc_id, mc in self.clustering.micro_clusters.items()])
         X = []
         y = []
+
+        X_test = []
+        y_test = []
         # Collecting the Labeled Samples from the clusters
         for mc_id, mc in self.clustering.micro_clusters.items():
             # Hard coded for rbf_generator change adaption !!!
@@ -107,6 +110,13 @@ class CluStreamClassifier(SkactivemlClassifier):
                 features, targets = zip(*mc.labeled_samples)
                 X.extend(features)
                 y.extend(targets)
+
+                X_test.extend(mc.test[0])
+                y_test.extend(mc.test[1])
+                assert np.array_equal(X_test, X)
+                assert np.array_equal(y_test, y)
+
+
 
         # Convert the lists to NumPy arrays
         if not len(X) == 0:
