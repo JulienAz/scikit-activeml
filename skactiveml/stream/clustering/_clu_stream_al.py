@@ -44,7 +44,7 @@ class MicroCluster:
         self.n_classes = len(classes)
         self.window_size = window_size
 
-        self.labeled_samples = [deque(maxlen=window_size), deque(maxlen=window_size)]
+        self.labeled_samples = [deque(maxlen=window_size), deque(maxlen=window_size), deque(maxlen=window_size)]
         self.test = np.empty((0,), dtype=object)
         self.change_detector_param_dict = copy.deepcopy(change_detector_param_dict)
         if 'change_detector_type' in change_detector_param_dict:
@@ -66,6 +66,7 @@ class MicroCluster:
 
             self.labeled_samples[0].append(x[0])
             self.labeled_samples[1].append(y)
+            self.labeled_samples[2].append(time_stamp)
 
             self.test = np.array((x[0], y), dtype=object).reshape(1, 2)
             #self.labeled_samples.append((x[0], y))
@@ -135,6 +136,7 @@ class MicroCluster:
                 self.test = np.vstack([self.test, np.array((x, y), dtype=object)])
             self.labeled_samples[0].append(x)
             self.labeled_samples[1].append(y)
+            self.labeled_samples[2].append(t)
             #self.change_detector.add_element(self.class_entropy)
 
         #self.x = np.vstack([self.x, x[np.newaxis, ...]])
@@ -149,9 +151,29 @@ class MicroCluster:
             self.test = np.vstack([self.test.reshape(-1, 2), other.test.reshape(-1, 2)])
 
         if len(other.labeled_samples[0]) > 0:
+            paired_data = list(zip(list(self.labeled_samples[0]), list(self.labeled_samples[1]), list(self.labeled_samples[2])))\
+                          + list(zip(list(other.labeled_samples[0]), list(other.labeled_samples[1]), list(other.labeled_samples[2])))
+
+            #Sort the paired values by the timestamp in descending order.
+            sorted_data = sorted(paired_data, key=lambda x: x[2], reverse=True)
+
+            #Extract the top w pairs.
+            top_n_data = sorted_data[:self.window_size]
+
+            #Sort back to ascending
+            top_n_data = sorted(top_n_data, key=lambda x: x[2])
+
+            #Seperate again
+            merged_features = deque([item[0] for item in top_n_data],maxlen=self.window_size)
+            merged_targets = deque([item[1] for item in top_n_data],maxlen=self.window_size)
+            merged_timestamps = deque([item[2] for item in top_n_data], maxlen=self.window_size)
+            test = [merged_features, merged_targets, merged_timestamps]
+
             for i in range(len(other.labeled_samples[0])):
                 self.labeled_samples[0].append(other.labeled_samples[0][i])
                 self.labeled_samples[1].append(other.labeled_samples[1][i])
+                self.labeled_samples[2].append(other.labeled_samples[2][i])
+            self.labeled_samples = test
         return self
 
 # Microcluster class where each cluster has its own classifier
