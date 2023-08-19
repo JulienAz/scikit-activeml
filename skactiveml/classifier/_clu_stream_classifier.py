@@ -120,8 +120,8 @@ class CluStreamClassifier(SkactivemlClassifier):
 
         # Convert the lists to NumPy arrays
         if not len(X) == 0:
-            X = np.vstack(X)
-            y = np.array(y)
+            X = np.vstack(X_test)
+            y = np.array(y_test)
             return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def fit_window(self, X, y, sample_weight=None, **fit_kwargs):
