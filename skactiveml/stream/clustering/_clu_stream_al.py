@@ -151,29 +151,33 @@ class MicroCluster:
             self.test = np.vstack([self.test.reshape(-1, 2), other.test.reshape(-1, 2)])
 
         if len(other.labeled_samples[0]) > 0:
-            paired_data = list(zip(list(self.labeled_samples[0]), list(self.labeled_samples[1]), list(self.labeled_samples[2])))\
-                          + list(zip(list(other.labeled_samples[0]), list(other.labeled_samples[1]), list(other.labeled_samples[2])))
+            merged_features = deque(maxlen=self.window_size)
+            merged_targets = deque(maxlen=self.window_size)
+            merged_timestamps = deque(maxlen=self.window_size)
 
-            #Sort the paired values by the timestamp in descending order.
-            sorted_data = sorted(paired_data, key=lambda x: x[2], reverse=True)
+            # As long as we haven't reached n samples and there are still samples in either deque
+            while len(merged_timestamps) < self.window_size and (self.labeled_samples[2] or other.labeled_samples[2]):
+                # If one is empty, take from the other
+                if not self.labeled_samples[2]:
+                    source = other.labeled_samples
+                elif not other.labeled_samples[2]:
+                    source = self.labeled_samples
+                # If both have samples, take the one with the higher latest timestamp
+                elif self.labeled_samples[2][-1] >= other.labeled_samples[2][-1]:
+                    source = self.labeled_samples
+                else:
+                    source = other.labeled_samples
 
-            #Extract the top w pairs.
-            top_n_data = sorted_data[:self.window_size]
+                merged_features.appendleft(source[0].pop())
+                merged_targets.appendleft(source[1].pop())
+                merged_timestamps.appendleft(source[2].pop())
+            self.labeled_samples = [merged_features, merged_targets, merged_timestamps]
 
-            #Sort back to ascending
-            top_n_data = sorted(top_n_data, key=lambda x: x[2])
+            #for i in range(len(other.labeled_samples[0])):
+            #    self.labeled_samples[0].append(other.labeled_samples[0][i])
+            #    self.labeled_samples[1].append(other.labeled_samples[1][i])
+            #    self.labeled_samples[2].append(other.labeled_samples[2][i])
 
-            #Seperate again
-            merged_features = deque([item[0] for item in top_n_data],maxlen=self.window_size)
-            merged_targets = deque([item[1] for item in top_n_data],maxlen=self.window_size)
-            merged_timestamps = deque([item[2] for item in top_n_data], maxlen=self.window_size)
-            test = [merged_features, merged_targets, merged_timestamps]
-
-            for i in range(len(other.labeled_samples[0])):
-                self.labeled_samples[0].append(other.labeled_samples[0][i])
-                self.labeled_samples[1].append(other.labeled_samples[1][i])
-                self.labeled_samples[2].append(other.labeled_samples[2][i])
-            self.labeled_samples = test
         return self
 
 # Microcluster class where each cluster has its own classifier
