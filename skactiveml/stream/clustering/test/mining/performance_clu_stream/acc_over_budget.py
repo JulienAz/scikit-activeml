@@ -10,7 +10,6 @@ import seaborn as sb
 import os
 
 if __name__ == '__main__':
-    smoothing_window = 300
 
     hue = CLASSIFIER
     col = DATASET
@@ -20,15 +19,13 @@ if __name__ == '__main__':
 
     this_dir = os.path.split(__file__)[0]
     target_directory = 'target'
-    csv_filepath = os.path.join(this_dir, "..", "..", target_directory, 'accuracy_time_window.csv')
+    csv_filepath = os.path.join(this_dir, "..", "..", target_directory, 'minimal.csv')
     df = pd.read_csv(csv_filepath)
 
-    df[CLU_TIMEWINDOW] = df[CLU_TIMEWINDOW].replace(np.inf, "Infinity")
-    df[ACCURACY] = df[ACCURACY].rolling(window=smoothing_window).mean()
-
+    df = df.groupby([REP, BUDGET, CLASSIFIER, DATASET], as_index=False)[ACCURACY].mean()
     sb.set_theme()
 
-    f = sb.relplot(data=df, x=BUDGET, y=ACCURACY, kind="line", hue=hue, col=col, palette='tab10')
+    f = sb.relplot(data=df, x=BUDGET, y=ACCURACY, kind="line", hue=hue, col=col, palette='tab10', facet_kws={'sharey': False})
 
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, file_name)
 
