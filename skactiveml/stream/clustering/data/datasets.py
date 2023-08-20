@@ -23,6 +23,7 @@ RBF_GENERATOR = {'name': 'RbfGenerator', 'type': 'rbf', 'length': 100000}
 AIRLINES = {'name': 'Airlines', 'length': 539383, 'type': 'local', 'path': os.path.join('real-world', 'airlines2.csv')}
 ELECTRICITY = {'name': 'Electricity', 'length': 45312, 'type': 'local', 'path': os.path.join('real-world', 'elec.csv')}
 COVERTYPE = {'name': 'Covertype', 'length': 581012, 'type': 'local', 'path': os.path.join('real-world', 'covertype.csv')}
+POKER_HAND = {'name': 'PokerHand', 'length': 829201, 'type': 'local', 'path': os.path.join('real-world', 'poker.csv')}
 
 # Artificial
 CHESSBOARD = {'name': 'ChessBoard', 'length': 200000, 'type': 'local', 'path': os.path.join('artificial', 'transientChessboard.csv')}
