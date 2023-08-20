@@ -10,7 +10,7 @@ from skactiveml.stream._paired_xu import PairedEnsembleStrategy
 from skactiveml.stream.clustering import CluStream
 from skactiveml.stream.clustering._clu_stream_al import MicroClfCluster
 from skactiveml.stream.clustering.data.datasets import ABALONE_BIN, COVERTYPE, generate_data, HYPERPLANE, IRIS, \
-    ELECTRICITY, INTERCHANGING_RBF, CHESSBOARD, RBF_GENERATOR, AIRLINES, SEA_BIG
+    ELECTRICITY, INTERCHANGING_RBF, CHESSBOARD, RBF_GENERATOR, AIRLINES, SEA_BIG, POKER_HAND
 from skactiveml.stream.clustering.test.stream_runner import *
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamPerformanceLogger, \
     ACCURACY, BUDGET, CLASSIFIER, REP, BANDWIDTH, CluStreamClusteringLogger
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     csv_clu_stat_filepath = os.path.join(target_directory, 'cluster_statistics_time_window.csv')
 
     dataset = ELECTRICITY
-    datasets = [ELECTRICITY, HYPERPLANE, RBF_GENERATOR]
+    datasets = [POKER_HAND]
 
     args = []
     res = []
@@ -64,22 +64,24 @@ if __name__ == '__main__':
         # Number of clusters to be executed
         cluster_numbers = [10]
 
-        if dataset['name'] == 'RbfGenerator':
-            cluster_numbers = [23]
+        if dataset['name'] == 'PokerHand':
+            cluster_numbers = [18]
 
-        ws = [10, 50, 100, 150, 200, 250, 300, 450, 500, 550, 600]
+        #ws = [10, 50, 100, 150, 200, 250, 300, 450, 500, 550, 600]
+        ws = [100]
 
-        array_window = 100
-
+        sample = None
+        if 'sample' in dataset:
+            sample = dataset['sample']
         shuffle_data = False
         log_clustering = False
         log_clu_statistics = False
 
-        n_budget = 3
+        n_budget = 11
         init_budget = 0.1
         budget_step_size = 0.3
 
-        n_reps = 5
+        n_reps = 1
 
         n_change_thresholds = 1
         init_threshold = 1
@@ -107,7 +109,7 @@ if __name__ == '__main__':
             # Generating Datastream
             X, y = generate_data(dataset, init_train_length,
                                  shuffle=shuffle_data, random_state=random_state, stream_length=stream_length,
-                                 start_point=stream_start_point, n_features=n_features, mag_change=mag_change)
+                                 start_point=stream_start_point, n_features=n_features, mag_change=mag_change, sample=sample)
             unique_values, y = np.unique(y, return_inverse=True)
 
             classes = np.unique(y)
