@@ -16,7 +16,7 @@ from skactiveml.utils import call_func
 def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         labeling_strategy=None, change_detector=None,
         n_training_size=100, n_init_traing=10, rep=0, band_width=0.1,
-        n_cluster=0, detector_threshold=1.5,
+        n_cluster=0, detector_threshold=1.5, w=100,
         log_clustering=False, log_clu_statistics=False, fit_clf=False):
     acc_logger = CluStreamPerformanceLogger()
     clu_logger = CluStreamClusteringLogger()
@@ -154,6 +154,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         acc_logger.track_x1(X_cand[0][0])
         acc_logger.track_x2(X_cand[0][1])
         acc_logger.track_rep(rep)
+        acc_logger.track_w(w)
         tmp_accuracy.append(prediction == y_cand)
         # classification_logger.track_accuracy(sum(accuracy) / len(accuracy))
         acc_logger.track_classifier(approach_name)
@@ -170,7 +171,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
     # calculate and show the average accuracy
     if approach_name.startswith('Clustering'):
         print("Dataset ", dataset_name, "Repition ", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: ", band_width,
-               ", DetectorThreshold: ", detector_threshold, ", Avg Accuracy: ", np.mean(correct_classifications),
+               ", DetectorThreshold: ", detector_threshold, "Window_size: ", w, ", Avg Accuracy: ", np.mean(correct_classifications),
               ", Acquisition count:", count, 'number_cluster: ', clf.clustering.n_micro_clusters)
     else:
         print("Dataset ", dataset_name, "Repition ", rep, "Query Strategy: ", approach_name, "Budget: ", budget, "Bandwidth: " , band_width,

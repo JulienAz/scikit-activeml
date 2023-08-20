@@ -191,6 +191,7 @@ class MicroClfCluster(MicroCluster):
             random_state=0,
             classifier=HoeffdingTreeClassifier,
             change_detector_param_dict= {'warm_start': 5, 'drift_threshold': 0.5},
+            window_size=100
     ):
         self.clf = SklearnClassifier(classifier(), missing_label=None, random_state=random_state, classes=classes)
 
@@ -201,7 +202,8 @@ class MicroClfCluster(MicroCluster):
             y=y,
             time_stamp=time_stamp,
             classes=classes,
-            change_detector_param_dict=change_detector_param_dict
+            change_detector_param_dict=change_detector_param_dict,
+             window_size=window_size
             )
 
     def add(self, data):
@@ -237,7 +239,8 @@ class CluStream:
             time_window=10000,
             random_state=None,
             classes=None,
-            change_detector_param_dict=None
+            change_detector_param_dict=None,
+            window_size=100
     ):
         self.mc = micro_cluster
 
@@ -247,6 +250,7 @@ class CluStream:
 
         self.classes = classes
         self.n_classes = len(classes)
+        self.window_size = window_size
 
         self.centers: dict[int, []] = {}
         self.micro_clusters: dict[int, micro_cluster] = {}
@@ -299,6 +303,7 @@ class CluStream:
             self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y,
                                                            self._timestamp,
                                                            self.classes,
+                                                           window_size=self.window_size,
                                                            change_detector_param_dict=self.change_detector_param_dict)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object)  # !!! For cluster analysi
             return free_cluster_id, None
@@ -331,6 +336,7 @@ class CluStream:
             self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y,
                                                            self._timestamp,
                                                            self.classes,
+                                                           window_size=self.window_size,
                                                            change_detector_param_dict=self.change_detector_param_dict)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object) #!!! For cluster analysis
             return free_cluster_id, None
@@ -350,6 +356,7 @@ class CluStream:
         self.centers = {i: X for i, X in enumerate(self._kmeans_mc.cluster_centers_)}
         self.micro_clusters = {i: self.mc(x=X[np.newaxis, ...],
                                           time_stamp=self.n_micro_clusters - 1,
+                                          window_size=self.window_size,
                                           change_detector_param_dict=self.change_detector_param_dict,
                                           classes=self.classes)
                                for i, X in
@@ -377,6 +384,7 @@ class CluStream:
             self.micro_clusters[del_id] = self.mc(X[np.newaxis, ...], y,
                                                   self._timestamp,
                                                   self.classes,
+                                                  window_size=self.window_size,
                                                   change_detector_param_dict=self.change_detector_param_dict)
             self.cluster_test[del_id] = np.array((X, y), dtype=object)
             return del_id, None
@@ -404,6 +412,7 @@ class CluStream:
         self.micro_clusters[closest_b] = self.mc(X[np.newaxis, ...], y,
                                                  self._timestamp,
                                                  self.classes,
+                                                 window_size=self.window_size,
                                                  change_detector_param_dict=self.change_detector_param_dict)
 
         return closest_b, closest_a
