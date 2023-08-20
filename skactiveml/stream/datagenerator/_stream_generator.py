@@ -125,7 +125,7 @@ class ArtificialStreamGenerator(StreamGenerator):
 
 
 class CsvStreamGenerator(StreamGenerator):
-    def __init__(self, path, rng, shuffle: bool, stream_length, start_point=0):
+    def __init__(self, path, rng, shuffle: bool, stream_length, start_point=0, sample=False):
         dataset = pd.read_csv(path)
         self.rng = rng
 
@@ -147,6 +147,9 @@ class CsvStreamGenerator(StreamGenerator):
         if stream_length is not None:
             X = X[start_point:stream_length + start_point, :]
             y = y[start_point:stream_length + start_point]
+            if sample:
+                X = X[start_point: start_point + 3 * stream_length: 3]
+                y = y[start_point: start_point + 3 * stream_length: 3]
         super().__init__(X, y)
 
 

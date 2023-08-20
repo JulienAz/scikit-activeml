@@ -34,7 +34,7 @@ SEA_BIG = {'name': 'SeaBig', 'length': 100000, 'type': 'local', 'path': os.path.
 
 
 def generate_data(dataset, init_train_length, shuffle, random_state, n_features=0, stream_length=4000, mag_change=0,
-                  noise=0.1, start_point=0, kpca=False):
+                  noise=0.1, start_point=0, kpca=False, sample=False):
     set_type = dataset['type']
     if set_type == 'hyperplane':
         assert n_features > 0, "Please specify the number of features for the hyperplane generator"
@@ -59,7 +59,7 @@ def generate_data(dataset, init_train_length, shuffle, random_state, n_features=
     elif set_type == 'local':
         rng = np.random.default_rng(random_state)
         path = os.path.join(os.path.dirname(__file__), dataset['path'])
-        dataGenerator = CsvStreamGenerator(path, shuffle=shuffle, rng=rng, stream_length=stream_length + init_train_length, start_point=start_point)
+        dataGenerator = CsvStreamGenerator(path, shuffle=shuffle, rng=rng, stream_length=stream_length + init_train_length, start_point=start_point, sample=sample)
     # Generating Datastream
     if stream_length is None:
         stream_length = len(dataGenerator.y) - init_train_length - 1
