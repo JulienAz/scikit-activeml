@@ -190,36 +190,36 @@ if __name__ == '__main__':
                                     # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                                     paired_ensemble_strategy = PairedEnsembleStrategy(budget=budget)
                                     query_strategies = {
-                                        #'ZliobaiteRefit': (
-                                        #                           StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
-                                        #                           #VariableUncertainty(random_state=random_state, budget=budget),
-                                        #                           ZliobateClassifier(
-                                        #                               classes=classes,
-                                        #                          clf_type=base_classifier,
-                                        #                           metric_dict=metric_dict,
-                                        #                           missing_label=None,
-                                        #                           classifier_param_dict=classifier_params)),
-                                        #'PairedEnsembleXu': (
-                                        #    paired_ensemble_strategy,
-                                        #    XuPairedEnsembleClassifier(
-                                        #        classes=classes,
-                                        #        clf_type=base_classifier,
-                                        #        labeling_strategy=paired_ensemble_strategy,
-                                        #        missing_label=None,
-                                        #        classifier_param_dict=classifier_params
-                                        #    )),
-                                        #'ClusteringIncremental': (
-                                        #    StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
-                                        #                        # VariableUncertainty(random_state=random_state),
-                                        #                          CluStreamClassifier(
-                                        #                              classes=classes,
-                                        #                              clf_type=base_classifier,
-                                        #                              metric_dict=metric_dict,
-                                        #                              missing_label=None,
-                                        #                              refit=False,
-                                        #                              clustering_param_dict=clusteringParams,
-                                        #                              classifier_param_dict=classifier_params
-                                        #                          )),
+                                        'ZliobaiteRefit': (
+                                                                   StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
+                                                                   #VariableUncertainty(random_state=random_state, budget=budget),
+                                                                   ZliobateClassifier(
+                                                                       classes=classes,
+                                                                  clf_type=base_classifier,
+                                                                   metric_dict=metric_dict,
+                                                                   missing_label=None,
+                                                                   classifier_param_dict=classifier_params)),
+                                        'PairedEnsembleXu': (
+                                            paired_ensemble_strategy,
+                                            XuPairedEnsembleClassifier(
+                                                classes=classes,
+                                                clf_type=base_classifier,
+                                                labeling_strategy=paired_ensemble_strategy,
+                                                missing_label=None,
+                                                classifier_param_dict=classifier_params
+                                            )),
+                                        'ClusteringIncremental': (
+                                            StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
+                                                                # VariableUncertainty(random_state=random_state),
+                                                                  CluStreamClassifier(
+                                                                      classes=classes,
+                                                                      clf_type=base_classifier,
+                                                                      metric_dict=metric_dict,
+                                                                      missing_label=None,
+                                                                      refit=False,
+                                                                      clustering_param_dict=clusteringParams,
+                                                                      classifier_param_dict=classifier_params
+                                                                  )),
                                         #'ClusteringClfReset': (StreamProbabilisticAL(random_state=random_state, budget=budget),
                                         #                    # VariableUncertainty(random_state=random_state),
                                         #                    CluStreamClassifier(estimator_clf=SklearnClassifier(
