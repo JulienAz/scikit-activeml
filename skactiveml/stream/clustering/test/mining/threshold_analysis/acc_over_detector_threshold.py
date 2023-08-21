@@ -32,11 +32,11 @@ if __name__ == '__main__':
 
     g = sb.relplot(
         data=df,
-        x="BUDGET",
-        y="ACCURACY",
-        hue="CLASSIFIER",
-        col="N_CLUSTERS",
-        row="DATASET",
+        x=DETECTOR_THRESHOLD,
+        y=ACCURACY,
+        hue=CLASSIFIER,
+        col=N_CLUSTER,
+        row=DATASET,
         kind="line",
         facet_kws=dict(sharex=True, sharey=True),
         palette="tab10"
