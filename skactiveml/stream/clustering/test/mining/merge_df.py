@@ -1,9 +1,3 @@
-import numpy as np
-from matplotlib import pyplot as plt
-
-from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import ACCURACY, BUDGET, \
-    CLASSIFIER, BANDWIDTH, REP, LABEL, DATASET
-from skactiveml.stream.clustering.util import save_image, run_async
 
 import pandas as pd
 import seaborn as sb
@@ -15,16 +9,19 @@ if __name__ == '__main__':
     target_directory = 'target'
 
 
-    csv_1_filepath = os.path.join(this_dir, "..", target_directory, 'threshold_elec.csv')
+    csv_1_filepath = os.path.join(this_dir, "..", target_directory, 'n_cluster_elec.csv')
 
-    csv_2_filepath = os.path.join(this_dir, "..", target_directory, 'threshold_hyperplane.csv')
+    csv_2_filepath = os.path.join(this_dir, "..", target_directory, 'n_cluster_hyperplane.csv')
+
+    csv_3_filepath = os.path.join(this_dir, "..", target_directory, 'n_cluster_rbf.csv')
 
     df1 = pd.read_csv(csv_1_filepath)
     df2 = pd.read_csv(csv_2_filepath)
+    df3 = pd.read_csv(csv_3_filepath)
 
-    concatenated_df = pd.concat([df1, df2], ignore_index=True)
+    concatenated_df = pd.concat([df1, df2, df3], ignore_index=True)
 
-    target_filepath = os.path.join(this_dir, "..", target_directory, 'threshold_merged.csv')
+    target_filepath = os.path.join(this_dir, "..", target_directory, 'n_cluster_merged.csv')
 
     concatenated_df.to_csv(target_filepath, index=False)
 
