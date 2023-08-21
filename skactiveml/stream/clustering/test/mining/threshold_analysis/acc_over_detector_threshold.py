@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, file_name)
 
-    df = df.loc[df[DATASET] != 'Electricity']
+    #df = df.loc[df[DATASET] != 'Electricity']
 
     df = df.groupby([REP, BUDGET, CLASSIFIER, N_CLUSTER, DETECTOR_THRESHOLD, DATASET], as_index=False)[ACCURACY].mean()
     sb.set_theme()
@@ -37,10 +37,12 @@ if __name__ == '__main__':
                    y=ACCURACY,
                    kind="line",
                    hue=hue,
-                   col=row,
-                   row=col,
+                   col=col,
+                   row=row,
                    palette='tab10',
                    facet_kws={'sharey': False})
+
+    g.set_titles(col_template="{col_name} Cluster", row_template="{row_name}")
 
     #save_image(image_filepath)
     sb.move_legend(
