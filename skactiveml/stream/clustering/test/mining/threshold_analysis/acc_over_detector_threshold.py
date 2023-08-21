@@ -22,11 +22,30 @@ if __name__ == '__main__':
     csv_filepath = os.path.join(this_dir, "..", "..", target_directory, csv_name)
     df = pd.read_csv(csv_filepath)
 
-    sb.set_theme()
-
-    f = sb.relplot(data=df, x=DETECTOR_THRESHOLD, y=ACCURACY, kind="line", hue=hue, col=col, row=row, palette='tab10', facet_kws={'sharey': False})
-
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, file_name)
 
-    save_image(image_filepath)
+    sb.set_theme()
 
+    #f = sb.relplot(data=df, x=DETECTOR_THRESHOLD, y=ACCURACY, kind="line", hue=hue, col=col, row=row, palette='tab10', facet_kws={'sharey': False})
+
+    #save_image(image_filepath)
+
+    g = sb.relplot(
+        data=df,
+        x="BUDGET",
+        y="ACCURACY",
+        hue="CLASSIFIER",
+        col="N_CLUSTERS",
+        row="DATASET",
+        kind="line",
+        facet_kws=dict(sharex=True, sharey=True),
+        palette="tab10"
+    )
+
+    g.fig.subplots_adjust(top=0.9)  # Adjust title position
+    g.fig.suptitle('Classifier Accuracy over Budget by Dataset and Number of Clusters')
+
+    # Save the figure as a PDF file
+    g.fig.savefig(image_filepath, bbox_inches='tight')
+
+    plt.close()
