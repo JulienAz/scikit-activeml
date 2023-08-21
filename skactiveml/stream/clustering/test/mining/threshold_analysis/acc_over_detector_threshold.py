@@ -24,28 +24,26 @@ if __name__ == '__main__':
 
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, file_name)
 
+    df = df.loc[df[DATASET] != 'Electricity']
     sb.set_theme()
 
-    #f = sb.relplot(data=df, x=DETECTOR_THRESHOLD, y=ACCURACY, kind="line", hue=hue, col=col, row=row, palette='tab10', facet_kws={'sharey': False})
+    g = sb.relplot(data=df,
+                   x=DETECTOR_THRESHOLD,
+                   y=ACCURACY,
+                   kind="line",
+                   hue=hue,
+                   col=row,
+                   row=col,
+                   palette='tab10',
+                   facet_kws={'sharey': False})
 
     #save_image(image_filepath)
-
-    g = sb.relplot(
-        data=df,
-        x=DETECTOR_THRESHOLD,
-        y=ACCURACY,
-        hue=CLASSIFIER,
-        col=N_CLUSTER,
-        row=DATASET,
-        kind="line",
-        facet_kws=dict(sharex=True, sharey=True),
-        palette="tab10"
+    sb.move_legend(
+        g, "lower center",
+        bbox_to_anchor=(.5, 1), ncol=4, title=None, frameon=False,
     )
-
-    g.fig.subplots_adjust(top=0.9)  # Adjust title position
-    g.fig.suptitle('Classifier Accuracy over Budget by Dataset and Number of Clusters')
-
+    g.legend
     # Save the figure as a PDF file
     g.fig.savefig(image_filepath, bbox_inches='tight')
 
-    plt.close()
+    plt.close()  # Closes the
