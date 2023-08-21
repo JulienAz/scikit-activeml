@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     replace_values = {'ZliobaiteRefit': 'Zliobaite', 'PairedEnsembleXu': 'PEFAL',
                       'ClusteringIncremental': 'OPAL-NA',
-                      'ClusteringRefit': 'CORA-SP', 'ClusteringEntropyRefit': 'CORA-SE',
+                      'ClusteringClfRefit': 'CORA-SP', 'ClusteringClfEntropyRefit': 'CORA-SE',
                       'ClusteringClfEnsemble': 'CORA-EP', 'ClusteringClfEnsembleEntropy': 'CORA-EE'}
     df[CLASSIFIER] = df[CLASSIFIER].replace(replace_values)
 
