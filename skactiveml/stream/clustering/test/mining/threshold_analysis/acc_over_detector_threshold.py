@@ -25,6 +25,11 @@ if __name__ == '__main__':
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, file_name)
 
     df = df.loc[df[DATASET] != 'Electricity']
+
+    df = df.groupby([REP, BUDGET, CLASSIFIER, N_CLUSTER, DETECTOR_THRESHOLD, DATASET], as_index=False)[ACCURACY].mean()
+    sb.set_theme()
+
+
     sb.set_theme()
 
     g = sb.relplot(data=df,
