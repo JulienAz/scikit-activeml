@@ -14,16 +14,18 @@ if __name__ == '__main__':
     this_dir = os.path.split(__file__)[0]
 
     target_directory = 'target'
-    csv_filepath = os.path.join(this_dir, "..", target_directory, 'acc_over_budget_merged.csv')
+    filename = ''
+    csv_filepath = os.path.join(this_dir, "..", target_directory, filename)
 
     df = pd.read_csv(csv_filepath)
 
     replace_values = {'ZliobaiteRefit': 'Zliobaite', 'PairedEnsembleXu': 'PEFAL',
+                      'ClusteringIncremental': 'OPAL-NA',
                       'ClusteringRefit': 'CORA-SP', 'ClusteringEntropyRefit': 'CORA-SE',
                       'ClusteringClfEnsemble': 'CORA-EP', 'ClusteringClfEnsembleEntropy': 'CORA-EE'}
     df[CLASSIFIER] = df[CLASSIFIER].replace(replace_values)
 
-    csv_filepath = os.path.join(this_dir, "..", target_directory, 'acc_over_budget_merged_new.csv')
+    csv_filepath = os.path.join(this_dir, "..", target_directory, filename)
     df.to_csv(csv_filepath)
 
 
