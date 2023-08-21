@@ -32,6 +32,8 @@ if __name__ == '__main__':
 
     sb.set_theme()
 
+    order_list = ['CORA-SP', 'CORA-SE', 'CORA-EP', 'CORA-EE']
+
     g = sb.relplot(data=df,
                    x=DETECTOR_THRESHOLD,
                    y=ACCURACY,
@@ -39,6 +41,7 @@ if __name__ == '__main__':
                    hue=hue,
                    col=col,
                    row=row,
+                   hue_order=order_list,
                    palette='tab10',
                    facet_kws={'sharey': False})
 
