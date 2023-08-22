@@ -35,8 +35,8 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
 
         self.labeling_strategy = labeling_strategy
         self.w = w
-        self.detection_threshold = detection_threshold * w
-
+        #self.detection_threshold = detection_threshold * w
+        self.detection_threshold = detection_threshold
         self.classes = classes
 
         self.change_state = deque(maxlen=w)
@@ -67,9 +67,9 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
                 self.training_window_X.append(X[0])
                 self.training_window_y.append(y[0])
                 #self.reactive_clf.reset()
-                #self.reactive_clf.fit(self.training_window_X, np.array(self.training_window_y))
+                self.reactive_clf.fit(self.training_window_X, np.array(self.training_window_y))
 
-                self.reactive_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
+                #self.reactive_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
 
     def update_change_state(self, X, y):
         y_stable = self.stable_clf.predict(X)
@@ -80,7 +80,7 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
         else:
             self.change_state.append(0)
 
-        if sum(self.change_state) >= self.detection_threshold:
+        if sum(self.change_state) >= self.detection_threshold * len(self.change_state):
             return True
         return False
 
