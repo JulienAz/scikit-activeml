@@ -54,7 +54,7 @@ class CluStreamClassifier(SkactivemlClassifier):
                 self.clustering.fit_one(x_t, y_t)
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
-    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, sample_weight=None, **fit_kwargs):
+    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, detection_logger=None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
 
         if not y == self.missing_label:
@@ -74,6 +74,9 @@ class CluStreamClassifier(SkactivemlClassifier):
                 change_detections[mc_id] = mc.change_detector.drift_detected
             if not statistic_logger == None:
                 statistic_logger.track_change_detection(change_detections)
+
+            if detection_logger is not None:
+                detection_logger.track_change_detection(any(change_detections))
             # If change_detector of cluster is positiv, corresponding cluster is cleared
             # self.clustering.clear_cluster(mc_id)
 
@@ -208,7 +211,7 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
             proba = self.estimator_clf.predict_proba(X)
         return proba
 
-    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, sample_weight=None, **fit_kwargs):
+    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, detection_logger=None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
 
         if not y == self.missing_label:
@@ -236,6 +239,9 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
                 for mc_id in changed_clusters:
                     self.clustering.clear_cluster(mc_id)
                 self.refit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
+
+            if detection_logger is not None:
+                detection_logger.track_change_detection(any(change_detections))
 
         if y[0] is not self.estimator_clf.missing_label:
             return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
