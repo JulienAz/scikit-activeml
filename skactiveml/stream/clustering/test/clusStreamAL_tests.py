@@ -82,6 +82,7 @@ if __name__ == '__main__':
         shuffle_data = False
         log_clustering = False
         log_clu_statistics = False
+        log_detection = True
 
         n_budget = 11
         init_budget = 0.1
