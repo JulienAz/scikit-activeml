@@ -33,6 +33,7 @@ if __name__ == '__main__':
     csv_acc_filepath = os.path.join(target_directory, 'accuracy_time_window.csv')
     csv_clu_filepath = os.path.join(target_directory, 'clustering_time_window.csv')
     csv_clu_stat_filepath = os.path.join(target_directory, 'cluster_statistics_time_window.csv')
+    csv_detection_filepath = os.path.join(target_directory, 'change_detection.csv')
 
     dataset = ELECTRICITY
     datasets = [POKER_HAND]
@@ -66,6 +67,11 @@ if __name__ == '__main__':
 
         if dataset['name'] == 'PokerHand':
             cluster_numbers = [18]
+
+        if dataset['name'] == 'RbfGenerator':
+            cluster_numbers = [23]
+
+
 
         #ws = [10, 50, 100, 150, 200, 250, 300, 450, 500, 550, 600]
         ws = [100]
@@ -320,6 +326,8 @@ if __name__ == '__main__':
 
     df_clu_statistics = pd.concat([t[2] for t in results])
 
+    df_detection = pd.concat([t[3] for t in results])
+
     #df = pd.concat(results)
 
     os.makedirs(target_directory, exist_ok=True)
@@ -330,3 +338,6 @@ if __name__ == '__main__':
 
     if log_clu_statistics:
         df_clu_statistics.to_csv(csv_clu_stat_filepath, index=False)
+
+    if log_detection:
+        df_detection.to_csv(csv_detection_filepath, index=False)

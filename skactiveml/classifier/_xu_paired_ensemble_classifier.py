@@ -17,8 +17,8 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
             missing_label=MISSING_LABEL,
             cost_matrix=None,
             random_state=None,
-            w=100,
-            detection_threshold=0.2,
+            w=50,
+            detection_threshold=0.1,
             classifier_param_dict=None,
     ):
         super().__init__(
@@ -49,12 +49,15 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
         self.reactive_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
         return self.stable_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
-    def partial_fit(self, X, y, logger=None, sample_weight=None, **fit_kwargs):
+    def partial_fit(self, X, y, detection_logger=None):
         if y[0] is not self.stable_clf.missing_label:
             # Update changestate and adjust structure if necessary
             change_detected = self.update_change_state(X, y)
             if change_detected:
                 self.swap_classifier()
+
+            if detection_logger is not None:
+                detection_logger.track_change_detection(change_detected)
 
             #Train stable classifier
             self.stable_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
@@ -77,7 +80,7 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
         else:
             self.change_state.append(0)
 
-        if sum(self.change_state) > self.detection_threshold:
+        if sum(self.change_state) >= self.detection_threshold:
             return True
         return False
 

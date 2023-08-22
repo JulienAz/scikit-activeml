@@ -9,7 +9,7 @@ from scipy.ndimage import gaussian_filter1d
 from sklearn.neighbors import KernelDensity
 
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamClusteringLogger, \
-    CluStreamPerformanceLogger, CluStreamStatisticLogger
+    CluStreamPerformanceLogger, CluStreamStatisticLogger, DetectionLogger
 from skactiveml.utils import call_func
 
 
@@ -17,10 +17,11 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         labeling_strategy=None, change_detector=None,
         n_training_size=100, n_init_traing=10, rep=0, band_width=0.1,
         n_cluster=0, detector_threshold=1.5, w=100,
-        log_clustering=False, log_clu_statistics=False, fit_clf=False):
+        log_clustering=False, log_clu_statistics=False, log_detection=False, fit_clf=False):
     acc_logger = CluStreamPerformanceLogger()
     clu_logger = CluStreamClusteringLogger()
     clu_statistic_logger = CluStreamStatisticLogger()
+    detection_logger = DetectionLogger()
 
     # Dividing Pretraining and Stream data
     X_init = X[:n_init_traing, :]
@@ -92,14 +93,16 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         elif approach_name.startswith('Clustering'):
             # Missing Labels are handled in the Classifier itself
             # Partially Fit
-            clf.partial_fit(X_cand, np.array([al_label]), acc_logger=acc_logger,statistic_logger=clu_statistic_logger, classes=unique_classes)
+            clf.partial_fit(X_cand, np.array([al_label]), acc_logger=acc_logger,
+                            statistic_logger=clu_statistic_logger, detection_logger=detection_logger,
+                            classes=unique_classes)
             if (approach_name.endswith('Reset')) & (t == (int(len(y_stream) / 2) + 1)):
                 clf.fit(X_cand, np.array([al_label]), classes=unique_classes)
             #if (approach_name.endswith('Refit')) & (t == (int(len(y_stream) / 2) + 1)):
             #    clf.refit_on_cluster(X_cand, np.array([al_label]), classes=unique_classes)
         else:
             if not al_label is clf.missing_label:
-                clf.partial_fit(X_cand, np.array([al_label]))
+                clf.partial_fit(X_cand, np.array([al_label]), detection_logger=detection_logger)
 
         if approach_name.startswith('Clustering'):
             acc_logger.track_clu_time_window(clf.clustering.time_window)
@@ -160,7 +163,17 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
         acc_logger.track_classifier(approach_name)
         acc_logger.finalize_round()
 
+        if log_detection:
+            detection_logger.track_rep(rep)
+            detection_logger.track_budget(budget)
+            detection_logger.track_classifier(approach_name)
+            detection_logger.track_timestep(t)
+            detection_logger.track_dataset(dataset_name)
+            detection_logger.finalize_round()
+
     df_acc = acc_logger.get_dataframe()
+    df_detecton = detection_logger.get_dataframe()
+
     acc_series = pd.Series(tmp_accuracy)
     accuracy = acc_series.rolling(window=30).mean()
 
@@ -208,7 +221,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
 
     df_clu = clu_logger.get_dataframe()
 
-    return df_acc, df_clu, df_clu_statistics
+    return df_acc, df_clu, df_clu_statistics, df_detecton
 
 
 def run_multiple(query_strategies: dict, X, y, logger, n_training_size=0, n_init_traing=10, rep=0, bandwidth=0.1, fit_clf=False):
