@@ -17,7 +17,7 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
             missing_label=MISSING_LABEL,
             cost_matrix=None,
             random_state=None,
-            w=100,
+            w=300,
             detection_threshold=0.2,
             classifier_param_dict=None,
     ):
@@ -77,7 +77,7 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
         else:
             self.change_state.append(0)
 
-        if sum(self.change_state) > self.detection_threshold:
+        if sum(self.change_state) > self.detection_threshold * len(self.change_state):
             return True
         return False
 
