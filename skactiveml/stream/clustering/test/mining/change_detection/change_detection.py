@@ -28,7 +28,8 @@ if __name__ == '__main__':
 
     df = df.groupby([REP, BUDGET, CLASSIFIER, DATASET], as_index=False)[CHANGE_DETECTION].sum()
 
-
+    standard_palette = sb.color_palette()
+    colors = ['darkcyan', 'purple', standard_palette[0], standard_palette[1]]
     order_list = ['CORA-SP', 'CORA-SE', 'CORA-EP', 'CORA-EE']
 
     sb.set_theme()
@@ -37,7 +38,8 @@ if __name__ == '__main__':
         df,
         x=DATASET,
         y=CHANGE_DETECTION,
-        hue=CLASSIFIER
+        hue=CLASSIFIER,
+        palette=colors
     )
     #g.set_titles(col_template="{col_name}")
 
