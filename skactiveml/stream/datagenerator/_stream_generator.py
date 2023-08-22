@@ -144,13 +144,15 @@ class CsvStreamGenerator(StreamGenerator):
         X = X.values
         y = y.values
 
-        if stream_length is not None:
-            if sample is not None:
-                X = X[start_point: start_point + sample * stream_length: sample]
-                y = y[start_point: start_point + sample * stream_length: sample]
-            else:
-                X = X[start_point:stream_length + start_point, :]
-                y = y[start_point:stream_length + start_point]
+        #if stream_length is not None:
+        #    if sample is not None:
+        #        X = X[start_point: start_point + sample * stream_length: sample]
+        #        y = y[start_point: start_point + sample * stream_length: sample]
+        #    else:
+        #        X = X[start_point:stream_length + start_point, :]
+        #        y = y[start_point:stream_length + start_point]
+        X = X[start_point:stream_length + start_point, :]
+        y = y[start_point:stream_length + start_point]
         super().__init__(X, y)
 
 
