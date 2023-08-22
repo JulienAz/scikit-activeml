@@ -370,3 +370,66 @@ class CluStreamStatisticLogger:
     @property
     def data(self):
         return self._data
+
+
+ids_change_detection = [
+    TIMESTEP,
+    REP,
+    DATASET,
+    CLASSIFIER,
+    BUDGET,
+    CHANGE_DETECTION,
+]
+
+class DetectionLogger:
+    def __init__(self):
+        self._columns = ids_change_detection
+        self._data = []
+        self._current_row = [np.nan for _ in range(len(self._columns))]
+        self._column_indices = {key: i for (i, key) in enumerate(self._columns)}
+
+    # Add own functions for tracking different metrics
+    def track_timestep(self, value: int):
+        self._track_value(value, TIMESTEP)
+
+    def track_rep(self, value: int):
+        self._track_value(value, REP)
+
+    def track_dataset(self, value: str):
+        self._track_value(value, DATASET)
+
+    def track_classifier(self, value: str):
+        self._track_value(value, CLASSIFIER)
+
+    def track_budget(self, value: int):
+        self._track_value(value, BUDGET)
+
+    def track_change_detection(self, value):
+        self._track_value(value, CHANGE_DETECTION)
+
+    def finalize_round(self):
+        self._data.append(self._current_row)
+        self._current_row = [np.nan for _ in range(len(self._columns))]
+
+    def get_dataframe(self) -> pd.DataFrame:
+        df = pd.DataFrame(self._data, columns=self._columns)
+        self._reset()
+        return df
+
+    def track_time(self):
+        current_time = time.perf_counter_ns()
+        self._track_value(current_time, "time")
+
+    def _track_value(self, newval, id):
+        self._current_row[self._index_of(id)] = newval
+
+    def _index_of(self, id):
+        return self._column_indices[id]
+
+    def _reset(self):
+        self._current_row = [np.nan for _ in range(len(self._columns))]
+        self._data = []
+
+    @property
+    def data(self):
+        return self._data
