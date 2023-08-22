@@ -35,7 +35,7 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
 
         self.labeling_strategy = labeling_strategy
         self.w = w
-        #self.detection_threshold = detection_threshold * w
+
         self.detection_threshold = detection_threshold
         self.classes = classes
 
