@@ -161,7 +161,7 @@ class RbfStreamGenerator(StreamGenerator):
     def _distance(self, point_a, point_b):
         return np.linalg.norm(np.array(point_a) - np.array(point_b))
 
-    def __init__(self, random_state, stream_length, n_features=2, n_classes=15, n_centroids=15, stdv_min=0.005, stdv_max=0.03, min_dist=0.1):
+    def __init__(self, random_state, stream_length, n_features=2, n_classes=5, n_centroids=5, stdv_min=0.005, stdv_max=0.1, min_dist=0.01):
         assert n_classes == n_centroids
 
         # Extract feature matrix and target array

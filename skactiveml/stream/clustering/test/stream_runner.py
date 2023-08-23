@@ -9,7 +9,7 @@ from scipy.ndimage import gaussian_filter1d
 from sklearn.neighbors import KernelDensity
 
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import CluStreamClusteringLogger, \
-    CluStreamPerformanceLogger, CluStreamStatisticLogger, DetectionLogger
+    CluStreamPerformanceLogger, CluStreamStatisticLogger, DetectionLogger, AdaptionLogger
 from skactiveml.utils import call_func
 
 
@@ -22,6 +22,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
     clu_logger = CluStreamClusteringLogger()
     clu_statistic_logger = CluStreamStatisticLogger()
     detection_logger = DetectionLogger()
+    adaption_logger = AdaptionLogger()
 
     # Dividing Pretraining and Stream data
     X_init = X[:n_init_traing, :]
@@ -219,9 +220,19 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
                 clu_logger.track_clu_time_window(clf.clustering.time_window)
                 clu_logger.finalize_round()
 
-    df_clu = clu_logger.get_dataframe()
+    if adaption_logger is not None:
+        if approach_name.startswith('Clustering'):
+            for i, cluster_samples in enumerate(clf.clustering.cluster_test):
+                if np.shape(cluster_samples) == (2,):
+                    cluster_samples = cluster_samples.reshape((1, 2))
+                for (X_tmp, y_tmp) in cluster_samples:
+                    adaption_logger.track_x1(X_tmp[0])
+                    adaption_logger.track_x2(X_tmp[1])
 
-    return df_acc, df_clu, df_clu_statistics, df_detecton
+    df_clu = clu_logger.get_dataframe()
+    df_adapt = adaption_logger.get_dataframe()
+    
+    return df_acc, df_clu, df_clu_statistics, df_detecton, df_adapt
 
 
 def run_multiple(query_strategies: dict, X, y, logger, n_training_size=0, n_init_traing=10, rep=0, bandwidth=0.1, fit_clf=False):
