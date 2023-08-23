@@ -65,28 +65,31 @@ g = sb.relplot(data=df,
                col_order=col_order,
                hue_order=hue_order,
                palette=palette_dict,  # Use the palette dictionary here
+               height=4,         # Adjust the height of each facet
+               aspect=1,
                facet_kws={'sharey': False})
 
-g.set_titles(col_template="{col_name}")
+g.set_titles(col_template="{col_name}", size=10)
 
 sb.move_legend(
     g, "lower center",
-    bbox_to_anchor=(.47, 0.99), ncol=len(hue_order), title=None, frameon=False,
+    bbox_to_anchor=(.485, 0.99), ncol=len(hue_order), title=None, frameon=False,
 )
 leg = g.legend
 
 for t in leg.get_texts():
-    t.set_fontsize(12)
+    t.set_fontsize(10)
 
-for ax in g.axes.flat:
-    ax.set_xlabel(ax.get_xlabel(), fontsize=14)  # Adjust x axis label font size
-    ax.set_ylabel(ax.get_ylabel(), fontsize=14)  # Adjust y axis label font size
-    ax.tick_params(axis='both', labelsize=12)
+#for ax in g.axes.flat:
+#    ax.set_xlabel(ax.get_xlabel(), fontsize=14)  # Adjust x axis label font size
+#    ax.set_ylabel(ax.get_ylabel(), fontsize=14)  # Adjust y axis label font size
+#    ax.tick_params(axis='both', labelsize=12)
 
 
-g.set_axis_labels(BUDGET, ACCURACY, fontsize=14)
+#g.set_axis_labels(BUDGET, ACCURACY, fontsize=14)
 
 g.legend
+plt.tight_layout()
 #plt.subplots_adjust(left=0.3, right=0.8, bottom=0.2, top=0.9)
 image_filepath = os.path.join(this_dir, "..", target_directory, file_name)
 
