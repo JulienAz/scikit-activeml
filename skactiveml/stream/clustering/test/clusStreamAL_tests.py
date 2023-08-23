@@ -47,7 +47,7 @@ if __name__ == '__main__':
         # number of instances that are provided to the classifier
         init_train_length = 20
         # the length of the data stream
-        stream_length = 2010
+        stream_length = 10000
         stream_start_point = 0
         stream_max_length = dataset['length']
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
             cluster_numbers = [18]
 
         if dataset['name'] == 'RbfGenerator':
-            cluster_numbers = [13]
+            cluster_numbers = [23]
 
         if dataset['name'] == 'ChessBoard':
             cluster_numbers = [15]
@@ -87,16 +87,16 @@ if __name__ == '__main__':
             sample = dataset['sample']
 
         shuffle_data = False
-        log_clustering = True
+        log_clustering = False
         log_clu_statistics = False
         log_detection = False
-        log_adaption = True
+        log_adaption = False
 
         n_budget = 1
-        init_budget = 0.5
+        init_budget = 1.0
         budget_step_size = 0.3
 
-        n_reps = 1
+        n_reps = 10
 
         n_change_thresholds = 1
         init_threshold = 1
@@ -206,15 +206,15 @@ if __name__ == '__main__':
                                     # Different Approaches, defined by a tuple (Query Strategy, CLassifier)
                                     paired_ensemble_strategy = PairedEnsembleStrategy(budget=budget)
                                     query_strategies = {
-                                        #'ZliobaiteRefit': (
-                                        #                           StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
-                                        #                           #VariableUncertainty(random_state=random_state, budget=budget),
-                                        #                           ZliobateClassifier(
-                                        #                               classes=classes,
-                                        #                           clf_type=base_classifier,
-                                        #                           metric_dict=metric_dict,
-                                        #                           missing_label=None,
-                                        #                           classifier_param_dict=classifier_params)),
+                                        'ZliobaiteRefit': (
+                                                                   StreamProbabilisticAL(random_state=random_state, budget=budget, metric="rbf", metric_dict=metric_dict),
+                                                                   #VariableUncertainty(random_state=random_state, budget=budget),
+                                                                   ZliobateClassifier(
+                                                                       classes=classes,
+                                                                   clf_type=base_classifier,
+                                                                   metric_dict=metric_dict,
+                                                                   missing_label=None,
+                                                                   classifier_param_dict=classifier_params)),
                                         #'PairedEnsembleXu': (
                                         #    paired_ensemble_strategy,
                                         #    XuPairedEnsembleClassifier(
@@ -355,4 +355,4 @@ if __name__ == '__main__':
         df_detection.to_csv(csv_detection_filepath, index=False)
 
     if log_adaption:
-        df_detection.to_csv(csv_adaption_filepath, index=False)
+        df_adaption.to_csv(csv_adaption_filepath, index=False)

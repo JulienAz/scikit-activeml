@@ -438,6 +438,7 @@ ids_adaption = [
     REP,
     X1,
     X2,
+    LABEL,
     DATASET,
     CLASSIFIER,
     BUDGET,
@@ -471,6 +472,9 @@ class AdaptionLogger:
 
     def track_x2(self, value):
         self._track_value(value, X2)
+
+    def track_label(self, value):
+        self._track_value(value, LABEL)
 
     def finalize_round(self):
         self._data.append(self._current_row)

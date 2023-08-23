@@ -228,6 +228,22 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
                 for (X_tmp, y_tmp) in cluster_samples:
                     adaption_logger.track_x1(X_tmp[0])
                     adaption_logger.track_x2(X_tmp[1])
+                    adaption_logger.track_label(y_tmp)
+                    adaption_logger.track_rep(rep)
+                    adaption_logger.track_classifier(approach_name)
+                    adaption_logger.finalize_round()
+
+    if approach_name == 'ZliobaiteRefit':
+        X = clf.instances
+        y = clf.labels
+
+        for i in range(len(X)):
+            adaption_logger.track_x1(X[i][0])
+            adaption_logger.track_x2(X[i][1])
+            adaption_logger.track_label(y[i])
+            adaption_logger.track_classifier(approach_name)
+            adaption_logger.track_rep(rep)
+            adaption_logger.finalize_round()
 
     df_clu = clu_logger.get_dataframe()
     df_adapt = adaption_logger.get_dataframe()

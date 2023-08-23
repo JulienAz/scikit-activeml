@@ -38,12 +38,16 @@ class ZliobateClassifier(SkactivemlClassifier):
 
         self.random_state = random_state
 
+        self.instances = []
+        self.labels = []
     def fit(self, X, y, sample_weight=None, **fit_kwargs):
         return self.stable_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
     def partial_fit(self, X, y, detection_logger=None):
         if y[0] is not self.stable_clf.missing_label:
             self.stable_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
+            self.instances.append(X[0])
+            self.labels.append(y[0])
             self._update_change_state(X, y, detection_logger)
 
 
@@ -59,6 +63,8 @@ class ZliobateClassifier(SkactivemlClassifier):
             self.change_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
 
         if self.change_detector.detected_change():
+            self.instances = [X[0]]
+            self.labels = [y[0]]
             if self.change_clf is not None:
                 self.stable_clf = self.change_clf
             else:
