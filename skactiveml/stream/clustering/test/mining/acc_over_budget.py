@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 import seaborn as sb
+from matplotlib import pyplot as plt
 
 from skactiveml.stream.clustering.test.ExperimentLogger.clu_stream_performance_logger import DATASET, CLASSIFIER, REP, BUDGET, ACCURACY
 
@@ -12,17 +13,17 @@ file_name = 'minimal_acc.pdf'
 
 this_dir = os.path.split(__file__)[0]
 target_directory = 'target'
-csv_filepath = os.path.join(this_dir, "..", target_directory, 'minimal.csv')
+csv_filepath = os.path.join(this_dir, "..", target_directory, 'merged.csv')
 df = pd.read_csv(csv_filepath)
 
 df = df.groupby([REP, BUDGET, CLASSIFIER, DATASET], as_index=False)[ACCURACY].mean()
 sb.set_theme()
 
 # Artificial
-datasets_to_include = ['Hyperplane', 'ChessBoard', 'RbfGenerator', 'SEA']
+#datasets_to_include = ['Hyperplane', 'ChessBoard', 'RbfGenerator', 'SEA']
 
 #Realworld
-#datasets_to_include = ['Electricity', 'Airlines', 'Covertype', 'Pokerhand']
+datasets_to_include = ['Electricity', 'Airlines', 'Covertype', 'PokerHand']
 
 df = df[df[DATASET].isin(datasets_to_include)]
 
@@ -31,7 +32,7 @@ df = df[df[DATASET].isin(datasets_to_include)]
 
 # Define your hue order
 hue_order = ['CORA-SP', 'CORA-SE', 'CORA-EP', 'CORA-EE', 'Zliobaite', 'PEFAL', 'OPAL-NA']
-
+col_order = ['Electricity', 'Airlines', 'Covertype', 'PokerHand']
 
 # Get the default seaborn colors and 'rocket' palette colors
 default_colors = sb.color_palette()  # by default gives the deep palette
@@ -61,6 +62,7 @@ g = sb.relplot(data=df,
                hue=hue,
                col=col,
                col_wrap=2,
+               col_order=col_order,
                hue_order=hue_order,
                palette=palette_dict,  # Use the palette dictionary here
                facet_kws={'sharey': False})
@@ -69,11 +71,23 @@ g.set_titles(col_template="{col_name}")
 
 sb.move_legend(
     g, "lower center",
-    bbox_to_anchor=(.5, 1), ncol=len(hue_order), title=None, frameon=False,
+    bbox_to_anchor=(.47, 0.99), ncol=len(hue_order), title=None, frameon=False,
 )
+leg = g.legend
+
+for t in leg.get_texts():
+    t.set_fontsize(12)
+
+for ax in g.axes.flat:
+    ax.set_xlabel(ax.get_xlabel(), fontsize=14)  # Adjust x axis label font size
+    ax.set_ylabel(ax.get_ylabel(), fontsize=14)  # Adjust y axis label font size
+    ax.tick_params(axis='both', labelsize=12)
+
+
+g.set_axis_labels(BUDGET, ACCURACY, fontsize=14)
 
 g.legend
-
+#plt.subplots_adjust(left=0.3, right=0.8, bottom=0.2, top=0.9)
 image_filepath = os.path.join(this_dir, "..", target_directory, file_name)
 
 g.savefig(image_filepath)
