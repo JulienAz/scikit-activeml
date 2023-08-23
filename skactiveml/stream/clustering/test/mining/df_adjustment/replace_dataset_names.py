@@ -21,7 +21,7 @@ if __name__ == '__main__':
     df = pd.read_csv(csv_filepath)
 
     replace_values = {'SeaBig': 'SEA'}
-    df[CLASSIFIER] = df[CLASSIFIER].replace(replace_values)
+    df[DATASET] = df[DATASET].replace(replace_values)
 
     csv_filepath = os.path.join(target_directory, filename)
     df.to_csv(csv_filepath)

@@ -69,7 +69,7 @@ g = sb.relplot(data=df,
                aspect=1,
                facet_kws={'sharey': False})
 
-g.set_titles(col_template="{col_name}", size=10)
+g.set_titles(col_template="{col_name}", size=12)
 
 sb.move_legend(
     g, "lower center",
