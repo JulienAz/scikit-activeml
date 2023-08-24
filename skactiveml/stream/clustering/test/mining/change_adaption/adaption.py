@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     standard_palette = sb.color_palette()
 
-    color = ['darkcyan', 'darkolivegreen', 'purple', 'darkred', standard_palette[1]]
+    color = [standard_palette[0], 'darkolivegreen', 'purple', 'black', standard_palette[1]]
 
     for approach in approaches:
         image_name = 'adaption' + approach + '.pdf'

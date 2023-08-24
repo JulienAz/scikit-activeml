@@ -35,7 +35,9 @@ if __name__ == '__main__':
 
     sb.set_theme()
 
-    f = sb.relplot(data=df, x=TIMESTEP, y=ACCURACY, kind="line", hue=hue, hue_order=hue_order, palette=cora_colors)
+    f = sb.relplot(data=df, x=TIMESTEP, y=ACCURACY, kind="line", hue=hue, hue_order=hue_order, palette=cora_colors,
+                   errorbar=None
+                   )
     ax = f.ax
     f.ax.set_xlabel('Time', fontsize=13)
     f.ax.set_ylabel('Accuracy', fontsize=13)

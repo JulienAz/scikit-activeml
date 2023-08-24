@@ -17,7 +17,7 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
             missing_label=MISSING_LABEL,
             cost_matrix=None,
             random_state=None,
-            w=50,
+            w=150,
             detection_threshold=0.1,
             classifier_param_dict=None,
     ):
@@ -45,6 +45,13 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
 
         self.random_state = random_state
 
+        # For plots
+        self.instances = []
+        self.labels = []
+
+        self.r_instances = []
+        self.r_labels = []
+
     def fit(self, X, y, sample_weight=None, **fit_kwargs):
         self.reactive_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
         return self.stable_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
@@ -62,14 +69,21 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
             #Train stable classifier
             self.stable_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
 
+            self.instances.append(X[0])
+            self.labels.append(y[0])
+
             #If labeled by random strategy train reactive classifier
             if self.labeling_strategy.random_sampled:
                 self.training_window_X.append(X[0])
                 self.training_window_y.append(y[0])
                 #self.reactive_clf.reset()
-                self.reactive_clf.fit(self.training_window_X, np.array(self.training_window_y))
+                #self.reactive_clf.fit(self.training_window_X, np.array(self.training_window_y))
 
-                #self.reactive_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
+
+                self.reactive_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
+
+                self.r_instances.append(X[0])
+                self.r_labels.append(y[0])
 
     def update_change_state(self, X, y):
         y_stable = self.stable_clf.predict(X)
@@ -86,9 +100,15 @@ class XuPairedEnsembleClassifier(SkactivemlClassifier):
 
     def swap_classifier(self):
         self.stable_clf = self.reactive_clf
+        self.instances = self.training_window_X
+        self.labels = self.training_window_y
+
         self.change_state = deque(maxlen=self.w)
         self.reactive_clf = SklearnClassifier(self.clf_type(), **self.classifier_param_dict)
         self.reactive_clf.fit(self.training_window_X, np.array(self.training_window_y))
+
+        self.r_instances = self.training_window_X
+        self.r_labels = self.training_window_y
 
     def predict_proba(self, X):
         return self.stable_clf.predict_proba(X)

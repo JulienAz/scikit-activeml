@@ -233,7 +233,7 @@ def run(X, y, approach_name, query_strategy, clf, dataset_name=None,
                     adaption_logger.track_classifier(approach_name)
                     adaption_logger.finalize_round()
 
-    if approach_name == 'ZliobaiteRefit':
+    if (approach_name == 'ZliobaiteRefit') | (approach_name == 'PairedEnsembleXu'):
         X = clf.instances
         y = clf.labels
 

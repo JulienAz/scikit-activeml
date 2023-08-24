@@ -38,6 +38,7 @@ class ZliobateClassifier(SkactivemlClassifier):
 
         self.random_state = random_state
 
+        # For plots
         self.instances = []
         self.labels = []
     def fit(self, X, y, sample_weight=None, **fit_kwargs):
