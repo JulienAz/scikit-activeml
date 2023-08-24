@@ -25,15 +25,35 @@ if __name__ == '__main__':
 
     df[ACCURACY] = df[ACCURACY].rolling(window=smoothing_window).mean()
 
+    hue_order = ['CORA-EP', 'Zliobaite', 'PEFAL']
+
+    default_colors = sb.color_palette()
+
+    cora_colors = ['darkolivegreen', default_colors[0], default_colors[1]]
+
     #df = df[df[REP] == 8]
 
     sb.set_theme()
 
-    f = sb.relplot(data=df, x=TIMESTEP, y=ACCURACY, kind="line", hue=hue, palette='tab10')
+    f = sb.relplot(data=df, x=TIMESTEP, y=ACCURACY, kind="line", hue=hue, hue_order=hue_order, palette=cora_colors)
+    ax = f.ax
+    f.ax.set_xlabel('Time', fontsize=13)
+    f.ax.set_ylabel('Accuracy', fontsize=13)
+    f.ax.tick_params(axis='both', labelsize=12)
+
+    sb.move_legend(
+        f, "lower center",
+        bbox_to_anchor=(.5, 0.97), ncol=len(hue_order), title=None, frameon=False,
+    )
+
+    leg = f.legend
+    for t in leg.get_texts():
+        t.set_fontsize(13)
 
     ax = f.ax
-    ax.axvline(x=2000, color='darkmagenta', linestyle='--')
+    plt.tight_layout()
+    #ax.axvline(x=2000, color='darkmagenta', linestyle='--')
     image_filepath = os.path.join(this_dir, "..", "..", target_directory, file_name)
 
-    save_image(image_filepath)
+    f.savefig(image_filepath)
 
