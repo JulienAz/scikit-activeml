@@ -28,7 +28,7 @@ class MicroCluster:
             time_stamp=1,
             classes=None,
             change_detector_param_dict= {'warm_start': 5, 'drift_threshold': 0.5},
-            window_size=100
+            window_size=1000000
     ):
         self.features: typing.Dict = {
             "ls_x": np.sum(x, 0),
@@ -44,12 +44,8 @@ class MicroCluster:
         self.n_classes = len(classes)
         self.window_size = window_size
 
-        self.labeled_samples = np.empty((0,), dtype=object)
-
-        self.test = [deque(maxlen=window_size), deque(maxlen=window_size)]
-
-        #self.labeled_samples = deque(maxlen=window_size)
-
+        self.labeled_samples = [deque(maxlen=window_size), deque(maxlen=window_size), deque(maxlen=window_size)]
+        self.test = np.empty((0,), dtype=object)
         self.change_detector_param_dict = copy.deepcopy(change_detector_param_dict)
         if 'change_detector_type' in change_detector_param_dict:
             self.change_detector_type = self.change_detector_param_dict.pop('change_detector_type')
@@ -68,10 +64,11 @@ class MicroCluster:
         if (y is not None) and (not np.isnan(y)):
             self.features["class_dist"][y] += 1
 
-            self.labeled_samples = np.array((x[0], y), dtype=object).reshape(1, 2)
-            self.test[0].append(x[0])
-            self.test[1].append(y)
+            self.labeled_samples[0].append(x[0])
+            self.labeled_samples[1].append(y)
+            self.labeled_samples[2].append(time_stamp)
 
+            self.test = np.array((x[0], y), dtype=object).reshape(1, 2)
             #self.labeled_samples.append((x[0], y))
             #self.change_detector.add_element(self.class_entropy)
 
@@ -88,7 +85,7 @@ class MicroCluster:
         if np.sum(self.features['class_dist']) == 0:
             return 0
 
-        class_probabilities = self.features['class_dist'] / len(self.labeled_samples)
+        class_probabilities = self.features['class_dist'] / len(self.labeled_samples[0])
         return entropy(class_probabilities, base=self.n_classes)
 
     def update_changedetector(self):
@@ -132,14 +129,14 @@ class MicroCluster:
 
         if y is not None:   ####TODO: Missing Label hinzufügen
             self.features["class_dist"][y] += 1
-            if len(self.labeled_samples) == 0:
-                self.labeled_samples = np.array([x, y], dtype=object).reshape(1, 2)
-                self.test[0].append(x)
-                self.test[1].append(y)
+            if len(self.test) == 0:
+                self.test = np.array([x, y], dtype=object).reshape(1, 2)
+
             else:
-                self.labeled_samples = np.vstack([self.labeled_samples, np.array((x, y), dtype=object)])
-                self.test[0].append(x)
-                self.test[1].append(y)
+                self.test = np.vstack([self.test, np.array((x, y), dtype=object)])
+            self.labeled_samples[0].append(x)
+            self.labeled_samples[1].append(y)
+            self.labeled_samples[2].append(t)
             #self.change_detector.add_element(self.class_entropy)
 
         #self.x = np.vstack([self.x, x[np.newaxis, ...]])
@@ -150,14 +147,37 @@ class MicroCluster:
         
         self.features = {k: self.features[k] + other.features[k] for k, value in other.features.items()}
         self.features["M"] += addterm_m
+        if len(other.test) > 0:
+            self.test = np.vstack([self.test.reshape(-1, 2), other.test.reshape(-1, 2)])
 
-        if len(other.labeled_samples) > 0:
-            self.labeled_samples = np.vstack([self.labeled_samples.reshape(-1, 2), other.labeled_samples.reshape(-1, 2)])
-            for i in range(len(other.test[0])):
-                self.test[0].append(other.test[0][i])
-                self.test[1].append(other.test[1][i])
-            #self.test[0].append(np.array(other.test[0]))
-            #self.test[1].append(other.test[1])
+        if len(other.labeled_samples[0]) > 0:
+            merged_features = deque(maxlen=self.window_size)
+            merged_targets = deque(maxlen=self.window_size)
+            merged_timestamps = deque(maxlen=self.window_size)
+
+            # As long as we haven't reached n samples and there are still samples in either deque
+            while len(merged_timestamps) < self.window_size and (self.labeled_samples[2] or other.labeled_samples[2]):
+                # If one is empty, take from the other
+                if not self.labeled_samples[2]:
+                    source = other.labeled_samples
+                elif not other.labeled_samples[2]:
+                    source = self.labeled_samples
+                # If both have samples, take the one with the higher latest timestamp
+                elif self.labeled_samples[2][-1] >= other.labeled_samples[2][-1]:
+                    source = self.labeled_samples
+                else:
+                    source = other.labeled_samples
+
+                merged_features.appendleft(source[0].pop())
+                merged_targets.appendleft(source[1].pop())
+                merged_timestamps.appendleft(source[2].pop())
+            self.labeled_samples = [merged_features, merged_targets, merged_timestamps]
+
+            #for i in range(len(other.labeled_samples[0])):
+            #    self.labeled_samples[0].append(other.labeled_samples[0][i])
+            #    self.labeled_samples[1].append(other.labeled_samples[1][i])
+            #    self.labeled_samples[2].append(other.labeled_samples[2][i])
+
         return self
 
 # Microcluster class where each cluster has its own classifier
@@ -171,6 +191,7 @@ class MicroClfCluster(MicroCluster):
             random_state=0,
             classifier=HoeffdingTreeClassifier,
             change_detector_param_dict= {'warm_start': 5, 'drift_threshold': 0.5},
+            window_size=100
     ):
         self.clf = SklearnClassifier(classifier(), missing_label=None, random_state=random_state, classes=classes)
 
@@ -181,7 +202,8 @@ class MicroClfCluster(MicroCluster):
             y=y,
             time_stamp=time_stamp,
             classes=classes,
-            change_detector_param_dict=change_detector_param_dict
+            change_detector_param_dict=change_detector_param_dict,
+             window_size=window_size
             )
 
     def add(self, data):
@@ -195,8 +217,8 @@ class MicroClfCluster(MicroCluster):
         return probas
 
     def __iadd__(self, other):
-        if len(other.labeled_samples) > 0:
-            X, y = zip(*other.labeled_samples)
+        if len(other.test) > 0:
+            X, y = zip(*other.test)
             self.clf.partial_fit(X, y)
         return super().__iadd__(other)
 
@@ -217,7 +239,8 @@ class CluStream:
             time_window=10000,
             random_state=None,
             classes=None,
-            change_detector_param_dict=None
+            change_detector_param_dict=None,
+            window_size=100
     ):
         self.mc = micro_cluster
 
@@ -227,6 +250,7 @@ class CluStream:
 
         self.classes = classes
         self.n_classes = len(classes)
+        self.window_size = window_size
 
         self.centers: dict[int, []] = {}
         self.micro_clusters: dict[int, micro_cluster] = {}
@@ -279,6 +303,7 @@ class CluStream:
             self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y,
                                                            self._timestamp,
                                                            self.classes,
+                                                           window_size=self.window_size,
                                                            change_detector_param_dict=self.change_detector_param_dict)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object)  # !!! For cluster analysi
             return free_cluster_id, None
@@ -311,6 +336,7 @@ class CluStream:
             self.micro_clusters[free_cluster_id] = self.mc(X[np.newaxis, ...], y,
                                                            self._timestamp,
                                                            self.classes,
+                                                           window_size=self.window_size,
                                                            change_detector_param_dict=self.change_detector_param_dict)
             self.cluster_test[free_cluster_id] = np.array((X, y), dtype=object) #!!! For cluster analysis
             return free_cluster_id, None
@@ -330,6 +356,7 @@ class CluStream:
         self.centers = {i: X for i, X in enumerate(self._kmeans_mc.cluster_centers_)}
         self.micro_clusters = {i: self.mc(x=X[np.newaxis, ...],
                                           time_stamp=self.n_micro_clusters - 1,
+                                          window_size=self.window_size,
                                           change_detector_param_dict=self.change_detector_param_dict,
                                           classes=self.classes)
                                for i, X in
@@ -357,6 +384,7 @@ class CluStream:
             self.micro_clusters[del_id] = self.mc(X[np.newaxis, ...], y,
                                                   self._timestamp,
                                                   self.classes,
+                                                  window_size=self.window_size,
                                                   change_detector_param_dict=self.change_detector_param_dict)
             self.cluster_test[del_id] = np.array((X, y), dtype=object)
             return del_id, None
@@ -384,6 +412,7 @@ class CluStream:
         self.micro_clusters[closest_b] = self.mc(X[np.newaxis, ...], y,
                                                  self._timestamp,
                                                  self.classes,
+                                                 window_size=self.window_size,
                                                  change_detector_param_dict=self.change_detector_param_dict)
 
         return closest_b, closest_a

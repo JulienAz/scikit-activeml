@@ -125,7 +125,7 @@ class ArtificialStreamGenerator(StreamGenerator):
 
 
 class CsvStreamGenerator(StreamGenerator):
-    def __init__(self, path, rng, shuffle: bool, stream_length, start_point=0):
+    def __init__(self, path, rng, shuffle: bool, stream_length, start_point=0, sample=None):
         dataset = pd.read_csv(path)
         self.rng = rng
 
@@ -144,9 +144,15 @@ class CsvStreamGenerator(StreamGenerator):
         X = X.values
         y = y.values
 
-        if stream_length is not None:
-            X = X[start_point:stream_length + start_point, :]
-            y = y[start_point:stream_length + start_point]
+        #if stream_length is not None:
+        #    if sample is not None:
+        #        X = X[start_point: start_point + sample * stream_length: sample]
+        #        y = y[start_point: start_point + sample * stream_length: sample]
+        #    else:
+        #        X = X[start_point:stream_length + start_point, :]
+        #        y = y[start_point:stream_length + start_point]
+        X = X[start_point:stream_length + start_point, :]
+        y = y[start_point:stream_length + start_point]
         super().__init__(X, y)
 
 
@@ -155,7 +161,7 @@ class RbfStreamGenerator(StreamGenerator):
     def _distance(self, point_a, point_b):
         return np.linalg.norm(np.array(point_a) - np.array(point_b))
 
-    def __init__(self, random_state, stream_length, n_features=2, n_classes=5, n_centroids=5, stdv_min=0.005, stdv_max=0.03, min_dist=0.1):
+    def __init__(self, random_state, stream_length, n_features=2, n_classes=15, n_centroids=15, stdv_min=0.005, stdv_max=0.03, min_dist=0.1):
         assert n_classes == n_centroids
 
         # Extract feature matrix and target array

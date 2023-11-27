@@ -54,7 +54,7 @@ class CluStreamClassifier(SkactivemlClassifier):
                 self.clustering.fit_one(x_t, y_t)
         return self.estimator_clf.fit(X, y, sample_weight=sample_weight, **fit_kwargs)
 
-    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, sample_weight=None, **fit_kwargs):
+    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, detection_logger=None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
 
         if not y == self.missing_label:
@@ -74,6 +74,9 @@ class CluStreamClassifier(SkactivemlClassifier):
                 change_detections[mc_id] = mc.change_detector.drift_detected
             if not statistic_logger == None:
                 statistic_logger.track_change_detection(change_detections)
+
+            if detection_logger is not None:
+                detection_logger.track_change_detection(any(change_detections))
             # If change_detector of cluster is positiv, corresponding cluster is cleared
             # self.clustering.clear_cluster(mc_id)
 
@@ -106,13 +109,17 @@ class CluStreamClassifier(SkactivemlClassifier):
             #        y.extend(targets)
             #    else:
             #        self.clustering.clear_cluster(mc_id)
-            if not len(mc.labeled_samples) == 0:
-                features, targets = zip(*mc.labeled_samples)
-                X.extend(features)
-                y.extend(targets)
+            if not len(mc.labeled_samples[0]) == 0:
+                X.extend(mc.labeled_samples[0])
+                y.extend(mc.labeled_samples[1])
 
+            if not len(mc.test) == 0:
+                features, targets = zip(*mc.test)
+                X_test.extend(features)
+                y_test.extend(targets)
 
-
+            #assert np.array_equal(X_test, X)
+            #assert np.array_equal(y_test, y)
         # Convert the lists to NumPy arrays
         if not len(X) == 0:
             X = np.vstack(X)
@@ -129,6 +136,7 @@ class CluStreamClassifier(SkactivemlClassifier):
     def predict(self, X):
         return self.estimator_clf.predict(X)
 
+    #!!!Depricated
     def predict_freq(self, X, logger=None):
         if self.clustering.initialized & len(self.clustering.micro_clusters) != 0:
             cluster_id, _ = self.clustering.nearest_cluster(X)
@@ -189,7 +197,7 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
 
         # Get weighted probabilities of base estimator and cluster estimator
         if (cluster_id in self.clustering.micro_clusters):
-            if (len(self.clustering.micro_clusters[cluster_id].labeled_samples) > 0):
+            if (len(self.clustering.micro_clusters[cluster_id].labeled_samples[0]) > 0):
                 mc_clf = self.clustering.micro_clusters[cluster_id].clf
                 # Get weighted probabilities of base estimator and cluster estimator
                 cluster_proba = self.clustering.micro_clusters[cluster_id].predict_proba()
@@ -203,7 +211,7 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
             proba = self.estimator_clf.predict_proba(X)
         return proba
 
-    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, sample_weight=None, **fit_kwargs):
+    def partial_fit(self, X, y, acc_logger=None, statistic_logger=None, detection_logger=None, sample_weight=None, **fit_kwargs):
         mc_id_fitted, mc_id_merged = self.clustering.fit_one(X[0], y[0])
 
         if not y == self.missing_label:
@@ -231,6 +239,9 @@ class CluStreamEnsembleClassifier(CluStreamClassifier):
                 for mc_id in changed_clusters:
                     self.clustering.clear_cluster(mc_id)
                 self.refit_on_cluster(X, y, sample_weight=sample_weight, **fit_kwargs)
+
+            if detection_logger is not None:
+                detection_logger.track_change_detection(any(change_detections))
 
         if y[0] is not self.estimator_clf.missing_label:
             return self.estimator_clf.partial_fit(X.reshape([1, -1]), np.array([y]))
